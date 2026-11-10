@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sensor hero variants</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<script src="../js/icons.js"></script>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #0b0b0d; color: var(--label-primary); font: var(--body-md); font-family: var(--font); -webkit-font-smoothing: antialiased; padding: 40px 32px 80px; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; letter-spacing: .3px; }
+  .lead { color: var(--label-secondary); max-width: 760px; margin: 0 0 8px; font: var(--body-lg); }
+  .legend { color: var(--label-tertiary); font: var(--body-sm); margin: 0 0 40px; }
+  section.var { margin: 0 0 56px; }
+  .vhead { display: flex; align-items: baseline; gap: 12px; margin: 0 0 6px; }
+  .vnum { font: 700 15px/20px var(--font); color: var(--primary); min-width: 28px; }
+  .vname { font: 700 22px/28px var(--font); }
+  .vtag { font: var(--body-sm); color: var(--green); border: 1px solid var(--green); border-radius: 20px; padding: 1px 8px; }
+  .videa { color: var(--label-secondary); margin: 0 0 16px 40px; max-width: 760px; font: var(--body-md); }
+  .row { display: flex; gap: 22px; overflow-x: auto; padding: 4px 4px 16px 40px; }
+  .cap { font: var(--body-sm); color: var(--label-tertiary); margin: 10px 0 0 4px; }
+
+  /* mini phone: the top of a device page at real size, zoomed down */
+  .mock { flex: none; width: 375px; height: 560px; zoom: .78; border-radius: 40px; overflow: hidden; position: relative; isolation: isolate;
+    background: radial-gradient(420px 420px at 85% 105%, rgba(60, 180, 255, .45), transparent 70%), radial-gradient(300px 380px at 0% 70%, rgba(124, 255, 207, .16), transparent 70%), linear-gradient(rgba(0, 89, 255, .10), rgba(0, 89, 255, .10)), #000;
+    box-shadow: 0 0 0 8px #1a1a1d; }
+  .tb { display: flex; align-items: center; justify-content: space-between; padding: 54px 16px 0; height: 98px; }
+  .gb { width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, .1); display: grid; place-items: center; }
+  .gb svg { width: 22px; height: 22px; color: #fff; }
+  .tt { text-align: center; } .tt b { display: block; font: 600 17px/20px var(--font); } .tt span { font: var(--body-sm); color: var(--label-secondary); }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; margin-top: 28px; }
+  .card { min-height: 68px; padding: 12px 16px; border-radius: 16px; background: var(--fill-tertiary); display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .card span { font: var(--body-sm); color: var(--label-secondary); } .card b { font: var(--body-lg-accent); font-variant-numeric: tabular-nums; }
+  .rep { text-align: center; font: var(--body-sm); color: var(--label-tertiary); margin-top: 14px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .ic { width: 18px; height: 18px; }
+  .good { color: var(--green); } .ok { color: var(--yellow); } .bad { color: var(--red); } .calm { color: #64d2ff; }
+
+  /* 1 — Twin numerals */
+  .v1 { display: flex; justify-content: center; gap: 28px; padding: 50px 16px 0; }
+  .v1 .val { text-align: center; } .v1 .n { font: 600 56px/60px var(--font); letter-spacing: -1.5px; display: flex; justify-content: center; }
+  .v1 .n small { font: 600 22px/30px var(--font); color: var(--label-secondary); margin: 4px 0 0 3px; letter-spacing: 0; }
+  .v1 .n.word { font-size: 48px; }
+  .v1 .l { display: flex; gap: 6px; align-items: center; justify-content: center; color: var(--label-secondary); margin-top: 6px; }
+  .v1 .sep { width: 1px; background: var(--separator-opaque); margin: 10px 0 28px; }
+
+  /* 2 — One hero + chips */
+  .v2 { text-align: center; padding: 40px 16px 0; }
+  .v2 .l { color: var(--label-secondary); display: inline-flex; gap: 6px; align-items: center; }
+  .v2 .n { font: 200 104px/104px var(--font); letter-spacing: -4px; margin-top: 4px; }
+  .v2 .n small { font: 300 34px/40px var(--font); letter-spacing: 0; vertical-align: top; margin-left: 2px; position: relative; top: 14px; }
+  .v2 .n.word { font: 300 76px/96px var(--font); letter-spacing: -2px; }
+  .v2 .chips { display: flex; gap: 8px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+  .v2 .chip { display: inline-flex; gap: 6px; align-items: center; height: 34px; padding: 0 14px; border-radius: 17px; background: var(--fill-tertiary); font: var(--body-md-accent); }
+  .v2 .chip svg { width: 16px; height: 16px; color: var(--label-secondary); }
+
+  /* 3 — Arc gauge */
+  .v3 { position: relative; width: 240px; height: 210px; margin: 34px auto 0; }
+  .v3 svg.arc { position: absolute; inset: 0; width: 240px; height: 240px; }
+  .v3 .mid { position: absolute; left: 0; right: 0; top: 62px; text-align: center; }
+  .v3 .n { font: 300 64px/64px var(--font); letter-spacing: -2px; } .v3 .n small { font: 400 22px/26px var(--font); color: var(--label-secondary); letter-spacing: 0; margin-left: 2px; }
+  .v3 .n.word { font: 400 44px/64px var(--font); letter-spacing: -1px; }
+  .v3 .s { font: var(--body-md); color: var(--label-secondary); margin-top: 6px; }
+  .v3 .ends { position: absolute; left: 34px; right: 34px; bottom: 0; display: flex; justify-content: space-between; font: var(--body-xs); color: var(--label-tertiary); }
+
+  /* 4 — Value on a scale */
+  .v4 { padding: 34px 20px 0; }
+  .v4 .m { margin-bottom: 22px; }
+  .v4 .top { display: flex; justify-content: space-between; align-items: baseline; }
+  .v4 .l { display: flex; gap: 6px; align-items: center; color: var(--label-secondary); }
+  .v4 .w { font: var(--body-md-accent); }
+  .v4 .n { font: 600 52px/58px var(--font); letter-spacing: -1.5px; } .v4 .n small { font: 600 22px/28px var(--font); color: var(--label-secondary); letter-spacing: 0; margin-left: 3px; }
+  .v4 .n.sm { font-size: 30px; line-height: 36px; letter-spacing: -.5px; } .v4 .n.sm small { font-size: 17px; }
+  .v4 .scale { position: relative; display: flex; gap: 3px; height: 6px; margin-top: 10px; }
+  .v4 .scale i { flex: 1; border-radius: 3px; background: rgba(255, 255, 255, .14); }
+  .v4 .scale i.on { background: currentColor; }
+  .v4 .scale b { position: absolute; top: -4px; width: 4px; height: 14px; margin-left: -2px; border-radius: 2px; background: #fff; box-shadow: 0 0 0 2px #000; }
+  .v4 .ticks { display: flex; justify-content: space-between; font: var(--body-xs); color: var(--label-tertiary); margin-top: 6px; }
+  .v4 .state { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 15px; background: var(--green-soft); font: var(--body-md-accent); margin-top: 12px; }
+  .v4 .state i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+  /* 5 — Widget tiles */
+  .v5 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 30px 16px 0; }
+  .v5 .t { aspect-ratio: 1; border-radius: 24px; background: var(--fill-tertiary); padding: 16px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); }
+  .v5 .t.wide { grid-column: 1 / -1; aspect-ratio: auto; min-height: 150px; }
+  .v5 .t .h { display: flex; justify-content: space-between; align-items: center; color: var(--label-secondary); }
+  .v5 .t .h svg { width: 22px; height: 22px; }
+  .v5 .n { font: 600 46px/50px var(--font); letter-spacing: -1.5px; } .v5 .n small { font: 600 18px/24px var(--font); color: var(--label-secondary); letter-spacing: 0; margin-left: 2px; }
+  .v5 .q { font: var(--body-sm); }
+
+  /* 6 — Number + 24-hour line */
+  .v6 { padding: 36px 20px 0; }
+  .v6 .top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .v6 .n { font: 600 64px/66px var(--font); letter-spacing: -2px; } .v6 .n small { font: 600 24px/30px var(--font); color: var(--label-secondary); letter-spacing: 0; margin-left: 3px; vertical-align: top; position: relative; top: 8px; }
+  .v6 .n.word { font-size: 52px; }
+  .v6 .l { color: var(--label-secondary); display: flex; gap: 6px; align-items: center; margin-bottom: 2px; }
+  .v6 .side { text-align: right; padding-top: 22px; } .v6 .side div { font: var(--body-lg-accent); } .v6 .side span { font: var(--body-sm); color: var(--label-secondary); }
+  .v6 svg.sp { display: block; width: 100%; height: 64px; margin-top: 14px; overflow: visible; }
+  .v6 .mm { display: flex; justify-content: space-between; font: var(--body-xs); color: var(--label-tertiary); margin-top: 6px; }
+
+  /* 7 — State first */
+  .v7 { text-align: center; padding: 52px 16px 0; }
+  .v7 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 6px color-mix(in srgb, currentColor 20%, transparent); margin-bottom: 18px; }
+  .v7 .w { font: 700 40px/44px var(--font); letter-spacing: -.5px; color: var(--label-primary); }
+  .v7 .vals { display: flex; justify-content: center; gap: 18px; margin-top: 14px; font: 500 20px/28px var(--font); white-space: nowrap; }
+  .v7 .vals span { display: inline-flex; gap: 6px; align-items: center; } .v7 .vals svg { width: 18px; height: 18px; color: var(--label-secondary); }
+  .v7 .note { font: var(--body-xs); color: var(--orange); margin-top: 10px; }
+
+  /* 8 — Aura */
+  .v8 { position: relative; width: 236px; height: 236px; margin: 30px auto 0; border-radius: 50%; display: grid; place-items: center; text-align: center; }
+  .v8::before { content: ''; position: absolute; inset: -30px; border-radius: 50%; background: radial-gradient(closest-side, var(--a1), var(--a2) 55%, transparent 100%); opacity: .9; z-index: -1; }
+  .v8::after { content: ''; position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .22), rgba(255, 255, 255, .04) 60%); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); z-index: -1; }
+  .v8 .n { font: 300 64px/64px var(--font); letter-spacing: -2px; } .v8 .n small { font: 400 22px/26px var(--font); letter-spacing: 0; opacity: .8; margin-left: 2px; }
+  .v8 .n.word { font: 400 46px/56px var(--font); letter-spacing: -1px; }
+  .v8 .s { font: var(--body-md); opacity: .85; margin-top: 4px; }
+
+  /* 9 — Rings */
+  .v9 { display: flex; justify-content: center; gap: 22px; padding: 40px 16px 0; }
+  .v9 .r { position: relative; width: 150px; text-align: center; }
+  .v9 svg { width: 150px; height: 150px; display: block; }
+  .v9 .in { position: absolute; left: 0; right: 0; top: 46px; }
+  .v9 .n { font: 600 38px/42px var(--font); letter-spacing: -1px; } .v9 .n small { font: 600 16px/20px var(--font); color: var(--label-secondary); letter-spacing: 0; margin-left: 1px; }
+  .v9 .n.word { font-size: 30px; }
+  .v9 .l { color: var(--label-secondary); margin-top: 8px; display: flex; gap: 6px; justify-content: center; align-items: center; }
+  .v9.three { gap: 10px; } .v9.three .r { width: 108px; } .v9.three svg { width: 108px; height: 108px; } .v9.three .in { top: 34px; } .v9.three .n { font-size: 28px; line-height: 32px; } .v9.three .n small { font-size: 12px; }
+
+  /* 10 — Editorial */
+  .v10 { padding: 40px 24px 0; }
+  .v10 .k { font: 600 13px/16px var(--font); letter-spacing: 1.2px; text-transform: uppercase; color: var(--label-secondary); }
+  .v10 .n { font: 200 92px/92px var(--font); letter-spacing: -4px; margin: 4px 0 2px -4px; } .v10 .n small { font: 300 30px/36px var(--font); letter-spacing: 0; color: var(--label-secondary); vertical-align: top; position: relative; top: 12px; margin-left: 4px; }
+  .v10 .n.word { font: 300 72px/92px var(--font); letter-spacing: -2px; }
+  .v10 .q { font: var(--body-md-accent); margin-bottom: 18px; }
+  .v10 dl { margin: 0; border-top: 1px solid var(--separator-opaque); }
+  .v10 dl div { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--separator-opaque); font: var(--body-lg); }
+  .v10 dt { color: var(--label-secondary); } .v10 dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+  .pick { margin: 8px 0 48px; padding: 18px 20px; border-radius: 16px; background: var(--blue-soft); max-width: 900px; font: var(--body-lg); }
+  .pick b { font-weight: 600; }
+  @media (max-width: 700px) { body { padding: 24px 16px 60px; } .row { padding-left: 0; } .videa { margin-left: 0; } .mock { zoom: .66; } }
+</style>
+</head>
+<body>
+<h1>Sensor hero — 10 variants</h1>
+<p class="lead">The top of every sensor page: the 1–3 values that matter most. Each variant is shown on three different sensors — a number sensor (temperature & humidity), a multi-value sensor (air quality) and a state sensor (water leak) — so we can pick one style that also fits motion, presence, smoke, gas / CO, vibration, energy meters and valves later.</p>
+<p class="legend">Real app colours, font and icons. Values are the last report; "Reported 2 min ago" stays under the hero in every variant. Cards under the hero are the same in all variants.</p>
+<div id="out"></div>
+<script>
+const S = {
+  temp: { title: 'Bedroom climate', room: 'Bedroom', main: { k: 'Temperature', ic: 'temperature', v: '21.9', u: '°C', pos: (21.9 - 10) / 25, zone: 1, zones: ['Cold', 'Comfort', 'Warm'], cols: ['#64d2ff', 'var(--green)', 'var(--orange)'], ends: ['10°', '35°'], q: 'Comfortable', tone: 'good', a1: '#ffb04a', a2: 'rgba(255,120,60,.35)' },
+    sub: [{ k: 'Humidity', ic: 'dev-drop', v: '46', u: '%', pos: .46, zone: 1, zones: ['Dry', 'Normal', 'Humid'], cols: ['var(--orange)', 'var(--green)', '#64d2ff'], ends: ['0 %', '100 %'], q: 'Normal' }],
+    rep: 'Reported 2 min ago', state: 'Comfortable', spark: [21.2, 20.6, 20.1, 19.8, 19.6, 19.9, 20.8, 21.9, 22.6, 23.1, 23.6, 24.1, 24.2, 23.8, 23.1, 22.6, 22.2, 21.9], mm: ['min 19.6° · 06:10', 'max 24.2° · 15:10'],
+    cards: [['Pressure · steady', '1012 hPa'], ['Dew point', '9.7 °C']] },
+  air: { title: 'Living room air', room: 'Living Room', main: { k: 'Air quality', ic: 'dev-air', v: '42', u: 'AQI', pos: 42 / 300, zone: 0, zones: ['Good', 'Moderate', 'Poor'], cols: ['var(--green)', 'var(--yellow)', 'var(--red)'], ends: ['0', '300'], q: 'Good', tone: 'good', a1: '#5ff0a8', a2: 'rgba(40,200,140,.35)' },
+    sub: [{ k: 'CO₂', ic: 'dev-air', v: '640', u: 'ppm', pos: (640 - 400) / 1600, zone: 0, zones: ['Fresh', 'Stuffy', 'Bad'], cols: ['var(--green)', 'var(--yellow)', 'var(--red)'], ends: ['400', '2000'], q: 'Fresh' }, { k: 'PM2.5', ic: 'dev-air', v: '8', u: 'µg/m³', pos: 8 / 75, zone: 0, zones: ['Low', 'Medium', 'High'], cols: ['var(--green)', 'var(--yellow)', 'var(--red)'], ends: ['0', '75'], q: 'Low' }],
+    rep: 'Reported 1 min ago', state: 'Good air', spark: [55, 61, 58, 50, 44, 40, 38, 39, 45, 52, 60, 66, 58, 49, 44, 42], mm: ['best 36 · 05:40', 'worst 68 · 19:30'],
+    cards: [['Temperature', '22.4 °C'], ['Humidity', '44 %']] },
+  leak: { title: 'Kitchen sink', room: 'Kitchen', state: 'Dry', main: { k: 'Water', ic: 'dev-drop', word: 'Dry', q: 'No leak', tone: 'good', pos: 0, zone: 0, a1: '#64d2ff', a2: 'rgba(40,140,255,.30)' },
+    sub: [{ k: 'Temperature', ic: 'temperature', v: '14.2', u: '°C', pos: (14.2 + 10) / 50, zone: 1, zones: ['Frost', 'OK', 'Hot'], cols: ['#64d2ff', 'var(--green)', 'var(--orange)'], ends: ['−10°', '40°'], q: 'No frost' }],
+    rep: 'Checked in 3 min ago', spark: null, mm: null, cards: [['Battery', '88 %'], ['Last leak', '12 Oct, 07:40']] },
+};
+const I = (n, c = 'ic') => icon(n, c);
+const val = (x, cls = 'n') => x.word ? `<div class="${cls} word">${x.word}</div>` : `<div class="${cls} num">${x.v}<small>${x.u}</small></div>`;
+const mock = (s, hero, noCards) => `<div><div class="mock"><div class="tb"><span class="gb">${I('back')}</span><span class="tt"><b>${s.title}</b><span>${s.room}</span></span><span class="gb"><img src="../assets/icons/setting.svg" width="24" height="24" alt=""></span></div>${hero}
+  <div class="rep">${s.rep}</div>${noCards ? '' : `<div class="cards">${s.cards.map(([a, b]) => `<div class="card"><span>${a}</span><b>${b}</b></div>`).join('')}</div>`}</div></div>`;
+const arcPath = (cx, cy, r, a0, a1) => { const p = (a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)]; const [x0, y0] = p(a0), [x1, y1] = p(a1); return `M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
+const TONE = { 0: 'var(--green)', 1: 'var(--yellow)', 2: 'var(--red)' };
+const zoneColor = (x) => (x.cols ? x.cols[x.zone] : TONE[x.zone]);   // every reading has its own zone colours (humidity: dry · normal · humid)
+
+const V = [
+  { name: 'Twin numerals', idea: 'What we have now: the values side by side, same size, with a hairline between. Calm and clear for 2 values; a state sensor shows its word in the same place.', hero: (s) => {
+      const all = [s.main, ...s.sub].slice(0, 2);
+      return `<div class="v1">${all.map((x, i) => `${i ? '<i class="sep"></i>' : ''}<div class="val">${val(x)}<div class="l">${I(x.ic)}${x.k}</div></div>`).join('')}</div>`; } },
+  { name: 'One hero + chips', idea: 'One value is the page — huge and thin (iOS Weather). Everything else is a small chip under it. Strong hierarchy; works for any number of secondary values.', hero: (s) => {
+      const m = s.main;
+      return `<div class="v2"><div class="l">${I(m.ic)}${m.k}</div>${m.word ? `<div class="n word">${m.word}</div>` : `<div class="n num">${m.v}<small>${m.u}</small></div>`}
+        <div class="chips">${s.sub.map((x) => `<span class="chip">${I(x.ic)}${x.k === 'Temperature' || x.k === 'Humidity' ? '' : x.k + ' '}${x.v} ${x.u}</span>`).join('')}</div></div>`; } },
+  { name: 'Arc gauge', idea: 'A thin 240° arc shows where the value sits in its range — like a car gauge or Apple Watch. The arc colour is the zone. A state sensor shows a full calm ring.', hero: (s) => {
+      const m = s.main, a0 = Math.PI * 0.833, a1 = Math.PI * 2.167, at = a0 + (a1 - a0) * Math.min(.98, Math.max(.02, m.pos));
+      const c = m.word ? 'var(--green)' : zoneColor(m, s === S.temp);
+      const track = arcPath(120, 120, 104, a0, a1), fill = m.word ? track : arcPath(120, 120, 104, a0, at), [dx, dy] = [120 + 104 * Math.cos(at), 120 + 104 * Math.sin(at)];
+      return `<div class="v3"><svg class="arc" viewBox="0 0 240 240"><path d="${track}" stroke="rgba(255,255,255,.12)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="${fill}" stroke="${c}" stroke-width="8" fill="none" stroke-linecap="round"/>${m.word ? '' : `<circle cx="${dx}" cy="${dy}" r="9" fill="#fff" stroke="#000" stroke-width="3"/>`}</svg>
+        <div class="mid">${val(m)}<div class="s">${m.word ? m.q : s.sub.map((x) => `${x.v} ${x.u}`).join(' · ')}</div></div>${m.ends ? `<div class="ends"><span>${m.ends[0]}</span><span>${m.ends[1]}</span></div>` : ''}</div>`; } },
+  { name: 'Value on a scale', idea: 'Left-aligned number with a short zone bar under it (cold · comfort · warm, good · moderate · poor). Answers "is this OK?" at a glance; the zones are our app\'s ranges (the comfort range, CO₂ / PM guidelines) and the user can change them. Scales to 1–4 values and to CO₂, PM, gas levels, battery. A state sensor shows a status pill.', pick: true, hero: (s) => {
+      const isT = s === S.temp;
+      const block = (x, big) => {
+        const c = zoneColor(x, isT && x === s.main);
+        if (x.word) return `<div class="m"><div class="top"><span class="l">${I(x.ic)}${x.k}</span></div><div class="n">${x.word}</div><span class="state"><i></i>${x.q}</span></div>`;
+        return `<div class="m"><div class="top"><span class="l">${I(x.ic)}${x.k}</span><span class="w" style="color:${c}">${x.q}</span></div><div class="n num ${big ? '' : 'sm'}">${x.v}<small>${x.u}</small></div>
+          <div class="scale" style="color:${c}">${x.zones.map((z, i) => `<i class="${i === x.zone ? 'on' : ''}"></i>`).join('')}<b style="left:${(x.pos * 100).toFixed(1)}%"></b></div>${big ? `<div class="ticks"><span>${x.zones[0]}</span><span>${x.zones[1]}</span><span>${x.zones[2]}</span></div>` : ''}</div>`;
+      };
+      return `<div class="v4">${block(s.main, true)}${s.sub.map((x) => block(x, false)).join('')}</div>`; } },
+  { name: 'Widget tiles', idea: 'Each value is a big square tile, like iOS widgets: icon, name, value, a word. Very scannable and touch-friendly (tap a tile → its history). A state sensor gets one wide tile.', hero: (s) => {
+      const t = (x, wide) => `<div class="t ${wide ? 'wide' : ''}"><div class="h"><span>${x.k}</span>${I(x.ic)}</div><div>${val(x)}<div class="q ${x.tone || 'good'}" style="color:${x.word ? 'var(--green)' : zoneColor(x)}">${x.q}</div></div></div>`;
+      const all = [s.main, ...s.sub];
+      return `<div class="v5">${s.main.word ? t(s.main, true) + s.sub.map((x) => t(x, true)).join('') : all.slice(0, 2).map((x) => t(x)).join('') + (all[2] ? t(all[2], true) : '')}</div>`; } },
+  { name: 'Number + 24-hour line', idea: 'The value with today\'s line under it and min / max at the ends — the trend is part of the hero, no extra screen. Great for climate, air and energy; a state sensor shows its last events instead of a line.', hero: (s) => {
+      const m = s.main;
+      let line = '';
+      if (s.spark) { const a = s.spark, lo = Math.min(...a), hi = Math.max(...a), pts = a.map((v, i) => `${(i / (a.length - 1)) * 335},${58 - ((v - lo) / (hi - lo)) * 52}`); line = `<svg class="sp" viewBox="0 0 335 64" preserveAspectRatio="none"><defs><linearGradient id="g${Math.random().toString(36).slice(2, 6)}" x1="0" y1="0" x2="0" y2="1"></linearGradient></defs><polyline points="${pts.join(' ')}" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/><circle cx="335" cy="${pts[pts.length - 1].split(',')[1]}" r="5" fill="var(--primary)"/></svg><div class="mm"><span>${s.mm[0]}</span><span>${s.mm[1]}</span></div>`; }
+      else line = `<div class="mm" style="margin-top:22px;font:var(--body-md);color:var(--label-secondary)"><span>Last leak · 12 Oct, 07:40 (14 min)</span></div>`;
+      return `<div class="v6"><div class="top"><div><div class="l">${I(m.ic)}${m.k}</div>${val(m)}</div><div class="side">${s.sub.slice(0, 2).map((x) => `<div class="num">${x.v} ${x.u}</div><span>${x.k}</span>`).join('<div style="height:8px"></div>')}</div></div>${line}</div>`; } },
+  { name: 'State first', idea: 'A short state word leads ("Comfortable", "Good air", "Dry") with the numbers under it. Best for alarm sensors (smoke, gas, leak, motion). For climate the word is our app\'s judgement, not the sensor\'s — it must be marked as an app feature.', hero: (s) => {
+      const m = s.main;
+      return `<div class="v7"><span class="dot" style="color:${m.word ? '#64d2ff' : 'var(--green)'}"></span><div class="w">${s.state}</div>
+        <div class="vals">${m.word ? s.sub.map((x) => `<span>${I(x.ic)}<span class="num">${x.v} ${x.u}</span></span>`).join('') : [m, ...s.sub].map((x) => `<span class="num">${x.v} ${x.u}</span>`).join('<span style="color:var(--label-tertiary)">·</span>')}</div>
+        ${s === S.temp ? '<div class="note">“Comfortable” is our app’s word (20–25 °C, 40–60 %)</div>' : ''}</div>`; } },
+  { name: 'Aura', idea: 'A soft glowing orb whose colour is the reading — warm for heat, cool for cold, green for clean air, calm blue for a dry floor. Emotional and glanceable; numbers stay inside. Made with gradients only (no blur, Safari-safe).', hero: (s) => {
+      const m = s.main;
+      return `<div class="v8" style="--a1:${m.a1};--a2:${m.a2}"><div>${val(m)}<div class="s">${m.word ? m.q : s.sub.map((x) => `${x.v} ${x.u}`).join(' · ')}</div></div></div>`; } },
+  { name: 'Rings', idea: 'Each value in its own ring (Apple Fitness style); the ring fill is where it sits in its range, the colour is its zone. Two or three values sit side by side; a state sensor shows one closed ring.', hero: (s) => {
+      const all = s.main.word ? [s.main, ...s.sub] : [s.main, ...s.sub];
+      const ring = (x, R) => { const C = 2 * Math.PI * R, f = x.word ? 1 : Math.max(.04, x.pos), c = x.word ? '#64d2ff' : zoneColor(x, s === S.temp && x === s.main);
+        return `<div class="r"><svg viewBox="0 0 150 150"><circle cx="75" cy="75" r="${R}" stroke="rgba(255,255,255,.12)" stroke-width="10" fill="none"/><circle cx="75" cy="75" r="${R}" stroke="${c}" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="${(C * f).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 75 75)"/></svg><div class="in">${val(x)}</div><div class="l">${x.k}</div></div>`; };
+      return `<div class="v9 ${all.length > 2 ? 'three' : ''}">${all.map((x) => ring(x, 64)).join('')}</div>`; } },
+  { name: 'Editorial', idea: 'Typography only: a small caps label, one very large thin number, a word, then the other values as a hairline list. The most minimal and the easiest to extend — every sensor is the same list.', hero: (s) => {
+      const m = s.main;
+      return `<div class="v10"><div class="k">${m.k}</div>${m.word ? `<div class="n word">${m.word}</div>` : `<div class="n num">${m.v}<small>${m.u}</small></div>`}<div class="q" style="color:var(--green)">${m.q}</div>
+        <dl>${s.sub.map((x) => `<div><dt>${x.k}</dt><dd>${x.v} ${x.u}</dd></div>`).join('')}</dl></div>`; } },
+];
+
+document.getElementById('out').innerHTML = V.map((v, i) => `<section class="var"><div class="vhead"><span class="vnum">${String(i + 1).padStart(2, '0')}</span><span class="vname">${v.name}</span>${v.pick ? '<span class="vtag">My pick</span>' : ''}</div>
+  <p class="videa">${v.idea}</p><div class="row">${['temp', 'air', 'leak'].map((k) => mock(S[k], v.hero(S[k]), i === 4 && k === 'air') ).join('')}</div></section>`).join('')
+  + `<div class="pick"><b>My pick: 04 · Value on a scale.</b> It shows the value and where it sits (the zones are clearly our app\'s ranges, editable in settings), it works the same for temperature, humidity, CO₂, PM2.5, gas level, battery and power, a state sensor simply swaps the bar for a status pill, and it stays calm and minimal. Runner-up: 02 · One hero + chips, if we want one value to dominate.</div>`;
+</script>
+</body>
+</html>

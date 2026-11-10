@@ -19,6 +19,7 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Curtain page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-curtain |
 | Contact sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-contact |
 | Temperature sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-climate |
+| Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 
 The site updates by itself 1–2 minutes after each push to `main` (GitHub Pages).
 
