@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Other · open pictures</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  :root { color-scheme: dark; --ease: cubic-bezier(.45, .05, .25, 1); --lit: linear-gradient(180deg, #0b2747 0%, #1560a6 72%, #2a86d6 100%); --plastic: linear-gradient(155deg, #ffffff 0%, #eef1f5 50%, #d3d9e1 100%); }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px 32px 80px; background: #0b0b0d; color: var(--label-primary); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; }
+  .lead { color: var(--label-secondary); max-width: 760px; margin: 0 0 32px; font: var(--body-lg); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .opt { border-radius: 28px; overflow: hidden; background: radial-gradient(360px 300px at 80% 110%, rgba(60, 180, 255, .35), transparent 70%), linear-gradient(rgba(0, 89, 255, .10), rgba(0, 89, 255, .10)), #000; }
+  .stage { position: relative; height: 260px; display: grid; place-items: center; }
+  .meta { padding: 0 20px 20px; }
+  .meta b { font: 600 17px/22px var(--font); } .meta .n { color: var(--primary); font: 700 15px/20px var(--font); margin-right: 8px; }
+  .meta p { margin: 6px 0 12px; color: var(--label-secondary); font: var(--body-md); }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .btn { height: 34px; padding: 0 16px; border-radius: 17px; border: 0; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); cursor: pointer; }
+  .word { font: 700 22px/28px var(--font); color: var(--green); min-width: 90px; transition: color .3s; }
+  .opt.is-open .word { color: var(--orange); }
+  .tag { margin-left: auto; font: var(--body-sm); color: var(--green); border: 1px solid var(--green); border-radius: 20px; padding: 1px 8px; }
+  .shadow { position: absolute; left: 50%; bottom: 34px; width: 150px; height: 18px; margin-left: -75px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .45), rgba(0, 0, 0, .25) 45%, rgba(0, 0, 0, .06) 80%, transparent); }
+
+  /* 1 — Iris: six blades turn and open a round window of light */
+  .iris { position: relative; width: 150px; height: 150px; border-radius: 50%; background: var(--plastic); box-shadow: inset 0 1px 0 #fff, 0 10px 24px -10px rgba(0, 0, 0, .6); display: grid; place-items: center; }
+  .iris svg { width: 128px; height: 128px; }
+  .iris .blade { transform-box: view-box; transition: transform 800ms var(--ease); }
+  .opt.is-open .iris .blade { transform: rotate(-42deg); }
+
+  /* 2 — Drawer: the front slides towards you, the lit inside shows above it */
+  .cab { position: relative; width: 170px; height: 150px; border-radius: 16px; background: linear-gradient(180deg, #c9d0d9, #a7b1be); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), 0 12px 24px -12px rgba(0, 0, 0, .6); }
+  .cab .slot { position: absolute; left: 12px; right: 12px; top: 54px; height: 60px; border-radius: 10px; background: #0b1626; overflow: hidden; }
+  .cab .slot::after { content: ''; position: absolute; inset: 0; background: var(--lit); opacity: 0; transition: opacity 600ms var(--ease) 100ms; }
+  .cab .front { position: absolute; left: 12px; right: 12px; top: 54px; height: 60px; border-radius: 10px; background: var(--plastic); box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(0, 0, 0, .25);
+    transition: transform 800ms var(--ease), box-shadow 800ms var(--ease); }
+  .cab .front::before { content: ''; position: absolute; left: 50%; top: 26px; width: 40px; height: 8px; margin-left: -20px; border-radius: 4px; background: #c4cbd4; }
+  .cab .top { position: absolute; left: 12px; right: 12px; top: 14px; height: 30px; border-radius: 8px; background: linear-gradient(180deg, #e6eaef, #d2d9e1); }
+  .opt.is-open .cab .front { transform: translateY(34px) scale(1.12); box-shadow: inset 0 1px 0 #fff, 0 14px 18px -8px rgba(0, 0, 0, .55); }
+  .opt.is-open .cab .slot::after { opacity: 1; }
+
+  /* 3 — Magnetic field: the lines between sensor and magnet stretch and let go */
+  .mag { position: relative; width: 200px; height: 130px; }
+  .mag .s, .mag .m { position: absolute; top: 25px; width: 42px; height: 80px; border-radius: 12px; background: var(--plastic); box-shadow: inset 0 1px 0 #fff, 0 10px 20px -10px rgba(0, 0, 0, .6); }
+  .mag .s { left: 40px; } .mag .s::after { content: ''; position: absolute; left: 50%; top: 10px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #3ea0ff; opacity: .9; transition: background .4s; }
+  .mag .m { left: 104px; width: 30px; height: 60px; top: 35px; border-radius: 9px; transition: transform 800ms var(--ease); }
+  .mag svg { position: absolute; inset: 0; overflow: visible; }
+  .mag .f { fill: none; stroke: #6fb3ff; stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 3 5; opacity: .85; transition: opacity 500ms var(--ease), transform 800ms var(--ease); transform-box: view-box; transform-origin: 82px 65px; animation: flow 1.6s linear infinite; }
+  .mag .f.w { stroke-width: 2; opacity: 1; }
+  @keyframes flow { to { stroke-dashoffset: -16; } }
+  .opt.is-open .mag .m { transform: translateX(62px) rotate(8deg); }
+  .opt.is-open .mag .f { opacity: 0; transform: scaleX(1.8); }
+  .opt.is-open .mag .s::after { background: #ff9f43; }
+
+  /* 4 — Envelope: the flap turns up and a lit card rises */
+  .env { position: relative; width: 190px; height: 130px; margin-top: 30px; perspective: 600px; }
+  .env .back { position: absolute; inset: 0; border-radius: 10px; background: linear-gradient(180deg, #cfd6de, #b3bcc8); }
+  .env .card { position: absolute; left: 14px; right: 14px; top: 10px; height: 100px; border-radius: 8px; background: var(--lit); opacity: 0; transition: transform 700ms var(--ease) 250ms, opacity 200ms linear 250ms; }
+  .env .pocket { position: absolute; inset: 0; border-radius: 10px; background: var(--plastic); clip-path: polygon(0 28%, 50% 62%, 100% 28%, 100% 100%, 0 100%); }
+  .env .flap { position: absolute; left: 0; right: 0; top: 0; height: 80px; transform-origin: 50% 0; transition: transform 700ms var(--ease); background: linear-gradient(180deg, #ffffff, #dfe4ea); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  .opt.is-open .env .flap { transform: rotateX(178deg); transition-delay: 0ms; }
+  .opt.is-open .env .card { transform: translateY(-58px); opacity: 1; }
+  .opt:not(.is-open) .env .flap { transition-delay: 350ms; }
+  .opt:not(.is-open) .env .card { transition: transform 600ms var(--ease), opacity 160ms linear 440ms; }
+
+  /* 5 — Sliding panels: two halves part, light between */
+  .slide { position: relative; width: 170px; height: 150px; border-radius: 18px; background: #0b1626; overflow: hidden; box-shadow: 0 0 0 7px #c9d0d9, 0 14px 24px -10px rgba(0, 0, 0, .6); }
+  .slide::before { content: ''; position: absolute; inset: 0; background: var(--lit); opacity: 0; transition: opacity 600ms var(--ease); }
+  .slide i { position: absolute; top: 0; bottom: 0; width: 50%; background: var(--plastic); transition: transform 800ms var(--ease); box-shadow: inset 0 1px 0 #fff; }
+  .slide i:first-child { left: 0; border-right: 1px solid rgba(0, 0, 0, .1); } .slide i:last-child { right: 0; }
+  .opt.is-open .slide::before { opacity: 1; }
+  .opt.is-open .slide i:first-child { transform: translateX(-72%); } .opt.is-open .slide i:last-child { transform: translateX(72%); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition-duration: 1ms !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<h1>“Other” contact sensor — open / closed</h1>
+<p class="lead">Five ideas that are not a door. Each opens and closes on its own every few seconds; tap “Open / Close” to try it. App colours only: white plastic and the blue lit opening of the door and window pictures.</p>
+<div class="grid" id="g"></div>
+<script>
+// Iris: six triangles (rim point P_i, rim point P_i+1, centre) tile a hexagon that covers the round window when closed.
+// Each blade turns about its own rim point P_i — the centre corners swing out and a hole opens in the middle.
+const C = 64, R = 64;
+const P = (i) => { const a = ((i * 60 - 90) * Math.PI) / 180; return [C + R * Math.cos(a), C + R * Math.sin(a)]; };
+const blades = Array.from({ length: 6 }, (_, i) => {
+  const [x0, y0] = P(i), [x1, y1] = P(i + 1), ext = 1.12;   // a little past the centre so neighbours overlap (no gaps)
+  const cx = C + (C - (x0 + x1) / 2) * (ext - 1), cy = C + (C - (y0 + y1) / 2) * (ext - 1);
+  return `<path class="blade" style="transform-origin:${x0.toFixed(1)}px ${y0.toFixed(1)}px" d="M${x0.toFixed(1)} ${y0.toFixed(1)} L${x1.toFixed(1)} ${y1.toFixed(1)} L${cx.toFixed(1)} ${cy.toFixed(1)} Z" fill="url(#bl)" stroke="rgba(30,40,55,.18)" stroke-width=".8"/>`;
+}).join('');
+const OPTS = [
+  { k: 'iris', name: 'Iris', idea: 'Six blades turn like a camera aperture and open a round window of light. Abstract, calm, unmistakably “open”.', html: `<div class="iris"><svg viewBox="0 0 128 128"><defs><linearGradient id="bl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cfd6de"/></linearGradient><linearGradient id="lt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2747"/><stop offset=".72" stop-color="#1560a6"/><stop offset="1" stop-color="#2a86d6"/></linearGradient></defs><clipPath id="win"><circle cx="64" cy="64" r="54"/></clipPath><g clip-path="url(#win)"><circle cx="64" cy="64" r="64" fill="url(#lt)"/>${blades}</g><circle cx="64" cy="64" r="54" fill="none" stroke="rgba(30,40,55,.25)" stroke-width="1.5"/></svg></div>`, pick: true },
+  { k: 'drawer', name: 'Drawer', idea: 'The drawer slides out towards you and its lit inside shows. Reads at once for cabinets, desks, safes, boxes.', html: '<i class="shadow"></i><div class="cab"><i class="top"></i><i class="slot"></i><i class="front"></i></div>' },
+  { k: 'mag', name: 'Magnetic field', idea: 'What the sensor really sees: field lines join the sensor and its magnet; open, the magnet moves away and the lines let go. The LED turns from blue to orange.', html: '<div class="mag"><svg viewBox="0 0 200 130"><path class="f" d="M82 44 C 90 30, 96 30, 104 44"/><path class="f" d="M82 54 C 90 47, 96 47, 104 54"/><path class="f w" d="M82 65 L104 65"/><path class="f" d="M82 76 C 90 83, 96 83, 104 76"/><path class="f" d="M82 86 C 90 100, 96 100, 104 86"/></svg><i class="s"></i><i class="m"></i></div>' },
+  { k: 'env', name: 'Envelope', idea: 'The flap turns up and a lit card rises out — “something was opened”. Fits mailboxes, boxes and parcels.', html: '<div class="env"><i class="back"></i><i class="card"></i><i class="pocket"></i><i class="flap"></i></div>' },
+  { k: 'slide', name: 'Sliding panels', idea: 'Two halves slide apart and light comes through the middle. Simple and symmetric, like a wardrobe or a lift.', html: '<div class="slide"><i></i><i></i></div>' },
+];
+document.getElementById('g').innerHTML = OPTS.map((o, i) => `<section class="opt" data-k="${o.k}"><div class="stage">${o.html}</div>
+  <div class="meta"><div class="row"><span class="n">${String(i + 1).padStart(2, '0')}</span><b>${o.name}</b>${o.pick ? '<span class="tag">My pick</span>' : ''}</div><p>${o.idea}</p>
+  <div class="row"><span class="word">Closed</span><button class="btn" data-k="${o.k}">Open</button></div></div></section>`).join('');
+const set = (el, open) => { el.classList.toggle('is-open', open); el.querySelector('.word').textContent = open ? 'Open' : 'Closed'; el.querySelector('.btn').textContent = open ? 'Close' : 'Open'; };
+document.querySelectorAll('.btn').forEach((b) => b.onclick = () => { const s = b.closest('.opt'); s.dataset.manual = 1; set(s, !s.classList.contains('is-open')); });
+let on = false; setInterval(() => { on = !on; document.querySelectorAll('.opt:not([data-manual])').forEach((s) => set(s, on)); }, 2600);
+</script>
+</body>
+</html>
