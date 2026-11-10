@@ -200,7 +200,8 @@ Devices.motion = (() => {
      ========================================================================== */
   /** The picture — "Fresnel dots": a PIR lens splits the room into a fan of zones; we draw them as dots on 9 rays ×
       6 rings. Idle: cool dots in the app's blue. Motion: the dots turn warm amber in a wave from the lens outwards,
-      and a ring leaves the lens on each report. Only opacity / transform animate (Safari-safe, no blur). */
+      and on each report the warm dots breathe once, ring by ring (Apple-style: light colours, soft ease-out, no rings). Only opacity / transform animate (Safari-safe, no blur). */
+  const BREATH = 1300;   // ms: the outer ring starts 350 ms late and breathes for 900 ms
   const RAYS = 9, RINGS = [40, 60, 82, 106, 132, 160], LX = 120, LY = 30;
   const DOTS = (() => {
     const out = [];
@@ -211,15 +212,16 @@ Devices.motion = (() => {
   const halo = (id, c, a) => `<radialGradient id="${id}">${[[0, 1], [0.12, 0.9], [0.25, 0.72], [0.4, 0.5], [0.55, 0.3], [0.7, 0.15], [0.84, 0.05], [0.94, 0.012], [1, 0]].map(([o, k]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${(a * k).toFixed(3)}"/>`).join('')}</radialGradient>`;
   function scene(d) {
     const st = d.st, rest = st.restUntil > Date.now();
-    const cls = ['ct-card', 'mo-card', st.occ ? 'is-occ' : '', rest ? 'is-rest' : '', !detectionOn(d) ? 'is-disabled' : '', !d.online ? 'is-off' : '', st.tamper ? 'is-tamper' : ''].join(' ');
+    // 'blink' stays in the markup for the whole breath, so a re-render (the clock ticks every second) doesn't cut it short
+    const cls = ['ct-card', 'mo-card', st.occ ? 'is-occ' : '', rest ? 'is-rest' : '', !detectionOn(d) ? 'is-disabled' : '', !d.online ? 'is-off' : '', st.tamper ? 'is-tamper' : '',
+      Date.now() - d.blinkAt < BREATH ? 'blink' : '', has(d, 'led') && !S(d, 'led') ? 'led-off' : ''].join(' ');
     const dots = (c) => DOTS.map((o) => `<circle class="${c} j${o.j}" cx="${o.x}" cy="${o.y}" r="${o.r}"/>`).join('');
     return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${st.occ ? 'motion' : 'no motion'}">
       <svg class="mo-svg" viewBox="0 0 240 210" aria-hidden="true">
-        <defs>${halo('mo-halo-c', '#6fb3ff', 0.11)}${halo('mo-halo-w', '#ffb547', 0.17)}
+        <defs>${halo('mo-halo-c', '#6fb3ff', 0.11)}${halo('mo-halo-w', '#ffd59a', 0.16)}
           <radialGradient id="mo-pearl" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e3e8ee"/><stop offset="1" stop-color="#b9c2cd"/></radialGradient></defs>
         <circle class="mo-halo cool" cx="${LX}" cy="${LY}" r="104" fill="url(#mo-halo-c)"/><circle class="mo-halo warm" cx="${LX}" cy="${LY}" r="118" fill="url(#mo-halo-w)"/>
         <g class="mo-dots">${dots('mo-d')}</g><g class="mo-hot">${dots('mo-h')}</g>
-        <circle class="mo-ring" cx="${LX}" cy="${LY}" r="60"/><circle class="mo-ring r2" cx="${LX}" cy="${LY}" r="60"/>
         <circle class="mo-lens" cx="${LX}" cy="${LY}" r="15" fill="url(#mo-pearl)"/><circle class="mo-led" cx="${LX}" cy="${LY + 9}" r="1.8"/>
       </svg></div>`;
   }
@@ -253,10 +255,16 @@ Devices.motion = (() => {
     const card = root.querySelector('.mo-card'); if (card) card.classList.toggle('is-rest', d.st.restUntil > Date.now());
     afterRender(d, root);
   }
-  const seen = { blink: 0 };
+  const seen = { blink: 0, t: 0 };
   function afterRender(d, root) {
     const card = root.querySelector('.mo-card'); if (!card) return;
-    if (d.blinkAt > seen.blink) { seen.blink = d.blinkAt; if (Date.now() - d.blinkAt < 1500) { card.classList.toggle('led-off', has(d, 'led') && !S(d, 'led')); UI.pulse(card, 'blink'); } }
+    if (d.blinkAt > seen.blink) {
+      seen.blink = d.blinkAt;
+      if (Date.now() - d.blinkAt < BREATH) {   // restart the breath (not UI.pulse: the first ring's animationend would stop the outer rings)
+        card.classList.remove('blink'); void card.getBoundingClientRect(); card.classList.add('blink');
+        clearTimeout(seen.t); seen.t = setTimeout(() => card.classList.remove('blink'), BREATH);
+      }
+    }
   }
   function bindPage(d) { seen.blink = d.blinkAt; }
 

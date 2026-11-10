@@ -1513,31 +1513,31 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .sheet-body * + .collapse > .collapse-inner > .sheet-group:first-child { margin-top: 24px; }
 
 /* Motion sensor picture — "Fresnel dots" (shares .ct-card / .ct-readout with the contact sensor). Cool blue dots at
-   rest; on motion a warm amber wave runs out from the lens (ring by ring), a ring leaves the lens on each report. */
+   rest; on motion the dots turn a light peach ring by ring from the lens; on each report they breathe once (scale,
+   staggered outwards). Apple-like: light colours, a soft ease-out, nothing flashes. */
 .mo-svg { width: 240px; height: 210px; overflow: visible; }
-.mo-d { fill: #8fb8ff; opacity: .3; transition: opacity var(--dur) var(--ease-out); }
+.mo-d, .mo-h { transform-box: fill-box; transform-origin: center; }
+.mo-d { fill: #9cc4ff; opacity: .3; transition: opacity 600ms cubic-bezier(.32, .72, 0, 1); }
 .mo-d.j3 { opacity: .24; } .mo-d.j4 { opacity: .18; } .mo-d.j5 { opacity: .12; }
-.mo-h { fill: #ffb547; opacity: 0; transition: opacity 360ms var(--ease-out); }
-.mo-card.is-occ .mo-h { opacity: .95; } .mo-card.is-occ .mo-h.j3 { opacity: .8; } .mo-card.is-occ .mo-h.j4 { opacity: .6; } .mo-card.is-occ .mo-h.j5 { opacity: .4; }
-.mo-card.is-occ .mo-h.j1 { transition-delay: 70ms; } .mo-card.is-occ .mo-h.j2 { transition-delay: 140ms; } .mo-card.is-occ .mo-h.j3 { transition-delay: 210ms; } .mo-card.is-occ .mo-h.j4 { transition-delay: 280ms; } .mo-card.is-occ .mo-h.j5 { transition-delay: 350ms; }
+.mo-h { fill: #ffd59a; opacity: 0; transition: opacity 640ms cubic-bezier(.32, .72, 0, 1); }
+.mo-card.is-occ .mo-h { opacity: .92; } .mo-card.is-occ .mo-h.j3 { opacity: .74; } .mo-card.is-occ .mo-h.j4 { opacity: .55; } .mo-card.is-occ .mo-h.j5 { opacity: .36; }
+.mo-card.is-occ .mo-h.j1 { transition-delay: 60ms; } .mo-card.is-occ .mo-h.j2 { transition-delay: 120ms; } .mo-card.is-occ .mo-h.j3 { transition-delay: 180ms; } .mo-card.is-occ .mo-h.j4 { transition-delay: 240ms; } .mo-card.is-occ .mo-h.j5 { transition-delay: 300ms; }
 .mo-card.is-occ .mo-d { opacity: 0; }
-.mo-halo { transition: opacity 480ms var(--ease-out); } .mo-halo.warm { opacity: 0; }
+/* one breath per report: each ring of dots swells a little and settles, 70 ms after the ring inside it */
+.mo-card.blink .mo-h { animation: mo-breath 900ms cubic-bezier(.32, .72, 0, 1) both; }
+.mo-card.blink .mo-h.j1 { animation-delay: 70ms; } .mo-card.blink .mo-h.j2 { animation-delay: 140ms; } .mo-card.blink .mo-h.j3 { animation-delay: 210ms; } .mo-card.blink .mo-h.j4 { animation-delay: 280ms; } .mo-card.blink .mo-h.j5 { animation-delay: 350ms; }
+@keyframes mo-breath { 0%, 100% { transform: scale(1); } 35% { transform: scale(1.45); } }
+.mo-halo { transition: opacity 700ms cubic-bezier(.32, .72, 0, 1); } .mo-halo.warm { opacity: 0; }
 .mo-card.is-occ .mo-halo.warm { opacity: 1; } .mo-card.is-occ .mo-halo.cool { opacity: 0; }
-.mo-mount { fill: rgba(255, 255, 255, .1); }
 .mo-lens { stroke: rgba(255, 255, 255, .7); stroke-width: 1; transition: opacity var(--dur) var(--ease-out); }
-.mo-led { fill: rgba(0, 0, 0, .18); }
-.mo-ring { fill: none; stroke: #ffb547; stroke-width: 1.5; opacity: 0; transform-box: view-box; transform-origin: 120px 30px; }
-.mo-card.blink .mo-ring { animation: mo-ring 1200ms cubic-bezier(.2, .6, .35, 1); }
-.mo-card.blink .mo-ring.r2 { animation-delay: 200ms; }
-.mo-card.blink:not(.led-off) .mo-led { animation: mo-led 900ms var(--ease-out); }
-@keyframes mo-ring { 0% { opacity: .8; transform: scale(.25); } 45% { opacity: .45; } 100% { opacity: 0; transform: scale(2.4); } }
-@keyframes mo-led { 0%, 100% { fill: rgba(0, 0, 0, .18); } 15%, 60% { fill: #ff453a; } }
+.mo-led { fill: rgba(0, 0, 0, .16); }
+.mo-card.blink:not(.led-off) .mo-led { animation: mo-led 900ms cubic-bezier(.32, .72, 0, 1); }
+@keyframes mo-led { 0%, 100% { fill: rgba(0, 0, 0, .16); } 20%, 55% { fill: #ff8a80; } }
 .mo-card.is-rest .mo-lens { opacity: .6; }
 .mo-card.is-disabled .mo-d { opacity: .08; } .mo-card.is-disabled .mo-halo { opacity: 0; } .mo-card.is-disabled .mo-lens { opacity: .45; }
 .mo-card.is-off .mo-svg { opacity: .45; }
-@media (prefers-reduced-motion: reduce) { .mo-card.blink .mo-ring { animation: none; } .mo-h { transition-delay: 0ms !important; } }
+@media (prefers-reduced-motion: reduce) { .mo-card.blink .mo-h, .mo-card.blink .mo-led { animation: none; } .mo-h { transition-delay: 0ms !important; } }
 .mo-strip .bar { background: var(--fill-tertiary); }
-@media (prefers-reduced-motion: reduce) { .mo-card.blink .mo-ring { animation: none; } }
 
 </style>
 </head>
@@ -5810,7 +5810,8 @@ Devices.motion = (() => {
      ========================================================================== */
   /** The picture — "Fresnel dots": a PIR lens splits the room into a fan of zones; we draw them as dots on 9 rays ×
       6 rings. Idle: cool dots in the app's blue. Motion: the dots turn warm amber in a wave from the lens outwards,
-      and a ring leaves the lens on each report. Only opacity / transform animate (Safari-safe, no blur). */
+      and on each report the warm dots breathe once, ring by ring (Apple-style: light colours, soft ease-out, no rings). Only opacity / transform animate (Safari-safe, no blur). */
+  const BREATH = 1300;   // ms: the outer ring starts 350 ms late and breathes for 900 ms
   const RAYS = 9, RINGS = [40, 60, 82, 106, 132, 160], LX = 120, LY = 30;
   const DOTS = (() => {
     const out = [];
@@ -5821,15 +5822,16 @@ Devices.motion = (() => {
   const halo = (id, c, a) => `<radialGradient id="${id}">${[[0, 1], [0.12, 0.9], [0.25, 0.72], [0.4, 0.5], [0.55, 0.3], [0.7, 0.15], [0.84, 0.05], [0.94, 0.012], [1, 0]].map(([o, k]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${(a * k).toFixed(3)}"/>`).join('')}</radialGradient>`;
   function scene(d) {
     const st = d.st, rest = st.restUntil > Date.now();
-    const cls = ['ct-card', 'mo-card', st.occ ? 'is-occ' : '', rest ? 'is-rest' : '', !detectionOn(d) ? 'is-disabled' : '', !d.online ? 'is-off' : '', st.tamper ? 'is-tamper' : ''].join(' ');
+    // 'blink' stays in the markup for the whole breath, so a re-render (the clock ticks every second) doesn't cut it short
+    const cls = ['ct-card', 'mo-card', st.occ ? 'is-occ' : '', rest ? 'is-rest' : '', !detectionOn(d) ? 'is-disabled' : '', !d.online ? 'is-off' : '', st.tamper ? 'is-tamper' : '',
+      Date.now() - d.blinkAt < BREATH ? 'blink' : '', has(d, 'led') && !S(d, 'led') ? 'led-off' : ''].join(' ');
     const dots = (c) => DOTS.map((o) => `<circle class="${c} j${o.j}" cx="${o.x}" cy="${o.y}" r="${o.r}"/>`).join('');
     return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${st.occ ? 'motion' : 'no motion'}">
       <svg class="mo-svg" viewBox="0 0 240 210" aria-hidden="true">
-        <defs>${halo('mo-halo-c', '#6fb3ff', 0.11)}${halo('mo-halo-w', '#ffb547', 0.17)}
+        <defs>${halo('mo-halo-c', '#6fb3ff', 0.11)}${halo('mo-halo-w', '#ffd59a', 0.16)}
           <radialGradient id="mo-pearl" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e3e8ee"/><stop offset="1" stop-color="#b9c2cd"/></radialGradient></defs>
         <circle class="mo-halo cool" cx="${LX}" cy="${LY}" r="104" fill="url(#mo-halo-c)"/><circle class="mo-halo warm" cx="${LX}" cy="${LY}" r="118" fill="url(#mo-halo-w)"/>
         <g class="mo-dots">${dots('mo-d')}</g><g class="mo-hot">${dots('mo-h')}</g>
-        <circle class="mo-ring" cx="${LX}" cy="${LY}" r="60"/><circle class="mo-ring r2" cx="${LX}" cy="${LY}" r="60"/>
         <circle class="mo-lens" cx="${LX}" cy="${LY}" r="15" fill="url(#mo-pearl)"/><circle class="mo-led" cx="${LX}" cy="${LY + 9}" r="1.8"/>
       </svg></div>`;
   }
@@ -5863,10 +5865,16 @@ Devices.motion = (() => {
     const card = root.querySelector('.mo-card'); if (card) card.classList.toggle('is-rest', d.st.restUntil > Date.now());
     afterRender(d, root);
   }
-  const seen = { blink: 0 };
+  const seen = { blink: 0, t: 0 };
   function afterRender(d, root) {
     const card = root.querySelector('.mo-card'); if (!card) return;
-    if (d.blinkAt > seen.blink) { seen.blink = d.blinkAt; if (Date.now() - d.blinkAt < 1500) { card.classList.toggle('led-off', has(d, 'led') && !S(d, 'led')); UI.pulse(card, 'blink'); } }
+    if (d.blinkAt > seen.blink) {
+      seen.blink = d.blinkAt;
+      if (Date.now() - d.blinkAt < BREATH) {   // restart the breath (not UI.pulse: the first ring's animationend would stop the outer rings)
+        card.classList.remove('blink'); void card.getBoundingClientRect(); card.classList.add('blink');
+        clearTimeout(seen.t); seen.t = setTimeout(() => card.classList.remove('blink'), BREATH);
+      }
+    }
   }
   function bindPage(d) { seen.blink = d.blinkAt; }
 
