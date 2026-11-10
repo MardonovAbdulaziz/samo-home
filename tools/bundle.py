@@ -11,6 +11,7 @@ Usage:  python3 tools/bundle.py                     → dist/samo-home.html
         python3 tools/bundle.py --edition relay     → dist/samo-home-relays.html (relays only)
         python3 tools/bundle.py --edition contact   → dist/samo-home-contact.html (door / window sensors only)
         python3 tools/bundle.py --edition light     → dist/samo-home-lights.html (lights only)
+        python3 tools/bundle.py --edition climate   → dist/samo-home-climate.html (temperature & humidity sensors only)
 """
 import base64, json, mimetypes, pathlib, re
 
@@ -80,6 +81,20 @@ EDITIONS = {
       return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
     }''',
     },
+    'climate': {
+        'out': 'samo-home-climate.html', 'title': 'Samo-home · Temperature sensors', 'types': ['climate'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-bath', name: 'Bathroom' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-nursery', name: 'Nursery' }];
+      const C = Devices.climate;
+      const bed = C.create('sonoffd', { name: 'Bedroom climate', roomId: 'r-bedroom' });
+      const bath = C.create('tuyaal', { name: 'Bathroom', roomId: 'r-bath' }); Object.assign(bath.room, { t: 24.6, h: 62 }); Object.assign(bath.st, { t: 24.6, h: 62 });
+      const fridge = C.create('probe', { name: 'Kitchen & fridge', roomId: 'r-kitchen' });
+      const nursery = C.create('aqara', { name: 'Nursery', roomId: 'r-nursery' }); nursery.settings.alerts = { on: true, tlow: 20, thigh: 24, hlow: 35, hhigh: 65 };
+      const devs = [bed, bath, fridge, nursery]; devs.forEach((d) => { C.applyDefaults(d); d.isNew = false; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-bedroom', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
 }
 PAGES = {  # route → page script
     'index.html': 'js/pages/home.js',
@@ -88,7 +103,7 @@ PAGES = {  # route → page script
     'about-device.html': 'js/pages/about-device.js',
     'add-device.html': 'js/pages/add-device.js',
 }
-CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/store.js']
+CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/store.js']
 CSS = ['css/tokens.css', 'css/components.css']
 
 

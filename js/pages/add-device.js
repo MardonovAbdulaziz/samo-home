@@ -20,6 +20,8 @@
     { at: 11, type: 'contact', preset: 'bosch' },
     { at: 10, type: 'relay', preset: 'tuya1' },
     { at: 13, type: 'relay', preset: 'din' },
+    { at: 12, type: 'climate', preset: 'aqara' },
+    { at: 14, type: 'climate', preset: 'probe' },
   ];
   if (window.SAMO_EDITION && window.SAMO_EDITION.types) {   // edition build: only its device types
     for (let i = DISCOVERY.length - 1; i >= 0; i--) if (!window.SAMO_EDITION.types.includes(DISCOVERY[i].type)) DISCOVERY.splice(i, 1);
@@ -52,7 +54,7 @@
       st.found.forEach((f) => {
         const p = presetOf(f);
         const on = st.added.has(f.key);
-        h += `<div class="list" style="margin:0"><div class="cell has-icon"><span class="cell-icon">${icon(f.type === 'curtain' ? 'dev-curtains' : f.type === 'contact' ? (presetOf(f).ic === 'window' ? 'dev-window' : 'dev-door-02') : f.type === 'light' ? 'dev-bulb' : 'menu-device')}</span>
+        h += `<div class="list" style="margin:0"><div class="cell has-icon"><span class="cell-icon">${icon(f.type === 'curtain' ? 'dev-curtains' : f.type === 'contact' ? (presetOf(f).ic === 'window' ? 'dev-window' : 'dev-door-02') : f.type === 'light' ? 'dev-bulb' : f.type === 'climate' ? 'dev-temperature' : 'menu-device')}</span>
           <span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(p.name)}</span><span class="cell-sub" style="display:block">${UI.esc(describe(f))}</span></span>
           ${on ? `<button class="btn-circle" data-action="remove" data-k="${f.key}" aria-label="Remove">${icon('cross', 'icon icon-xs')}</button>` : `<button class="btn-sm" data-action="add" data-k="${f.key}">Add</button>`}</div></div>`;
       });
@@ -127,7 +129,7 @@
     st.setup = st.found.filter((f) => st.added.has(f.key)).map((f) => {
       const keep = st.setup.find((s) => s.key === f.key);
       const p = presetOf(f);
-      return keep || { key: f.key, type: f.type, preset: f.preset, name: f.type === 'contact' ? (p.ic === 'window' ? 'Window' : 'Front door') : f.type === 'light' && p.ch === 1 ? p.names[0] : p.name, roomId: defaultRoom, channels: (p.names || []).slice() };
+      return keep || { key: f.key, type: f.type, preset: f.preset, name: f.type === 'contact' ? (p.ic === 'window' ? 'Window' : 'Front door') : f.type === 'light' && p.ch === 1 ? p.names[0] : f.type === 'climate' ? (p.id === 'probe' ? 'Fridge sensor' : 'Temperature sensor') : p.name, roomId: defaultRoom, channels: (p.names || []).slice() };
     });
     st.step = 'setup'; render();
   }

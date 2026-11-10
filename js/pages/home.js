@@ -22,6 +22,13 @@
     return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0">${icon('chip-door')}<span><b>${UI.esc(d.name)}</b><span data-num>${UI.esc(t.status)}</span></span></button>`;
   }
 
+  /** "Temperature" chip (Figma home): the first temperature sensor on home, live. */
+  function tempChip() {
+    const d = S().devices.find((x) => x.type === 'climate' && x.showOnHome !== false);
+    if (!d) return `<button class="quick-chip">${icon('chip-temperature')}<span><b>Temperature</b><span>25.5°</span></span></button>`;
+    return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0">${icon('chip-temperature')}<span><b>Temperature</b><span data-num>${UI.esc(Devices.climate.chipText(d))}</span></span></button>`;
+  }
+
   function onCount() {
     let n = 0;
     S().devices.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { if (t.on) n++; }));
@@ -39,7 +46,7 @@
         </div></header>
       <div class="chips-row">
         <button class="quick-chip" data-action="all-off">${icon('power')}<span><b>Turn off all</b><span data-num>${n ? `${n} device${n > 1 ? 's' : ''} on` : 'No devices on'}</span></span></button>
-        <button class="quick-chip">${icon('chip-temperature')}<span><b>Temperature</b><span>25.5°</span></span></button>
+        ${tempChip()}
         ${doorChip()}
       </div>`;
 

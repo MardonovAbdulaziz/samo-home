@@ -26,10 +26,11 @@ const Store = (() => {
       curtainSeed(),
       contactSeed(),
       lightSeed(),
+      climateSeed(),
       { id: 'd-leak', type: 'sensor', name: 'Water Leak Sensor', roomId: 'r-kitchen', model: 'SJCGQ11LM', manufacturer: 'Aqara', protocol: 'Zigbee 3.0', online: true, showOnHome: true, status: 'No leak' },
     ];
     devices.forEach((d) => { d.isNew = false; });
-    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true };
+    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true };
   }
   /** Example curtain: a track motor that is paired but not set up yet (shows the setup flow). */
   function curtainSeed() {
@@ -46,6 +47,8 @@ const Store = (() => {
   }
   /** Example colour bulb in the living room. */
   function lightSeed() { const l = Devices.light.create('hue', { name: 'Living room lamp', roomId: 'r-living' }); l.id = 'd-light'; return l; }
+  /** Example temperature & humidity sensor with a screen in the bedroom. */
+  function climateSeed() { const c = Devices.climate.create('sonoffd', { name: 'Bedroom climate', roomId: 'r-bedroom' }); c.id = 'd-climate'; return c; }
   /** Existing data from before curtains existed: add the example curtain once (stays deleted if removed). */
   function ensureCurtain() {
     if (ED || state.curtainAdded) return;
@@ -67,6 +70,7 @@ const Store = (() => {
     ensureCurtain();
     ensureContact();
     if (!ED && !state.lightAdded) { const l = lightSeed(); l.isNew = true; if (!state.rooms.some((r) => r.id === l.roomId)) l.roomId = (state.rooms[0] || {}).id || null; state.devices.push(l); state.lightAdded = true; save(); }
+    if (!ED && !state.climateAdded) { const c = climateSeed(); c.isNew = true; if (!state.rooms.some((r) => r.id === c.roomId)) c.roomId = (state.rooms[0] || {}).id || null; state.devices.push(c); state.climateAdded = true; save(); }
     // bring saved devices up to the current model (new settings get defaults, renamed values are mapped)
     state.devices.forEach((d) => { const T = Devices[d.type]; if (T && T.applyDefaults && d.settings) T.applyDefaults(d); });
     return state;

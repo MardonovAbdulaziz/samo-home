@@ -1301,3 +1301,21 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .power-area .power-sub { position: absolute; left: var(--screen-pad); right: var(--screen-pad); top: calc(100% - 30px); min-height: 16px; text-align: center; }
 .power-area + .v2-head.muted { padding-top: 0; }
 .power-area + .list { margin-top: 0 !important; }
+
+/* Temperature & humidity sensor — the two reported values are the page; the switch block's spacing (50 px from the
+   toolbar) so every device page starts at the same height. Numbers roll (data-num). */
+.th-hero { display: flex; justify-content: center; align-items: stretch; gap: 28px; padding: 50px var(--screen-pad) 0; transition: opacity var(--dur) var(--ease-out); }
+.th-hero.is-off { opacity: .45; }
+.th-val { text-align: center; min-width: 0; }
+.th-num { display: flex; justify-content: center; align-items: flex-start; font: 600 56px/60px var(--font); letter-spacing: -1.5px; font-variant-numeric: tabular-nums; color: var(--label-primary); }
+.th-num small { font: 600 22px/30px var(--font); letter-spacing: 0; color: var(--label-secondary); margin: 4px 0 0 3px; }
+.th-cap { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 6px; font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-secondary); }
+.th-cap .icon { width: 18px; height: 18px; }
+.th-sep { width: 1px; margin: 10px 0 28px; background: var(--separator-opaque); }
+.th-rep { margin-top: 14px; text-align: center; font: var(--body-sm); color: var(--label-tertiary); }
+/* history chart (server data) */
+.th-chart { padding: 4px 0 2px; }
+.th-plot { position: relative; height: 120px; }
+.th-plot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.th-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 3px var(--bg-elevation-2); }
+.th-axis { display: flex; justify-content: space-between; margin-top: 8px; font: var(--body-xs); color: var(--label-tertiary); font-variant-numeric: tabular-nums; }

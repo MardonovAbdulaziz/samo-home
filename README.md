@@ -14,9 +14,11 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Curtains & rollers | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-curtains.html |
 | Door / window sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-contact.html |
 | Lights | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-lights.html |
+| Temperature & humidity sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-climate.html |
 | Light page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-light |
 | Curtain page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-curtain |
 | Contact sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-contact |
+| Temperature sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-climate |
 
 The site updates by itself 1–2 minutes after each push to `main` (GitHub Pages).
 
@@ -104,6 +106,18 @@ Built from `Device Interface 3/1. Light_Interface.html`; the Figma light sketche
 - Simulated: power cut / restore, a bulb's normal wall switch off / on ("No power"), a dimmer's wall buttons (press, hold ▲ / ▼), Sunrise / Sunset run in 10 s
 - Presets: IKEA white spectrum, Philips Hue colour, Tuya RGB+CCT, Aqara T1, Tuya 2-gang dimmer, Moes 3-gang, Tuya 2-channel module, All features
 - Check: `tools/checks/light.js` · edition: `python3 tools/bundle.py --edition light` → `dist/samo-home-lights.html`
+
+## Temperature & humidity sensor (step 5)
+
+Built from `Device Interface 3/4. Temp_Humidity_Sensor_Interface.html` (232 sensors in zigbee2mqtt). Same rule: show a value or setting only if the sensor has it. Type `climate` (`js/devices/climate.js`).
+
+- Device page: the last REPORTED temperature and humidity, big, with "Reported 2 min ago" (battery sensors report only real changes, so the app can lag the room). Cards only for what the sensor has: pressure with its trend, dew point + VPD, an external probe with its own name ("Fridge probe"), the built-in bound relay, battery. A banner while the sensor's own limit alarm is on. No comfort word — the smiley lives on the sensor's screen only (the sensor doesn't report it)
+- Settings: Sensor (Correction, How often it reports, Built-in limit alarm, Switch a heater directly, Probe name), Screen (°C / °F + screen on, Smiley range), Notifications (Too hot / cold / humid — our server, one push per crossing). "From" limits can't pass "to" limits
+- Event History (Log): the 24-hour chart for temperature / humidity / pressure, today's warmest / coldest with times, alarms and alerts — built by our server from the reports
+- Home: tile "23.4 °C · 46 %" (red when the sensor is in alarm); the "Temperature" chip shows the first sensor live
+- Simulated (prototype panel): heater, air conditioner, hot shower, window open in winter; the room drifts, the sensor measures every N s and reports changes ≥ the step (or every 10 min); press its button to report now; battery low; stops reporting
+- Presets: Aqara (pressure), SONOFF SNZB-02D (screen) / 02P, Tuya TS0201, Tuya TH05Z (built-in alarms), Xiaomi LYWSD03MMC custom firmware, Excellux probe, EFEKTA DIY (relay control), All features
+- Check: `tools/checks/climate.js` · edition: `python3 tools/bundle.py --edition climate` → `dist/samo-home-climate.html`
 
 ## Performance on weak phones
 
