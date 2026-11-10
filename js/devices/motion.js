@@ -208,16 +208,16 @@ Devices.motion = (() => {
     return out;
   })();
   /** A soft glow: an eased fall-off (many stops) — two stops draw a hard disc edge and band on dark screens. */
-  const halo = (id, c, a) => `<radialGradient id="${id}">${[[0, 1], [0.15, 0.82], [0.3, 0.6], [0.45, 0.4], [0.6, 0.23], [0.75, 0.1], [0.88, 0.03], [1, 0]].map(([o, k]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${(a * k).toFixed(3)}"/>`).join('')}</radialGradient>`;
+  const halo = (id, c, a) => `<radialGradient id="${id}">${[[0, 1], [0.12, 0.9], [0.25, 0.72], [0.4, 0.5], [0.55, 0.3], [0.7, 0.15], [0.84, 0.05], [0.94, 0.012], [1, 0]].map(([o, k]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${(a * k).toFixed(3)}"/>`).join('')}</radialGradient>`;
   function scene(d) {
     const st = d.st, rest = st.restUntil > Date.now();
     const cls = ['ct-card', 'mo-card', st.occ ? 'is-occ' : '', rest ? 'is-rest' : '', !detectionOn(d) ? 'is-disabled' : '', !d.online ? 'is-off' : '', st.tamper ? 'is-tamper' : ''].join(' ');
     const dots = (c) => DOTS.map((o) => `<circle class="${c} j${o.j}" cx="${o.x}" cy="${o.y}" r="${o.r}"/>`).join('');
     return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${st.occ ? 'motion' : 'no motion'}">
       <svg class="mo-svg" viewBox="0 0 240 210" aria-hidden="true">
-        <defs>${halo('mo-halo-c', '#4aa3ff', 0.22)}${halo('mo-halo-w', '#ffb547', 0.3)}
+        <defs>${halo('mo-halo-c', '#6fb3ff', 0.11)}${halo('mo-halo-w', '#ffb547', 0.17)}
           <radialGradient id="mo-pearl" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e3e8ee"/><stop offset="1" stop-color="#b9c2cd"/></radialGradient></defs>
-        <circle class="mo-halo cool" cx="${LX}" cy="${LY}" r="96" fill="url(#mo-halo-c)"/><circle class="mo-halo warm" cx="${LX}" cy="${LY}" r="112" fill="url(#mo-halo-w)"/>
+        <circle class="mo-halo cool" cx="${LX}" cy="${LY}" r="104" fill="url(#mo-halo-c)"/><circle class="mo-halo warm" cx="${LX}" cy="${LY}" r="118" fill="url(#mo-halo-w)"/>
         <g class="mo-dots">${dots('mo-d')}</g><g class="mo-hot">${dots('mo-h')}</g>
         <circle class="mo-ring" cx="${LX}" cy="${LY}" r="60"/><circle class="mo-ring r2" cx="${LX}" cy="${LY}" r="60"/>
         <circle class="mo-lens" cx="${LX}" cy="${LY}" r="15" fill="url(#mo-pearl)"/><circle class="mo-led" cx="${LX}" cy="${LY + 9}" r="1.8"/>
