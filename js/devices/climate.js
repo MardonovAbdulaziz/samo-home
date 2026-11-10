@@ -260,8 +260,8 @@ Devices.climate = (() => {
       cards.push(`<div class="info-card"><span>Dew point</span><b data-num="count">${fmtT(dew(st.t, st.h))} °C</b></div>`);
       cards.push(`<div class="info-card"><span>VPD</span><b data-num="count">${vpd(st.t, st.h).toFixed(2)} kPa</b></div>`);
     }
-    if (cards.length % 2) cards[cards.length - 1] = cards[cards.length - 1].replace('class="info-card"', 'class="info-card wide"');
-    if (has(d, 'probe')) cards.push(`<div class="info-card wide"><span>${esc(d.probeName)} probe</span><b data-num="count">${fmtT(st.probe)} °C</b>${icon('temperature')}</div>`);
+    if (has(d, 'probe')) cards.push(`<div class="info-card"><span>${esc(d.probeName)} probe</span><b data-num="count">${fmtT(st.probe)} °C</b></div>`);
+    if (cards.length % 2) cards[cards.length - 1] = cards[cards.length - 1].replace('class="info-card"', 'class="info-card wide"');   // small cards in pairs
     if (has(d, 'control') && S(d, 'control').on) {
       const v = S(d, 'control');
       cards.push(`<div class="info-card wide"><span>Bound relay · ${v.mode === 'HEAT' ? 'heats' : 'cools'} ${v.low}–${v.high} °C</span><b>${st.relay ? 'On' : 'Off'}</b>${icon('bolt')}</div>`);
@@ -376,7 +376,7 @@ Devices.climate = (() => {
     let cur = 'temp';
     const s = UI.sheet({
       title: 'Event History', sub: 'Last 24 hours · built by our server from the sensor’s reports',
-      tabs: keys.length > 1 ? () => `<div class="pad"><div class="segmented" role="tablist">${keys.map((x, i) => `<button role="tab" class="${x === cur ? 'on' : ''}" aria-selected="${x === cur}" data-action="th-ser" data-ch="${i}">${SERIES[x].label}</button>`).join('')}</div></div>` : null,
+      tabs: keys.length > 1 ? () => `<div class="segmented" role="tablist">${keys.map((x, i) => `<button role="tab" class="${x === cur ? 'on' : ''}" aria-selected="${x === cur}" data-action="th-ser" data-ch="${i}">${SERIES[x].label}</button>`).join('')}</div>` : null,
       render: () => {
         const sr = SERIES[cur], ex = extremes(d, cur);
         const stat = (label, x) => `<div class="cell"><span class="cell-main cell-title">${label}</span><span class="cell-value">${sr.fmt(x[cur])} ${sr.unit} · ${UI.fmtTime(x.t)}</span></div>`;

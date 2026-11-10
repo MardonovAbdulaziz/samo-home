@@ -1319,3 +1319,8 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .th-plot svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .th-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 3px var(--bg-elevation-2); }
 .th-axis { display: flex; justify-content: space-between; margin-top: 8px; font: var(--body-xs); color: var(--label-tertiary); font-variant-numeric: tabular-nums; }
+
+/* Blocks in a sheet never touch: a group after a list, a chart or a switch (also when it opens inside a collapse)
+   gets the same 24 px as group + group. Found by tools/checks/spacing.js. */
+.sheet-body * + .sheet-group,
+.sheet-body * + .collapse > .collapse-inner > .sheet-group:first-child { margin-top: 24px; }
