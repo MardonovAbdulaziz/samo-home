@@ -3,6 +3,23 @@
 Clickable smart-home prototype built from the Figma file **Samo-home / HUB Tidied**, with the
 design system based on **Hamroh**. Main color: blue `#0A84FF`.
 
+## Live
+
+Open in a browser (best at phone width, or on a phone). Every viewer keeps their own state in their browser.
+
+| What | Link |
+|---|---|
+| Whole app | https://mardonovabdulaziz.github.io/samo-home/ |
+| Relays | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-relays.html |
+| Curtains & rollers | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-curtains.html |
+| Door / window sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-contact.html |
+| Lights | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-lights.html |
+| Light page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-light |
+| Curtain page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-curtain |
+| Contact sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-contact |
+
+The site updates by itself 1–2 minutes after each push to `main` (GitHub Pages).
+
 No build step. Open `index.html` in Chrome or Safari. Data is saved in `localStorage`.
 On desktop, device pages show a **Relay prototype** panel next to the phone; it is for testing only and is not part of the app.
 
