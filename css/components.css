@@ -1293,3 +1293,11 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .tw-end { margin: 12px 0 0; text-align: center; font: var(--body-sm); color: var(--label-secondary); }
 .tw-btns { display: flex; gap: 10px; } .tw-btns .btn { flex: 1; }
 .btn-primary:disabled { opacity: .4; }
+
+/* Big power switch block — Figma 6560:49770: 44 px above the switch (from the 54 px toolbar frame; ours is 107 px
+   tall vs Figma's 113, so 50 px here puts the switch at the same y = 157), 44 px below it to the next section.
+   The status line under the switch sits inside those 44 px, so it never pushes the page when it appears. */
+.power-area { position: relative; display: flex; flex-direction: column; align-items: center; padding: 50px 0 44px; }
+.power-area .power-sub { position: absolute; left: var(--screen-pad); right: var(--screen-pad); top: calc(100% - 30px); min-height: 16px; text-align: center; }
+.power-area + .v2-head.muted { padding-top: 0; }
+.power-area + .list { margin-top: 0 !important; }

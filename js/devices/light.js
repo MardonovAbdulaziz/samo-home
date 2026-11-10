@@ -262,10 +262,10 @@ Devices.light = (() => {
     // 1. Control — same big toggle as the relay; multi-gang dimmers get a tile per gang
     if (!multi(d)) {
       const fx = c.fx ? ' fx-' + c.fx.name : '';
-      h += `<div data-key="power" style="display:flex;flex-direction:column;align-items:center;padding:36px 0 18px">
+      h += `<div data-key="power" class="power-area">
         <button class="power-toggle lt-toggle${fx}" aria-pressed="${ok && c.on}" data-action="lt-toggle" data-ch="0" ${ok && has(d, 'onoff') ? '' : 'disabled'} aria-label="Power">
           <span class="label">${ok && c.on ? 'On' : 'Off'}</span><span class="knob"><img class="pwr" src="assets/icons/power.svg" width="36" height="36" alt=""></span></button>
-        <div class="t-sm c-secondary" style="margin-top:12px;min-height:16px" data-num data-live="sub">${subLine(d, 0)}</div></div>`;
+        <div class="t-sm c-secondary power-sub" data-num data-live="sub">${subLine(d, 0)}</div></div>`;
     } else {
       const cols = d.channels.length === 3 ? 'cols-3' : '';
       h += `<div class="pad" data-key="ch-grid" style="padding-top:28px"><div class="channel-grid ${cols}">${d.channels.map((x, j) => `

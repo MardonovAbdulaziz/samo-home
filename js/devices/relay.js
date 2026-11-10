@@ -292,10 +292,10 @@ Devices.relay = (() => {
     // 1. Control
     if (!split(d)) {
       const on = grouped(d) ? anyOn(d) : d.channels[0].on;
-      h += `<div data-key="power" style="display:flex;flex-direction:column;align-items:center;padding:40px 0 28px">
+      h += `<div data-key="power" class="power-area">
         <button class="power-toggle" aria-pressed="${on}" data-action="relay-toggle" data-ch="${grouped(d) ? -1 : 0}" ${!d.online ? 'disabled' : ''} aria-label="Power">
           <span class="label">${on ? 'On' : 'Off'}</span><span class="knob"><img class="pwr" src="assets/icons/power.svg" width="36" height="36" alt=""></span></button>
-        <div class="t-sm c-secondary" style="margin-top:14px;min-height:16px" data-num data-live="${grouped(d) ? 'group' : 'ch0'}">${grouped(d) ? groupLine(d) : subLine(d, 0)}</div></div>`;
+        <div class="t-sm c-secondary power-sub" data-num data-live="${grouped(d) ? 'group' : 'ch0'}">${grouped(d) ? groupLine(d) : subLine(d, 0)}</div></div>`;
     } else {
       const cols = d.channels.length === 3 || d.channels.length === 6 ? 'cols-3' : '';
       h += `<div class="pad" data-key="ch-grid" style="padding-top:32px"><div class="channel-grid ${cols}">${d.channels.map((c, i) => `
