@@ -1330,41 +1330,44 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .ct-card.is-tamper .ct-base { box-shadow: 0 0 0 1.5px var(--red), 0 0 12px rgba(255, 69, 58, .65); }
 
 /* other: just the sensor and its magnet; the magnetic field fades as the magnet moves away */
-/* "Other" (fridge, cabinet, safe…) — abstract: the sensor and its magnet are the two halves of one disc.
-   Closed: the halves meet, a green ring closes around them (the circuit is closed). Open: the magnet half swings
-   away, the ring breaks into an orange arc around the sensor half. Only transform / opacity move. */
+/* "Other" (fridge, cabinet, safe, box…) — a box with a lid: not a door, but opening reads at once. The lid turns up
+   on its back hinge (CSS 3D), warm light comes out; the sensor sits on the front, its magnet on the lid's lip.
+   Glow and shadow are eased radial gradients (no blur — Safari). */
 .ct-card.other .ct-stage { width: 220px; height: 180px; }
-.cto { position: absolute; inset: 0; }
-.cto svg { width: 220px; height: 180px; overflow: visible; }
-.cto-ring { fill: none; stroke: var(--green); stroke-width: 2; opacity: .9; transition: opacity 420ms var(--ease-out); }
-.cto-ring.soft { stroke-width: 10; opacity: .14; }
-.cto-arc { fill: none; stroke: var(--orange); stroke-width: 2; stroke-linecap: round; opacity: 0; transition: opacity 420ms var(--ease-out); }
-.cto-arc.soft { stroke-width: 10; }
-.cto-left, .cto-right { transition: transform 640ms var(--ease-in-out); transform-box: view-box; }
-.cto-right { transform-origin: 110px 146px; }
-.cto-half { stroke: rgba(255, 255, 255, .55); stroke-width: 1; }
-.cto-seam { fill: var(--green); opacity: .55; transition: opacity 320ms var(--ease-out); }
-.cto-mark { fill: #c3c8cf; }
-.cto-led { fill: rgba(0, 0, 0, .16); }
-.cto-wave { fill: none; stroke: #3ea0ff; stroke-width: 1.5; opacity: 0; transform-box: view-box; transform-origin: 90px 60px; }
-.ct-card.other.is-open .cto-right { transform: translate(26px, -2px) rotate(22deg); }
-.ct-card.other.is-open .cto-ring { opacity: 0; }
-.ct-card.other.is-open .cto-arc { opacity: .95; } .ct-card.other.is-open .cto-arc.soft { opacity: .16; }
-.ct-card.other.is-open .cto-seam { opacity: 0; }
-.ct-card.other.blink .cto-led { animation: cto-led 900ms var(--ease-out); }
-.ct-card.other.blink .cto-wave { animation: ct-wave2 900ms var(--ease-out); }
-.ct-card.other.blink .cto-wave.w2 { animation-delay: 160ms; }
-@keyframes cto-led { 0%, 55% { fill: #3ea0ff; } 100% { fill: rgba(0, 0, 0, .16); } }
-@keyframes ct-wave2 { 0% { opacity: .9; transform: scale(.3); } 100% { opacity: 0; transform: scale(2.2); } }
-.ct-card.other.is-tamper .cto-left { transform: translate(-6px, 10px) rotate(-10deg); }
-.ct-card.other.is-tamper .cto-left .cto-half { stroke: var(--red); stroke-width: 2; }
-.ct-card.other.knock .cto-right { animation: ct-knock 420ms var(--ease-out); }
+.ctb { position: absolute; left: 40px; top: 96px; width: 140px; height: 70px; perspective: 420px; perspective-origin: 50% 0; }   /* one level of 3D: the vanishing point sits on the box's top edge */
+.ctb-front { position: absolute; inset: 0; border-radius: 3px 3px 14px 14px; background: linear-gradient(180deg, #f4f6f9 0%, #dde2e8 55%, #c3cad4 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 -3px 0 rgba(0, 0, 0, .06); }
+/* The opening and the lid are flat planes laid back by one transform each (no nested preserve-3d: Safari flattens
+   it); the box gives the perspective. The lid turns about its FAR edge: translateY(-88px) rotateX(a) translateY(88px) inside the laid-back plane. */
+.ctb-inside, .ctb-lid { position: absolute; left: 0; right: 0; bottom: 100%; height: 88px; border-radius: 6px; transform-origin: 50% 100%; }
+.ctb-inside { transform: rotateX(76deg); background: linear-gradient(180deg, #0a1322, #1a2b42); box-shadow: inset 0 0 0 6px #e3e8ee; }
+.ctb-inside::after { content: ''; position: absolute; inset: 6px; border-radius: 3px; background: radial-gradient(closest-side, #ffe2a8, #ffb547 55%, rgba(255, 159, 67, .2)); opacity: 0; transition: opacity 520ms var(--ease-out) 120ms; }
+.ctb-lid { background: linear-gradient(180deg, #ffffff, #e2e7ed); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .05);
+  transform: rotateX(76deg) translateY(-88px) rotateX(0deg) translateY(88px); transition: transform 640ms var(--ease-in-out); }
+/* the inside of the lid (a shade darker) shows once it stands past upright — an opacity swap mid-way */
+.ctb-lid::after { content: ''; position: absolute; inset: 0; border-radius: 6px; background: linear-gradient(0deg, #d6dce4, #b1bac6); box-shadow: inset 0 0 0 5px #e6eaef; opacity: 0; transition: opacity 120ms linear; }
+.ct-card.other.is-open .ctb-lid::after { opacity: 1; transition-delay: 330ms; }
+.ctb-magnet { position: absolute; right: 18px; bottom: 6px; width: 22px; height: 16px; border-radius: 4px; background: #c9cfd7; }
+.ctb-sensor { position: absolute; right: 18px; top: 6px; width: 22px; height: 30px; border-radius: 5px; background: #fbfcfd; box-shadow: 0 1px 2px rgba(0, 0, 0, .22); transition: transform 320ms var(--ease-out); }
+.ctb-led { position: absolute; left: 50%; top: 6px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: rgba(0, 0, 0, .14); }
+.ctb-wave { position: absolute; right: 19px; top: 2px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid rgba(62, 160, 255, .9); opacity: 0; pointer-events: none; }
+.ctb-glow { position: absolute; left: 10px; right: 10px; top: 10px; height: 130px; border-radius: 50%; opacity: 0; transition: opacity 600ms var(--ease-out) 140ms;
+  background: radial-gradient(closest-side, rgba(255, 190, 90, .34), rgba(255, 190, 90, .26) 20%, rgba(255, 180, 80, .16) 42%, rgba(255, 170, 70, .07) 64%, rgba(255, 160, 60, .02) 84%, transparent); }
+.ctb-shadow { position: absolute; left: 30px; right: 30px; top: 156px; height: 22px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .42), rgba(0, 0, 0, .3) 30%, rgba(0, 0, 0, .14) 60%, rgba(0, 0, 0, .04) 85%, transparent); }
+.ct-card.other.is-open .ctb-lid { transform: rotateX(76deg) translateY(-88px) rotateX(105deg) translateY(88px); }
+.ct-card.other.is-open .ctb-inside::after, .ct-card.other.is-open .ctb-glow { opacity: 1; }
+.ct-card.other.blink .ctb-led { animation: ct-led 900ms var(--ease-out); }
+.ct-card.other.blink .ctb-wave { animation: ct-wave 900ms var(--ease-out); }
+.ct-card.other.blink .ctb-wave.w2 { animation-delay: 160ms; }
+.ct-card.other.is-tamper .ctb-sensor { transform: translate(10px, 26px) rotate(24deg); box-shadow: 0 0 0 1.5px var(--red), 0 1px 2px rgba(0, 0, 0, .22); }
+.ct-card.other.knock .ctb-lid { animation: ctb-knock 420ms var(--ease-out); }
+@keyframes ctb-knock { 0%, 100% { transform: rotateX(76deg) translateY(-88px) rotateX(0deg) translateY(88px); } 30% { transform: rotateX(76deg) translateY(-88px) rotateX(8deg) translateY(88px); } 60% { transform: rotateX(76deg) translateY(-88px) rotateX(3deg) translateY(88px); } }
 
 .ct-card.knock .ct-leaf, .ct-card.knock .ct-sash, .ct-card.knock .ct-mag { animation: ct-knock 420ms var(--ease-out); }
 @keyframes ct-knock { 0%, 100% { translate: 0 0; } 15% { translate: -2.5px 0; } 30% { translate: 2.5px 0; } 45% { translate: -1.5px 0; } 60% { translate: 1.5px 0; } 75% { translate: -.5px 0; } }
 .ct-card.is-off .ct-stage { opacity: .45; }
 @media (prefers-reduced-motion: reduce) {   /* fewer, gentler: the state still changes, nothing swings or shakes */
-  .ct-leaf, .ct-turn, .ct-sash, .ct-whandle, .ct-cover, .ct-mag, .cto-left, .cto-right { transition-duration: 1ms !important; transition-delay: 0ms !important; }
+  .ct-leaf, .ct-turn, .ct-sash, .ct-whandle, .ct-cover, .ct-mag, .ctb-lid { transition-duration: 1ms !important; transition-delay: 0ms !important; }
   .ct-card .ct-wave, .ct-card.knock .ct-leaf, .ct-card.knock .ct-sash, .ct-card.knock .ct-mag, .ct-card.is-open .ct-lever::before { animation: none !important; }
 }
 
@@ -4204,14 +4207,8 @@ Devices.contact = (() => {
     switch (k) {
       case 'window': return `<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-sill"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-pane"><i class="ct-glass"></i></div><i class="ct-mull"></i>
           <div class="ct-turn"><div class="ct-sash"><i class="ct-glass"></i><i class="ct-shade"></i><i class="ct-magnet"></i><i class="ct-whandle"></i></div></div></div>`;
-      case 'other': return `<div class="cto"><svg viewBox="0 0 220 180" aria-hidden="true">
-          <defs><linearGradient id="cto-pearl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e6eaef"/><stop offset="1" stop-color="#bcc4ce"/></linearGradient></defs>
-          <circle class="cto-ring soft" cx="110" cy="90" r="72"/><circle class="cto-ring" cx="110" cy="90" r="72"/>
-          <path class="cto-arc soft" d="M110 18 A72 72 0 0 0 110 162"/><path class="cto-arc" d="M110 18 A72 72 0 0 0 110 162"/>
-          <g class="cto-left"><path class="cto-half" d="M108 34 A56 56 0 0 0 108 146 Z" fill="url(#cto-pearl)"/><circle class="cto-led" cx="90" cy="60" r="3.5"/><circle class="cto-wave" cx="90" cy="60" r="12"/><circle class="cto-wave w2" cx="90" cy="60" r="12"/></g>
-          <rect class="cto-seam" x="107.5" y="44" width="5" height="92" rx="2.5"/>
-          <g class="cto-right"><path class="cto-half" d="M112 34 A56 56 0 0 1 112 146 Z" fill="url(#cto-pearl)"/><rect class="cto-mark" x="122" y="86" width="16" height="8" rx="4"/></g>
-        </svg></div>`;   // abstract: sensor + magnet = the two halves of one disc
+      case 'other': return `<i class="ctb-shadow"></i><i class="ctb-glow"></i><div class="ctb"><i class="ctb-inside"></i><div class="ctb-lid"><i class="ctb-magnet"></i></div>
+          <div class="ctb-front"><i class="ctb-sensor"><i class="ctb-led"></i></i><i class="ctb-wave"></i><i class="ctb-wave w2"></i></div></div>`;   // a box: the lid lifts on its back hinge, warm light inside
       default: return '<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-beam"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-leaf"><i class="ct-lever"></i><i class="ct-magnet"></i></div></div>';
     }
   }
@@ -5827,19 +5824,20 @@ Devices.motion = (() => {
     RINGS.forEach((R, j) => { for (let i = 0; i < RAYS; i++) { const a = ((90 - 52 + (104 / (RAYS - 1)) * i) * Math.PI) / 180; out.push({ x: +(LX + R * Math.cos(a)).toFixed(1), y: +(LY + R * Math.sin(a)).toFixed(1), r: +(1.6 + j * 0.42).toFixed(2), j }); } });
     return out;
   })();
+  /** A soft glow: an eased fall-off (many stops) — two stops draw a hard disc edge and band on dark screens. */
+  const halo = (id, c, a) => `<radialGradient id="${id}">${[[0, 1], [0.15, 0.82], [0.3, 0.6], [0.45, 0.4], [0.6, 0.23], [0.75, 0.1], [0.88, 0.03], [1, 0]].map(([o, k]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${(a * k).toFixed(3)}"/>`).join('')}</radialGradient>`;
   function scene(d) {
     const st = d.st, rest = st.restUntil > Date.now();
     const cls = ['ct-card', 'mo-card', st.occ ? 'is-occ' : '', rest ? 'is-rest' : '', !detectionOn(d) ? 'is-disabled' : '', !d.online ? 'is-off' : '', st.tamper ? 'is-tamper' : ''].join(' ');
     const dots = (c) => DOTS.map((o) => `<circle class="${c} j${o.j}" cx="${o.x}" cy="${o.y}" r="${o.r}"/>`).join('');
     return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${st.occ ? 'motion' : 'no motion'}">
       <svg class="mo-svg" viewBox="0 0 240 210" aria-hidden="true">
-        <defs><radialGradient id="mo-halo-c"><stop offset="0" stop-color="#4aa3ff" stop-opacity=".32"/><stop offset="1" stop-color="#4aa3ff" stop-opacity="0"/></radialGradient>
-          <radialGradient id="mo-halo-w"><stop offset="0" stop-color="#ffb547" stop-opacity=".42"/><stop offset="1" stop-color="#ffb547" stop-opacity="0"/></radialGradient>
+        <defs>${halo('mo-halo-c', '#4aa3ff', 0.22)}${halo('mo-halo-w', '#ffb547', 0.3)}
           <radialGradient id="mo-pearl" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e3e8ee"/><stop offset="1" stop-color="#b9c2cd"/></radialGradient></defs>
-        <circle class="mo-halo cool" cx="${LX}" cy="${LY}" r="70" fill="url(#mo-halo-c)"/><circle class="mo-halo warm" cx="${LX}" cy="${LY}" r="86" fill="url(#mo-halo-w)"/>
+        <circle class="mo-halo cool" cx="${LX}" cy="${LY}" r="96" fill="url(#mo-halo-c)"/><circle class="mo-halo warm" cx="${LX}" cy="${LY}" r="112" fill="url(#mo-halo-w)"/>
         <g class="mo-dots">${dots('mo-d')}</g><g class="mo-hot">${dots('mo-h')}</g>
         <circle class="mo-ring" cx="${LX}" cy="${LY}" r="60"/><circle class="mo-ring r2" cx="${LX}" cy="${LY}" r="60"/>
-        <rect class="mo-mount" x="${LX - 22}" y="${LY - 22}" width="44" height="14" rx="7"/><circle class="mo-lens" cx="${LX}" cy="${LY}" r="15" fill="url(#mo-pearl)"/><circle class="mo-led" cx="${LX}" cy="${LY + 9}" r="1.8"/>
+        <circle class="mo-lens" cx="${LX}" cy="${LY}" r="15" fill="url(#mo-pearl)"/><circle class="mo-led" cx="${LX}" cy="${LY + 9}" r="1.8"/>
       </svg></div>`;
   }
 
