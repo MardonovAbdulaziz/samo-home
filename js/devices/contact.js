@@ -230,7 +230,7 @@ Devices.contact = (() => {
     switch (k) {
       case 'window': return `<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-sill"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-pane"><i class="ct-glass"></i></div><i class="ct-mull"></i>
           <div class="ct-turn"><div class="ct-sash"><i class="ct-glass"></i><i class="ct-shade"></i><i class="ct-magnet"></i><i class="ct-whandle"></i></div></div></div>`;
-      case 'other': return `<i class="ctx-shadow"></i><i class="ctx-spill"></i><div class="ctx"><i class="ctx-in"></i><div class="ctx-panel"><i class="ctx-magnet"></i></div>
+      case 'other': return `<i class="ctx-shadow"></i><i class="ctx-spill"></i><div class="ctx"><i class="ctx-in"></i><i class="ctx-edge"></i><div class="ctx-panel"><i class="ctx-magnet"></i></div>
           <i class="ctx-sensor"><i class="ctx-led"></i></i><i class="ctx-wave"></i><i class="ctx-wave w2"></i></div>`;   // abstract: a front panel swings open on its left hinge
       default: return '<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-beam"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-leaf"><i class="ct-lever"></i><i class="ct-magnet"></i></div></div>';
     }
