@@ -12,6 +12,7 @@ Usage:  python3 tools/bundle.py                     → dist/samo-home.html
         python3 tools/bundle.py --edition contact   → dist/samo-home-contact.html (door / window sensors only)
         python3 tools/bundle.py --edition light     → dist/samo-home-lights.html (lights only)
         python3 tools/bundle.py --edition climate   → dist/samo-home-climate.html (temperature & humidity sensors only)
+        python3 tools/bundle.py --edition motion    → dist/samo-home-motion.html (motion sensors only)
 """
 import base64, json, mimetypes, pathlib, re
 
@@ -95,6 +96,21 @@ EDITIONS = {
       return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
     }''',
     },
+    'motion': {
+        'out': 'samo-home-motion.html', 'title': 'Samo-home · Motion sensors', 'types': ['motion', 'light'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-hall', name: 'Hallway' }, { id: 'r-living', name: 'Living Room' }, { id: 'r-bedroom', name: 'Bedroom' }];
+      const M = Devices.motion, L = Devices.light;
+      const hallLight = L.create('aqarat1', { name: 'Hall light', roomId: 'r-hall' });
+      const hall = M.create('hue', { name: 'Hallway motion', roomId: 'r-hall' }); hall.settings.motionLight.target = { id: hallLight.id, ch: 0 };
+      const living = M.create('p1', { name: 'Living room motion', roomId: 'r-living' }); living.settings.motionLight.on = false;
+      const bed = M.create('sonoff', { name: 'Bedroom motion', roomId: 'r-bedroom' }); bed.settings.motionLight.on = false;
+      const garage = M.create('tuyab', { name: 'Back door', roomId: 'r-hall' });
+      const devs = [hall, hallLight, living, bed, garage]; devs.forEach((d) => { d.isNew = false; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-hall', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
 }
 PAGES = {  # route → page script
     'index.html': 'js/pages/home.js',
@@ -103,7 +119,7 @@ PAGES = {  # route → page script
     'about-device.html': 'js/pages/about-device.js',
     'add-device.html': 'js/pages/add-device.js',
 }
-CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/store.js']
+CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/store.js']
 CSS = ['css/tokens.css', 'css/components.css']
 
 

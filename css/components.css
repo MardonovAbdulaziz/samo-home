@@ -1324,3 +1324,25 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
    gets the same 24 px as group + group. Found by tools/checks/spacing.js. */
 .sheet-body * + .sheet-group,
 .sheet-body * + .collapse > .collapse-inner > .sheet-group:first-child { margin-top: 24px; }
+
+/* Motion sensor picture: a wall PIR and its detection zones (shares .ct-card / .ct-readout with the contact sensor).
+   Zones light up warm while there is motion; a ring leaves the lens on each report. Only opacity / transform move. */
+.mo-svg { width: 240px; height: 210px; overflow: visible; }
+.mo-fan .mo-zone { fill: url(#mo-cool); stroke: rgba(255, 255, 255, .09); stroke-width: .6; transition: opacity var(--dur) var(--ease-out); }
+.mo-hot .mo-zone { fill: url(#mo-warm); stroke: none; opacity: 0; transition: opacity 420ms var(--ease-out); }
+.mo-card.is-occ .mo-hot .mo-zone { opacity: 1; }
+.mo-card.is-occ .mo-hot .z1 { transition-delay: 40ms; } .mo-card.is-occ .mo-hot .z2 { transition-delay: 80ms; } .mo-card.is-occ .mo-hot .z3 { transition-delay: 120ms; } .mo-card.is-occ .mo-hot .z4 { transition-delay: 160ms; }
+.mo-body { fill: #e9edf2; }
+.mo-lens { fill: #c9d1da; stroke: #ffffff; stroke-width: 1.5; transition: opacity var(--dur) var(--ease-out); }
+.mo-led { fill: #5a6068; }
+.mo-ring { fill: none; stroke: #ff9f43; stroke-width: 2; opacity: 0; transform-box: view-box; transform-origin: 120px 40px; }
+.mo-card.blink .mo-ring { animation: mo-ring 1200ms cubic-bezier(.2, .6, .35, 1); }
+.mo-card.blink .mo-ring.r2 { animation-delay: 180ms; }
+.mo-card.blink:not(.led-off) .mo-led { animation: mo-led 900ms var(--ease-out); }
+@keyframes mo-ring { 0% { opacity: .8; transform: scale(.22); } 45% { opacity: .5; } 100% { opacity: 0; transform: scale(1.45); } }   /* fades evenly: visible for the whole second */
+@keyframes mo-led { 0%, 100% { fill: #5a6068; } 15%, 60% { fill: #ff453a; } }
+.mo-card.is-rest .mo-lens { opacity: .55; }
+.mo-card.is-disabled .mo-fan, .mo-card.is-disabled .mo-hot { opacity: .25; }
+.mo-card.is-off .mo-svg { opacity: .45; }
+.mo-strip .bar { background: var(--fill-tertiary); }
+@media (prefers-reduced-motion: reduce) { .mo-card.blink .mo-ring { animation: none; } }

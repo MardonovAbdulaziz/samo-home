@@ -15,10 +15,12 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Door / window sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-contact.html |
 | Lights | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-lights.html |
 | Temperature & humidity sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-climate.html |
+| Motion sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-motion.html |
 | Light page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-light |
 | Curtain page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-curtain |
 | Contact sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-contact |
 | Temperature sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-climate |
+| Motion sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-motion |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 
 The site updates by itself 1–2 minutes after each push to `main` (GitHub Pages).
@@ -119,6 +121,16 @@ Built from `Device Interface 3/4. Temp_Humidity_Sensor_Interface.html` (232 sens
 - Simulated (prototype panel): heater, air conditioner, hot shower, window open in winter; the room drifts, the sensor measures every N s and reports changes ≥ the step (or every 10 min); press its button to report now; battery low; stops reporting
 - Presets: Aqara (pressure), SONOFF SNZB-02D (screen) / 02P, Tuya TS0201, Tuya TH05Z (built-in alarms), Xiaomi LYWSD03MMC custom firmware, Excellux probe, EFEKTA DIY (relay control), All features
 - Check: `tools/checks/climate.js` · edition: `python3 tools/bundle.py --edition climate` → `dist/samo-home-climate.html`
+
+## Motion sensor (step 6)
+
+Built from `Device Interface 3/6. Motion_Sensor_Interface.html` (181 PIR sensors in zigbee2mqtt). Type `motion` (`js/devices/motion.js`). Show only what the sensor has.
+
+- Device page: a minimal picture — the wall PIR and its detection zones; the zones light up warm while there is motion and a ring leaves the lens on each report (the LED blinks only if "Light on the sensor" is on). "Motion · Now · clears in 1:00" or "No motion · Last motion 13:00", times today. Cards: temperature + humidity, light level (SONOFF: only Dim / Bright, at the last motion), the light "Lights on motion" switches, battery. Banners: cover opened, detection off, battery low, offline. Same picture card / readout as the contact sensor
+- Settings: Detection (Motion detection on/off, No-motion time — Tuya offers only its steps, Rest time — fixed on the classic Aqara, Sensitivity), Sensor (Light on the sensor, Built-in light, Switches lights directly), Notifications (inline switches; "only when nobody is home" on by default — a hallway sees ~100 movements a day), Automation: Lights on motion (pick any light or light-relay in the home, darker than N lx, off after N min — runs in our app). Event History: today strip + list
+- Behaviour: PIR sees movement only — sitting still clears to "no motion"; movement during the rest time is not reported; a cat is ignored unless sensitivity is High; daylight keeps the light off
+- Prototype panel: walk in / sit still / leave / cat, day / night, Away, cover, battery, offline, demo ×10
+- Check: `tools/checks/motion.js` · edition: `python3 tools/bundle.py --edition motion` → `dist/samo-home-motion.html`
 
 ## Performance on weak phones
 

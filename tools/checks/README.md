@@ -15,6 +15,7 @@ page sections not being rebuilt when a banner appears, counts never going backwa
     node tools/checks/settings-inline-and-favourite.js  # switch-only settings flip in the row (no sheet); motor direction sheet; curtain Position chips 25/50/75 (no favourite)
     node tools/checks/light.js             # light: toggle, brightness drag (turns on, number rolls), white tone, colour, mood effects, power cut, wall switch, dimmer gangs, settings
     node tools/checks/climate.js           # temperature & humidity sensor: reported vs real (step / interval), correction, sensor alarm vs push limits, relay control, settings per sensor, history, offline
+    node tools/checks/motion.js            # motion sensor: motion / no motion, lights on motion (dark only), rest time, cat vs sensitivity, sitting still, push only when away, detection off, tamper, per-sensor settings, history
     node tools/checks/spacing.js           # every page and every sheet (all features, switches on): neighbouring blocks never touch (gap ≥ 16 px)
     node tools/checks/timer.js             # shared timer sheet on the relay: 5 presets + Custom wheel (mouse drag, flick, Start lock, remembered), channel tabs, ring + row countdown
     node tools/checks/curtain-perf.js      # curtain loop sleeps at rest, wakes on a command; lite mode drops blur/textures

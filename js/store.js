@@ -27,10 +27,11 @@ const Store = (() => {
       contactSeed(),
       lightSeed(),
       climateSeed(),
+      motionSeed(),
       { id: 'd-leak', type: 'sensor', name: 'Water Leak Sensor', roomId: 'r-kitchen', model: 'SJCGQ11LM', manufacturer: 'Aqara', protocol: 'Zigbee 3.0', online: true, showOnHome: true, status: 'No leak' },
     ];
     devices.forEach((d) => { d.isNew = false; });
-    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true };
+    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true, motionAdded: true };
   }
   /** Example curtain: a track motor that is paired but not set up yet (shows the setup flow). */
   function curtainSeed() {
@@ -49,6 +50,8 @@ const Store = (() => {
   function lightSeed() { const l = Devices.light.create('hue', { name: 'Living room lamp', roomId: 'r-living' }); l.id = 'd-light'; return l; }
   /** Example temperature & humidity sensor with a screen in the bedroom. */
   function climateSeed() { const c = Devices.climate.create('sonoffd', { name: 'Bedroom climate', roomId: 'r-bedroom' }); c.id = 'd-climate'; return c; }
+  /** Example motion sensor in the living room; "Lights on motion" switches the living room lamp. */
+  function motionSeed() { const m = Devices.motion.create('hue', { name: 'Living room motion', roomId: 'r-living' }); m.id = 'd-motion'; m.settings.motionLight.target = { id: 'd-light', ch: 0 }; return m; }
   /** Existing data from before curtains existed: add the example curtain once (stays deleted if removed). */
   function ensureCurtain() {
     if (ED || state.curtainAdded) return;
@@ -71,6 +74,7 @@ const Store = (() => {
     ensureContact();
     if (!ED && !state.lightAdded) { const l = lightSeed(); l.isNew = true; if (!state.rooms.some((r) => r.id === l.roomId)) l.roomId = (state.rooms[0] || {}).id || null; state.devices.push(l); state.lightAdded = true; save(); }
     if (!ED && !state.climateAdded) { const c = climateSeed(); c.isNew = true; if (!state.rooms.some((r) => r.id === c.roomId)) c.roomId = (state.rooms[0] || {}).id || null; state.devices.push(c); state.climateAdded = true; save(); }
+    if (!ED && !state.motionAdded) { const m = motionSeed(); m.isNew = true; if (!state.devices.some((x) => x.id === 'd-light')) m.settings.motionLight.target = null; if (!state.rooms.some((r) => r.id === m.roomId)) m.roomId = (state.rooms[0] || {}).id || null; state.devices.push(m); state.motionAdded = true; save(); }
     // bring saved devices up to the current model (new settings get defaults, renamed values are mapped)
     state.devices.forEach((d) => { const T = Devices[d.type]; if (T && T.applyDefaults && d.settings) T.applyDefaults(d); });
     return state;
