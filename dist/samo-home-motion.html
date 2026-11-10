@@ -1330,26 +1330,41 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .ct-card.is-tamper .ct-base { box-shadow: 0 0 0 1.5px var(--red), 0 0 12px rgba(255, 69, 58, .65); }
 
 /* other: just the sensor and its magnet; the magnetic field fades as the magnet moves away */
-.ct-card.other .ct-stage { width: 220px; height: 160px; }
-.ct-shadow { position: absolute; left: 68px; width: 50px; top: 131px; height: 10px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .32), transparent); }
-.ct-mshadow { position: absolute; left: -3px; right: -3px; top: calc(100% + 1px); height: 8px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .28), transparent); }
-.ct-card.other .ct-sensor { right: auto; left: 70px; top: 20px; width: 46px; height: 116px; }
-.ct-card.other .ct-base, .ct-card.other .ct-cover { border-radius: 12px; }
-.ct-card.other .ct-cover { box-shadow: 0 1px 3px rgba(0, 0, 0, .25); }
-.ct-card.other .ct-led { top: 14px; width: 7px; height: 7px; margin-left: -3.5px; }
-.ct-card.other .ct-wave { width: 40px; height: 40px; margin: -20px 0 0 -20px; top: 12%; }
-.ct-card.other.is-tamper .ct-cover { transform: translate(20px, 46px) rotate(24deg); }
-.ct-mag { position: absolute; left: 122px; top: 38px; width: 28px; height: 80px; border-radius: 9px; background: #f4f5f7; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform 640ms var(--ease-in-out); }
-.ct-mark { position: absolute; left: 4px; top: 50%; margin-top: -6px; border: 6px solid transparent; border-left: 7px solid #c3c8cf; border-right: 0; }
-.ct-card.other.is-open .ct-mag { transform: translateX(64px) rotate(8deg); }
-.ct-field { position: absolute; left: 114px; top: 50px; width: 12px; height: 56px; border: 2px dashed rgba(62, 160, 255, .55); border-left: 0; border-radius: 0 30px 30px 0; transition: opacity 400ms var(--ease-out); }
-.ct-card.other.is-open .ct-field { opacity: 0; }
+/* "Other" (fridge, cabinet, safe…) — abstract: the sensor and its magnet are the two halves of one disc.
+   Closed: the halves meet, a green ring closes around them (the circuit is closed). Open: the magnet half swings
+   away, the ring breaks into an orange arc around the sensor half. Only transform / opacity move. */
+.ct-card.other .ct-stage { width: 220px; height: 180px; }
+.cto { position: absolute; inset: 0; }
+.cto svg { width: 220px; height: 180px; overflow: visible; }
+.cto-ring { fill: none; stroke: var(--green); stroke-width: 2; opacity: .9; transition: opacity 420ms var(--ease-out); }
+.cto-ring.soft { stroke-width: 10; opacity: .14; }
+.cto-arc { fill: none; stroke: var(--orange); stroke-width: 2; stroke-linecap: round; opacity: 0; transition: opacity 420ms var(--ease-out); }
+.cto-arc.soft { stroke-width: 10; }
+.cto-left, .cto-right { transition: transform 640ms var(--ease-in-out); transform-box: view-box; }
+.cto-right { transform-origin: 110px 146px; }
+.cto-half { stroke: rgba(255, 255, 255, .55); stroke-width: 1; }
+.cto-seam { fill: var(--green); opacity: .55; transition: opacity 320ms var(--ease-out); }
+.cto-mark { fill: #c3c8cf; }
+.cto-led { fill: rgba(0, 0, 0, .16); }
+.cto-wave { fill: none; stroke: #3ea0ff; stroke-width: 1.5; opacity: 0; transform-box: view-box; transform-origin: 90px 60px; }
+.ct-card.other.is-open .cto-right { transform: translate(26px, -2px) rotate(22deg); }
+.ct-card.other.is-open .cto-ring { opacity: 0; }
+.ct-card.other.is-open .cto-arc { opacity: .95; } .ct-card.other.is-open .cto-arc.soft { opacity: .16; }
+.ct-card.other.is-open .cto-seam { opacity: 0; }
+.ct-card.other.blink .cto-led { animation: cto-led 900ms var(--ease-out); }
+.ct-card.other.blink .cto-wave { animation: ct-wave2 900ms var(--ease-out); }
+.ct-card.other.blink .cto-wave.w2 { animation-delay: 160ms; }
+@keyframes cto-led { 0%, 55% { fill: #3ea0ff; } 100% { fill: rgba(0, 0, 0, .16); } }
+@keyframes ct-wave2 { 0% { opacity: .9; transform: scale(.3); } 100% { opacity: 0; transform: scale(2.2); } }
+.ct-card.other.is-tamper .cto-left { transform: translate(-6px, 10px) rotate(-10deg); }
+.ct-card.other.is-tamper .cto-left .cto-half { stroke: var(--red); stroke-width: 2; }
+.ct-card.other.knock .cto-right { animation: ct-knock 420ms var(--ease-out); }
 
 .ct-card.knock .ct-leaf, .ct-card.knock .ct-sash, .ct-card.knock .ct-mag { animation: ct-knock 420ms var(--ease-out); }
 @keyframes ct-knock { 0%, 100% { translate: 0 0; } 15% { translate: -2.5px 0; } 30% { translate: 2.5px 0; } 45% { translate: -1.5px 0; } 60% { translate: 1.5px 0; } 75% { translate: -.5px 0; } }
 .ct-card.is-off .ct-stage { opacity: .45; }
 @media (prefers-reduced-motion: reduce) {   /* fewer, gentler: the state still changes, nothing swings or shakes */
-  .ct-leaf, .ct-turn, .ct-sash, .ct-whandle, .ct-cover, .ct-mag { transition-duration: 1ms !important; transition-delay: 0ms !important; }
+  .ct-leaf, .ct-turn, .ct-sash, .ct-whandle, .ct-cover, .ct-mag, .cto-left, .cto-right { transition-duration: 1ms !important; transition-delay: 0ms !important; }
   .ct-card .ct-wave, .ct-card.knock .ct-leaf, .ct-card.knock .ct-sash, .ct-card.knock .ct-mag, .ct-card.is-open .ct-lever::before { animation: none !important; }
 }
 
@@ -1499,25 +1514,30 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .sheet-body * + .sheet-group,
 .sheet-body * + .collapse > .collapse-inner > .sheet-group:first-child { margin-top: 24px; }
 
-/* Motion sensor picture: a wall PIR and its detection zones (shares .ct-card / .ct-readout with the contact sensor).
-   Zones light up warm while there is motion; a ring leaves the lens on each report. Only opacity / transform move. */
+/* Motion sensor picture — "Fresnel dots" (shares .ct-card / .ct-readout with the contact sensor). Cool blue dots at
+   rest; on motion a warm amber wave runs out from the lens (ring by ring), a ring leaves the lens on each report. */
 .mo-svg { width: 240px; height: 210px; overflow: visible; }
-.mo-fan .mo-zone { fill: url(#mo-cool); stroke: rgba(255, 255, 255, .09); stroke-width: .6; transition: opacity var(--dur) var(--ease-out); }
-.mo-hot .mo-zone { fill: url(#mo-warm); stroke: none; opacity: 0; transition: opacity 420ms var(--ease-out); }
-.mo-card.is-occ .mo-hot .mo-zone { opacity: 1; }
-.mo-card.is-occ .mo-hot .z1 { transition-delay: 40ms; } .mo-card.is-occ .mo-hot .z2 { transition-delay: 80ms; } .mo-card.is-occ .mo-hot .z3 { transition-delay: 120ms; } .mo-card.is-occ .mo-hot .z4 { transition-delay: 160ms; }
-.mo-body { fill: #e9edf2; }
-.mo-lens { fill: #c9d1da; stroke: #ffffff; stroke-width: 1.5; transition: opacity var(--dur) var(--ease-out); }
-.mo-led { fill: #5a6068; }
-.mo-ring { fill: none; stroke: #ff9f43; stroke-width: 2; opacity: 0; transform-box: view-box; transform-origin: 120px 40px; }
+.mo-d { fill: #8fb8ff; opacity: .3; transition: opacity var(--dur) var(--ease-out); }
+.mo-d.j3 { opacity: .24; } .mo-d.j4 { opacity: .18; } .mo-d.j5 { opacity: .12; }
+.mo-h { fill: #ffb547; opacity: 0; transition: opacity 360ms var(--ease-out); }
+.mo-card.is-occ .mo-h { opacity: .95; } .mo-card.is-occ .mo-h.j3 { opacity: .8; } .mo-card.is-occ .mo-h.j4 { opacity: .6; } .mo-card.is-occ .mo-h.j5 { opacity: .4; }
+.mo-card.is-occ .mo-h.j1 { transition-delay: 70ms; } .mo-card.is-occ .mo-h.j2 { transition-delay: 140ms; } .mo-card.is-occ .mo-h.j3 { transition-delay: 210ms; } .mo-card.is-occ .mo-h.j4 { transition-delay: 280ms; } .mo-card.is-occ .mo-h.j5 { transition-delay: 350ms; }
+.mo-card.is-occ .mo-d { opacity: 0; }
+.mo-halo { transition: opacity 480ms var(--ease-out); } .mo-halo.warm { opacity: 0; }
+.mo-card.is-occ .mo-halo.warm { opacity: 1; } .mo-card.is-occ .mo-halo.cool { opacity: 0; }
+.mo-mount { fill: rgba(255, 255, 255, .1); }
+.mo-lens { stroke: rgba(255, 255, 255, .7); stroke-width: 1; transition: opacity var(--dur) var(--ease-out); }
+.mo-led { fill: rgba(0, 0, 0, .18); }
+.mo-ring { fill: none; stroke: #ffb547; stroke-width: 1.5; opacity: 0; transform-box: view-box; transform-origin: 120px 30px; }
 .mo-card.blink .mo-ring { animation: mo-ring 1200ms cubic-bezier(.2, .6, .35, 1); }
-.mo-card.blink .mo-ring.r2 { animation-delay: 180ms; }
+.mo-card.blink .mo-ring.r2 { animation-delay: 200ms; }
 .mo-card.blink:not(.led-off) .mo-led { animation: mo-led 900ms var(--ease-out); }
-@keyframes mo-ring { 0% { opacity: .8; transform: scale(.22); } 45% { opacity: .5; } 100% { opacity: 0; transform: scale(1.45); } }   /* fades evenly: visible for the whole second */
-@keyframes mo-led { 0%, 100% { fill: #5a6068; } 15%, 60% { fill: #ff453a; } }
-.mo-card.is-rest .mo-lens { opacity: .55; }
-.mo-card.is-disabled .mo-fan, .mo-card.is-disabled .mo-hot { opacity: .25; }
+@keyframes mo-ring { 0% { opacity: .8; transform: scale(.25); } 45% { opacity: .45; } 100% { opacity: 0; transform: scale(2.4); } }
+@keyframes mo-led { 0%, 100% { fill: rgba(0, 0, 0, .18); } 15%, 60% { fill: #ff453a; } }
+.mo-card.is-rest .mo-lens { opacity: .6; }
+.mo-card.is-disabled .mo-d { opacity: .08; } .mo-card.is-disabled .mo-halo { opacity: 0; } .mo-card.is-disabled .mo-lens { opacity: .45; }
 .mo-card.is-off .mo-svg { opacity: .45; }
+@media (prefers-reduced-motion: reduce) { .mo-card.blink .mo-ring { animation: none; } .mo-h { transition-delay: 0ms !important; } }
 .mo-strip .bar { background: var(--fill-tertiary); }
 @media (prefers-reduced-motion: reduce) { .mo-card.blink .mo-ring { animation: none; } }
 
@@ -4183,14 +4203,21 @@ Devices.contact = (() => {
     switch (k) {
       case 'window': return `<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-sill"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-pane"><i class="ct-glass"></i></div><i class="ct-mull"></i>
           <div class="ct-turn"><div class="ct-sash"><i class="ct-glass"></i><i class="ct-shade"></i><i class="ct-magnet"></i><i class="ct-whandle"></i></div></div></div>`;
-      case 'other': return '<i class="ct-shadow"></i><i class="ct-field"></i><div class="ct-mag"><i class="ct-mark"></i><i class="ct-mshadow"></i></div>';   // each piece casts its own shadow
+      case 'other': return `<div class="cto"><svg viewBox="0 0 220 180" aria-hidden="true">
+          <defs><linearGradient id="cto-pearl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e6eaef"/><stop offset="1" stop-color="#bcc4ce"/></linearGradient></defs>
+          <circle class="cto-ring soft" cx="110" cy="90" r="72"/><circle class="cto-ring" cx="110" cy="90" r="72"/>
+          <path class="cto-arc soft" d="M110 18 A72 72 0 0 0 110 162"/><path class="cto-arc" d="M110 18 A72 72 0 0 0 110 162"/>
+          <g class="cto-left"><path class="cto-half" d="M108 34 A56 56 0 0 0 108 146 Z" fill="url(#cto-pearl)"/><circle class="cto-led" cx="90" cy="60" r="3.5"/><circle class="cto-wave" cx="90" cy="60" r="12"/><circle class="cto-wave w2" cx="90" cy="60" r="12"/></g>
+          <rect class="cto-seam" x="107.5" y="44" width="5" height="92" rx="2.5"/>
+          <g class="cto-right"><path class="cto-half" d="M112 34 A56 56 0 0 1 112 146 Z" fill="url(#cto-pearl)"/><rect class="cto-mark" x="122" y="86" width="16" height="8" rx="4"/></g>
+        </svg></div>`;   // abstract: sensor + magnet = the two halves of one disc
       default: return '<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-beam"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-leaf"><i class="ct-lever"></i><i class="ct-magnet"></i></div></div>';
     }
   }
   function scene(d) {
     const st = d.st, k = kind(d);
     const cls = ['ct-card', k === 'window' ? 'win' : k, st.open && !st.tilt ? 'is-open' : '', st.tilt && k === 'window' ? 'is-tilt' : '', st.tamper ? 'is-tamper' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${stateWord(d).toLowerCase()}"><div class="ct-stage">${sceneBody(k)}${SENSOR}</div></div>`;
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${stateWord(d).toLowerCase()}"><div class="ct-stage">${sceneBody(k)}${k === 'other' ? '' : SENSOR}</div></div>`;
   }
 
   function page(d) {
@@ -5790,21 +5817,28 @@ Devices.motion = (() => {
   /* ==========================================================================
      Device page
      ========================================================================== */
-  /** The picture: a wall PIR sensor and its detection zones. Zones light up warm on motion; a ring leaves the lens on
-      each report. Only opacity and transform move (Safari-safe, no blur). */
+  /** The picture — "Fresnel dots": a PIR lens splits the room into a fan of zones; we draw them as dots on 9 rays ×
+      6 rings. Idle: cool dots in the app's blue. Motion: the dots turn warm amber in a wave from the lens outwards,
+      and a ring leaves the lens on each report. Only opacity / transform animate (Safari-safe, no blur). */
+  const RAYS = 9, RINGS = [40, 60, 82, 106, 132, 160], LX = 120, LY = 30;
+  const DOTS = (() => {
+    const out = [];
+    RINGS.forEach((R, j) => { for (let i = 0; i < RAYS; i++) { const a = ((90 - 52 + (104 / (RAYS - 1)) * i) * Math.PI) / 180; out.push({ x: +(LX + R * Math.cos(a)).toFixed(1), y: +(LY + R * Math.sin(a)).toFixed(1), r: +(1.6 + j * 0.42).toFixed(2), j }); } });
+    return out;
+  })();
   function scene(d) {
     const st = d.st, rest = st.restUntil > Date.now();
     const cls = ['ct-card', 'mo-card', st.occ ? 'is-occ' : '', rest ? 'is-rest' : '', !detectionOn(d) ? 'is-disabled' : '', !d.online ? 'is-off' : '', st.tamper ? 'is-tamper' : ''].join(' ');
-    const zones = [-52, -31, -10, 10, 31].map((a, i) => { const r = (x) => (x * Math.PI) / 180, R = 150, a0 = r(a + 90), a1 = r(a + 21 + 90);
-      return `<path class="mo-zone z${i}" d="M120 52 L${(120 + R * Math.cos(a0)).toFixed(1)} ${(52 + R * Math.sin(a0)).toFixed(1)} A${R} ${R} 0 0 1 ${(120 + R * Math.cos(a1)).toFixed(1)} ${(52 + R * Math.sin(a1)).toFixed(1)} Z"/>`; }).join('');
+    const dots = (c) => DOTS.map((o) => `<circle class="${c} j${o.j}" cx="${o.x}" cy="${o.y}" r="${o.r}"/>`).join('');
     return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${st.occ ? 'motion' : 'no motion'}">
       <svg class="mo-svg" viewBox="0 0 240 210" aria-hidden="true">
-        <defs><linearGradient id="mo-warm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9f43" stop-opacity=".75"/><stop offset="1" stop-color="#ff9f43" stop-opacity="0"/></linearGradient>
-          <linearGradient id="mo-cool" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-        <g class="mo-fan">${zones}</g>
-        <g class="mo-hot">${zones}</g>
-        <circle class="mo-ring" cx="120" cy="40" r="60"/><circle class="mo-ring r2" cx="120" cy="40" r="60"/>
-        <rect class="mo-body" x="98" y="10" width="44" height="40" rx="12"/><circle class="mo-lens" cx="120" cy="34" r="13"/><circle class="mo-led" cx="133" cy="18" r="2.2"/>
+        <defs><radialGradient id="mo-halo-c"><stop offset="0" stop-color="#4aa3ff" stop-opacity=".32"/><stop offset="1" stop-color="#4aa3ff" stop-opacity="0"/></radialGradient>
+          <radialGradient id="mo-halo-w"><stop offset="0" stop-color="#ffb547" stop-opacity=".42"/><stop offset="1" stop-color="#ffb547" stop-opacity="0"/></radialGradient>
+          <radialGradient id="mo-pearl" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e3e8ee"/><stop offset="1" stop-color="#b9c2cd"/></radialGradient></defs>
+        <circle class="mo-halo cool" cx="${LX}" cy="${LY}" r="70" fill="url(#mo-halo-c)"/><circle class="mo-halo warm" cx="${LX}" cy="${LY}" r="86" fill="url(#mo-halo-w)"/>
+        <g class="mo-dots">${dots('mo-d')}</g><g class="mo-hot">${dots('mo-h')}</g>
+        <circle class="mo-ring" cx="${LX}" cy="${LY}" r="60"/><circle class="mo-ring r2" cx="${LX}" cy="${LY}" r="60"/>
+        <rect class="mo-mount" x="${LX - 22}" y="${LY - 22}" width="44" height="14" rx="7"/><circle class="mo-lens" cx="${LX}" cy="${LY}" r="15" fill="url(#mo-pearl)"/><circle class="mo-led" cx="${LX}" cy="${LY + 9}" r="1.8"/>
       </svg></div>`;
   }
 
@@ -5825,10 +5859,7 @@ Devices.motion = (() => {
     const cards = [];
     if (has(d, 'climate')) cards.push(`<div class="info-card"><span>Temperature</span><b data-num="count">${d.temp.toFixed(1)} °C</b></div>`, `<div class="info-card"><span>Humidity</span><b data-num="count">${d.hum} %</b></div>`);
     if (has(d, 'light')) cards.push(`<div class="info-card wide"><span>Light level${preset(d).dimBright ? ' · at the last motion' : ''}</span><b data-num="count">${luxText(d)}</b>${icon('sun')}</div>`);
-    if (has(d, 'motionLight') && S(d, 'motionLight').on && targetOf(d)) {
-      const t = targetOf(d);
-      cards.push(`<div class="info-card wide"><span>Lights on motion · below ${S(d, 'motionLight').lux} lx</span><b>${esc(t.name)} · ${t.on ? 'On' : 'Off'}</b>${icon(t.icon)}</div>`);
-    }
+    // "Lights on motion" is a scenario of our app, not a sensor reading — it stays in Settings → Automation (spec)
     if (has(d, 'battery')) cards.push(`<div class="info-card wide"><span>${battLow(d) ? 'Battery · replace it soon' : 'Battery'}</span><b data-num="count">${d.battery} %</b>${icon('battery')}</div>`);
     if (cards.length) h += `<div class="pad info-grid" data-key="info" style="margin-top:24px">${cards.join('')}</div>`;
     return h + '<div style="height:28px"></div>';

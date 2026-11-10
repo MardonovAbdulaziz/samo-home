@@ -99,6 +99,8 @@ Built from `Device Interface 3/3. Contact_Sensor_Interface.html`, in the look of
 - Presets: Aqara, SONOFF SNZB-04P, Tuya TS0203, Third Reality (report delay), Bosch II plus (knock + airing break), window handle sensor (tilted), All features
 - Icons not in Figma yet (so not offered): drawer, wardrobe, freezer, medicine box, mailbox
 
+Contact sensor “Other” (fridge, cabinet, safe…) is abstract: the sensor and its magnet are the two halves of one disc — closed: they meet inside a green ring; open: the magnet half swings away and the ring breaks into an orange arc.
+
 ## Light (step 4)
 
 Built from `Device Interface 3/1. Light_Interface.html`; the Figma light sketches (6560:50289, older style) redone in the current Samo-home style. Same rule: show a control only if the light has that feature.
@@ -126,7 +128,7 @@ Built from `Device Interface 3/4. Temp_Humidity_Sensor_Interface.html` (232 sens
 
 Built from `Device Interface 3/6. Motion_Sensor_Interface.html` (181 PIR sensors in zigbee2mqtt). Type `motion` (`js/devices/motion.js`). Show only what the sensor has.
 
-- Device page: a minimal picture — the wall PIR and its detection zones; the zones light up warm while there is motion and a ring leaves the lens on each report (the LED blinks only if "Light on the sensor" is on). "Motion · Now · clears in 1:00" or "No motion · Last motion 13:00", times today. Cards: temperature + humidity, light level (SONOFF: only Dim / Bright, at the last motion), the light "Lights on motion" switches, battery. Banners: cover opened, detection off, battery low, offline. Same picture card / readout as the contact sensor
+- Device page: "Fresnel dots" picture — a pearl PIR lens and its detection zones as dots on 9 rays × 6 rings; cool blue at rest, a warm amber wave runs out from the lens on motion, a ring leaves the lens on each report (the LED blinks only if "Light on the sensor" is on). "Motion · Now · clears in 1:00" or "No motion · Last motion 13:00", times today. Cards: temperature + humidity, light level (SONOFF: only Dim / Bright, at the last motion), battery — the "Lights on motion" scenario is not on the device page (it comes with scenarios). Banners: cover opened, detection off, battery low, offline. Same picture card / readout as the contact sensor
 - Settings: Detection (Motion detection on/off, No-motion time — Tuya offers only its steps, Rest time — fixed on the classic Aqara, Sensitivity), Sensor (Light on the sensor, Built-in light, Switches lights directly), Notifications (inline switches; "only when nobody is home" on by default — a hallway sees ~100 movements a day), Automation: Lights on motion (pick any light or light-relay in the home, darker than N lx, off after N min — runs in our app). Event History: today strip + list
 - Behaviour: PIR sees movement only — sitting still clears to "no motion"; movement during the rest time is not reported; a cat is ignored unless sensitivity is High; daylight keeps the light off
 - Prototype panel: walk in / sit still / leave / cat, day / night, Away, cover, battery, offline, demo ×10

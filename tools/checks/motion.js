@@ -20,7 +20,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   ok('Home tile: "No motion · <time>"', /^No motion · /.test(s), s);
   await pg.goto(root + 'device.html?id=d-motion'); await sl(500);
   s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, sub: document.querySelector('[data-live="sub"]').textContent, cards: [...document.querySelectorAll('.info-card span')].map((x) => x.textContent).join(',') }));
-  ok('Page: "No motion", "Last motion …"; Hue cards: temperature + humidity, light level, the light it switches, battery', s.w === 'No motion' && /^Last motion /.test(s.sub) && s.cards === 'Temperature,Humidity,Light level,Lights on motion · below 40 lx,Battery', JSON.stringify(s));
+  ok('Page: "No motion", "Last motion …"; Hue cards: temperature + humidity, light level, battery (no scenario card)', s.w === 'No motion' && /^Last motion /.test(s.sub) && s.cards === 'Temperature,Humidity,Light level,Battery', JSON.stringify(s));
 
   // walk in at night: motion → the living room lamp turns on (scenario), the zones light up
   await click('[data-action="pp-walk"]'); await sl(500);

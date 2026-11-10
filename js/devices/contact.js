@@ -230,14 +230,21 @@ Devices.contact = (() => {
     switch (k) {
       case 'window': return `<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-sill"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-pane"><i class="ct-glass"></i></div><i class="ct-mull"></i>
           <div class="ct-turn"><div class="ct-sash"><i class="ct-glass"></i><i class="ct-shade"></i><i class="ct-magnet"></i><i class="ct-whandle"></i></div></div></div>`;
-      case 'other': return '<i class="ct-shadow"></i><i class="ct-field"></i><div class="ct-mag"><i class="ct-mark"></i><i class="ct-mshadow"></i></div>';   // each piece casts its own shadow
+      case 'other': return `<div class="cto"><svg viewBox="0 0 220 180" aria-hidden="true">
+          <defs><linearGradient id="cto-pearl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e6eaef"/><stop offset="1" stop-color="#bcc4ce"/></linearGradient></defs>
+          <circle class="cto-ring soft" cx="110" cy="90" r="72"/><circle class="cto-ring" cx="110" cy="90" r="72"/>
+          <path class="cto-arc soft" d="M110 18 A72 72 0 0 0 110 162"/><path class="cto-arc" d="M110 18 A72 72 0 0 0 110 162"/>
+          <g class="cto-left"><path class="cto-half" d="M108 34 A56 56 0 0 0 108 146 Z" fill="url(#cto-pearl)"/><circle class="cto-led" cx="90" cy="60" r="3.5"/><circle class="cto-wave" cx="90" cy="60" r="12"/><circle class="cto-wave w2" cx="90" cy="60" r="12"/></g>
+          <rect class="cto-seam" x="107.5" y="44" width="5" height="92" rx="2.5"/>
+          <g class="cto-right"><path class="cto-half" d="M112 34 A56 56 0 0 1 112 146 Z" fill="url(#cto-pearl)"/><rect class="cto-mark" x="122" y="86" width="16" height="8" rx="4"/></g>
+        </svg></div>`;   // abstract: sensor + magnet = the two halves of one disc
       default: return '<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-beam"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-leaf"><i class="ct-lever"></i><i class="ct-magnet"></i></div></div>';
     }
   }
   function scene(d) {
     const st = d.st, k = kind(d);
     const cls = ['ct-card', k === 'window' ? 'win' : k, st.open && !st.tilt ? 'is-open' : '', st.tilt && k === 'window' ? 'is-tilt' : '', st.tamper ? 'is-tamper' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${stateWord(d).toLowerCase()}"><div class="ct-stage">${sceneBody(k)}${SENSOR}</div></div>`;
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${stateWord(d).toLowerCase()}"><div class="ct-stage">${sceneBody(k)}${k === 'other' ? '' : SENSOR}</div></div>`;
   }
 
   function page(d) {

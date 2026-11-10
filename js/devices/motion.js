@@ -198,21 +198,28 @@ Devices.motion = (() => {
   /* ==========================================================================
      Device page
      ========================================================================== */
-  /** The picture: a wall PIR sensor and its detection zones. Zones light up warm on motion; a ring leaves the lens on
-      each report. Only opacity and transform move (Safari-safe, no blur). */
+  /** The picture — "Fresnel dots": a PIR lens splits the room into a fan of zones; we draw them as dots on 9 rays ×
+      6 rings. Idle: cool dots in the app's blue. Motion: the dots turn warm amber in a wave from the lens outwards,
+      and a ring leaves the lens on each report. Only opacity / transform animate (Safari-safe, no blur). */
+  const RAYS = 9, RINGS = [40, 60, 82, 106, 132, 160], LX = 120, LY = 30;
+  const DOTS = (() => {
+    const out = [];
+    RINGS.forEach((R, j) => { for (let i = 0; i < RAYS; i++) { const a = ((90 - 52 + (104 / (RAYS - 1)) * i) * Math.PI) / 180; out.push({ x: +(LX + R * Math.cos(a)).toFixed(1), y: +(LY + R * Math.sin(a)).toFixed(1), r: +(1.6 + j * 0.42).toFixed(2), j }); } });
+    return out;
+  })();
   function scene(d) {
     const st = d.st, rest = st.restUntil > Date.now();
     const cls = ['ct-card', 'mo-card', st.occ ? 'is-occ' : '', rest ? 'is-rest' : '', !detectionOn(d) ? 'is-disabled' : '', !d.online ? 'is-off' : '', st.tamper ? 'is-tamper' : ''].join(' ');
-    const zones = [-52, -31, -10, 10, 31].map((a, i) => { const r = (x) => (x * Math.PI) / 180, R = 150, a0 = r(a + 90), a1 = r(a + 21 + 90);
-      return `<path class="mo-zone z${i}" d="M120 52 L${(120 + R * Math.cos(a0)).toFixed(1)} ${(52 + R * Math.sin(a0)).toFixed(1)} A${R} ${R} 0 0 1 ${(120 + R * Math.cos(a1)).toFixed(1)} ${(52 + R * Math.sin(a1)).toFixed(1)} Z"/>`; }).join('');
+    const dots = (c) => DOTS.map((o) => `<circle class="${c} j${o.j}" cx="${o.x}" cy="${o.y}" r="${o.r}"/>`).join('');
     return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${st.occ ? 'motion' : 'no motion'}">
       <svg class="mo-svg" viewBox="0 0 240 210" aria-hidden="true">
-        <defs><linearGradient id="mo-warm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9f43" stop-opacity=".75"/><stop offset="1" stop-color="#ff9f43" stop-opacity="0"/></linearGradient>
-          <linearGradient id="mo-cool" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".14"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-        <g class="mo-fan">${zones}</g>
-        <g class="mo-hot">${zones}</g>
-        <circle class="mo-ring" cx="120" cy="40" r="60"/><circle class="mo-ring r2" cx="120" cy="40" r="60"/>
-        <rect class="mo-body" x="98" y="10" width="44" height="40" rx="12"/><circle class="mo-lens" cx="120" cy="34" r="13"/><circle class="mo-led" cx="133" cy="18" r="2.2"/>
+        <defs><radialGradient id="mo-halo-c"><stop offset="0" stop-color="#4aa3ff" stop-opacity=".32"/><stop offset="1" stop-color="#4aa3ff" stop-opacity="0"/></radialGradient>
+          <radialGradient id="mo-halo-w"><stop offset="0" stop-color="#ffb547" stop-opacity=".42"/><stop offset="1" stop-color="#ffb547" stop-opacity="0"/></radialGradient>
+          <radialGradient id="mo-pearl" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e3e8ee"/><stop offset="1" stop-color="#b9c2cd"/></radialGradient></defs>
+        <circle class="mo-halo cool" cx="${LX}" cy="${LY}" r="70" fill="url(#mo-halo-c)"/><circle class="mo-halo warm" cx="${LX}" cy="${LY}" r="86" fill="url(#mo-halo-w)"/>
+        <g class="mo-dots">${dots('mo-d')}</g><g class="mo-hot">${dots('mo-h')}</g>
+        <circle class="mo-ring" cx="${LX}" cy="${LY}" r="60"/><circle class="mo-ring r2" cx="${LX}" cy="${LY}" r="60"/>
+        <rect class="mo-mount" x="${LX - 22}" y="${LY - 22}" width="44" height="14" rx="7"/><circle class="mo-lens" cx="${LX}" cy="${LY}" r="15" fill="url(#mo-pearl)"/><circle class="mo-led" cx="${LX}" cy="${LY + 9}" r="1.8"/>
       </svg></div>`;
   }
 
@@ -233,10 +240,7 @@ Devices.motion = (() => {
     const cards = [];
     if (has(d, 'climate')) cards.push(`<div class="info-card"><span>Temperature</span><b data-num="count">${d.temp.toFixed(1)} °C</b></div>`, `<div class="info-card"><span>Humidity</span><b data-num="count">${d.hum} %</b></div>`);
     if (has(d, 'light')) cards.push(`<div class="info-card wide"><span>Light level${preset(d).dimBright ? ' · at the last motion' : ''}</span><b data-num="count">${luxText(d)}</b>${icon('sun')}</div>`);
-    if (has(d, 'motionLight') && S(d, 'motionLight').on && targetOf(d)) {
-      const t = targetOf(d);
-      cards.push(`<div class="info-card wide"><span>Lights on motion · below ${S(d, 'motionLight').lux} lx</span><b>${esc(t.name)} · ${t.on ? 'On' : 'Off'}</b>${icon(t.icon)}</div>`);
-    }
+    // "Lights on motion" is a scenario of our app, not a sensor reading — it stays in Settings → Automation (spec)
     if (has(d, 'battery')) cards.push(`<div class="info-card wide"><span>${battLow(d) ? 'Battery · replace it soon' : 'Battery'}</span><b data-num="count">${d.battery} %</b>${icon('battery')}</div>`);
     if (cards.length) h += `<div class="pad info-grid" data-key="info" style="margin-top:24px">${cards.join('')}</div>`;
     return h + '<div style="height:28px"></div>';
