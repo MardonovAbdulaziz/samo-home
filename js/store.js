@@ -1,0 +1,96 @@
+/* Samo-home data store (localStorage). One source of truth for every page.
+   Shape:
+   { home: { name }, rooms: [{ id, name }], devices: [Device], notifications: n }
+   Device (common): { id, type, name, roomId, model, manufacturer, protocol, online, showOnHome, isNew, createdAt, ... }
+   Type-specific fields are owned by the device module (see js/devices/*.js). */
+const Store = (() => {
+  // Edition (single-file builds for one device type, see tools/bundle.py --edition): own data + seed
+  const ED = window.SAMO_EDITION || null;
+  const KEY = ED ? 'samo-home:' + ED.id : 'samo-home:v1';
+  const uid = (p = 'id') => p + '-' + Math.random().toString(36).slice(2, 9);
+  let state = null;
+  const listeners = new Set();
+
+  function seed() {
+    if (ED && ED.seed) return ED.seed();
+    const rooms = [
+      { id: 'r-living', name: 'Living Room' },
+      { id: 'r-kitchen', name: 'Kitchen' },
+      { id: 'r-bedroom', name: 'Bedroom' },
+    ];
+    const devices = [
+      { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: true },
+      Devices.relay.create('tuya2', { name: 'Living room lights', roomId: 'r-living', channelNames: ['Ceiling', 'Hall'] }),
+      Devices.relay.create('aqara', { name: 'Kitchen relay', roomId: 'r-kitchen', channelNames: ['Light', 'Boiler'] }),
+      Devices.relay.create('din', { name: 'Water heater', roomId: 'r-bedroom' }),
+      curtainSeed(),
+      contactSeed(),
+      lightSeed(),
+      { id: 'd-leak', type: 'sensor', name: 'Water Leak Sensor', roomId: 'r-kitchen', model: 'SJCGQ11LM', manufacturer: 'Aqara', protocol: 'Zigbee 3.0', online: true, showOnHome: true, status: 'No leak' },
+    ];
+    devices.forEach((d) => { d.isNew = false; });
+    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true };
+  }
+  /** Example curtain: a track motor that is paired but not set up yet (shows the setup flow). */
+  function curtainSeed() {
+    const c = Devices.curtain.create('aqc3', { name: 'Bedroom curtain', roomId: 'r-bedroom' });
+    c.id = 'd-curtain'; c.features = Object.keys(Devices.curtain.F).filter((k) => !['tilt', 'switchType', 'childLock', 'indicator', 'motorMode', 'step'].includes(k));
+    Devices.curtain.applyDefaults(c);
+    return c;
+  }
+  /** Example door sensor on the front door (all features of a common Aqara sensor + tamper). */
+  function contactSeed() {
+    const c = Devices.contact.create('aqara', { name: 'Front door', roomId: 'r-living' });
+    c.id = 'd-contact'; c.features.push('tamper'); Devices.contact.applyDefaults(c);
+    return c;
+  }
+  /** Example colour bulb in the living room. */
+  function lightSeed() { const l = Devices.light.create('hue', { name: 'Living room lamp', roomId: 'r-living' }); l.id = 'd-light'; return l; }
+  /** Existing data from before curtains existed: add the example curtain once (stays deleted if removed). */
+  function ensureCurtain() {
+    if (ED || state.curtainAdded) return;
+    const c = curtainSeed(); c.isNew = true;
+    if (!state.rooms.some((r) => r.id === c.roomId)) c.roomId = (state.rooms[0] || {}).id || null;
+    state.devices.push(c); state.curtainAdded = true; save();
+  }
+  /** Same for the contact sensor (added once; stays deleted if the user removes it). */
+  function ensureContact() {
+    if (ED || state.contactAdded) return;
+    const c = contactSeed(); c.isNew = true;
+    if (!state.rooms.some((r) => r.id === c.roomId)) c.roomId = (state.rooms[0] || {}).id || null;
+    state.devices.push(c); state.contactAdded = true; save();
+  }
+
+  function load() {
+    try { state = JSON.parse(SafeStorage.local.getItem(KEY)); } catch { state = null; }
+    if (!state || !state.devices) { state = seed(); save(); }
+    ensureCurtain();
+    ensureContact();
+    if (!ED && !state.lightAdded) { const l = lightSeed(); l.isNew = true; if (!state.rooms.some((r) => r.id === l.roomId)) l.roomId = (state.rooms[0] || {}).id || null; state.devices.push(l); state.lightAdded = true; save(); }
+    // bring saved devices up to the current model (new settings get defaults, renamed values are mapped)
+    state.devices.forEach((d) => { const T = Devices[d.type]; if (T && T.applyDefaults && d.settings) T.applyDefaults(d); });
+    return state;
+  }
+  function save() {
+    SafeStorage.local.setItem(KEY, JSON.stringify(state));
+    listeners.forEach((fn) => fn(state));
+  }
+  window.addEventListener('storage', (e) => { if (e.key === KEY) { load(); listeners.forEach((fn) => fn(state)); } });
+
+  return {
+    uid,
+    get state() { return state || load(); },
+    save,
+    subscribe: (fn) => listeners.add(fn),
+    reset() { SafeStorage.local.removeItem(KEY); state = null; load(); },
+
+    device: (id) => (state || load()).devices.find((d) => d.id === id),
+    room: (id) => (state || load()).rooms.find((r) => r.id === id),
+    roomName: (id) => ((state || load()).rooms.find((r) => r.id === id) || {}).name || 'No room',
+
+    addRoom(name) { const r = { id: uid('r'), name }; this.state.rooms.push(r); save(); return r; },
+    addDevice(d) { this.state.devices.push(d); save(); return d; },
+    removeDevice(id) { state.devices = state.devices.filter((d) => d.id !== id); save(); },
+    updateDevice(id, fn) { const d = this.device(id); if (d) { fn(d); save(); } return d; },
+  };
+})();

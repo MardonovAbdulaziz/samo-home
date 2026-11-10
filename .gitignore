@@ -1,0 +1,4 @@
+# check screenshots written to the project root
+/*.png
+.DS_Store
+node_modules/

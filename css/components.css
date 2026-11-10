@@ -1,0 +1,1295 @@
+/* ==========================================================================
+   Samo-home Components
+   Every component uses tokens from tokens.css only.
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font: var(--body-md);
+  letter-spacing: var(--body-md-ls);
+  color: var(--label-primary);
+  background: #0b0d12;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px;
+  min-height: 100vh;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+input, select { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ---------- Phone shell ---------- */
+.phone {
+  position: relative;
+  width: var(--phone-w);
+  height: var(--phone-h);
+  border-radius: 44px;
+  overflow: hidden;
+  background: var(--bg-base);
+  box-shadow: 0 0 0 10px #1a1a1d, 0 30px 80px rgba(0, 0, 0, 0.6);
+  flex-shrink: 0;
+  isolation: isolate;
+}
+.phone.ambient { background: var(--ambient-base); }
+.phone.ambient::before, .phone.ambient::after {
+  content: ""; position: absolute; border-radius: 360px; filter: blur(180px); z-index: -1; pointer-events: none;
+}
+.phone.ambient::before { width: 500px; height: 500px; background: var(--ambient-blob-1); opacity: .8; left: calc(50% + 122.5px - 250px); top: calc(50% + 341px - 250px); }
+.phone.ambient::after  { width: 313px; height: 500px; background: var(--ambient-blob-2); opacity: .4; left: calc(50% - 188px - 156px); top: calc(50% + 98px - 250px); }
+.phone.elevated { background: var(--bg-base-android); }
+
+@media (max-width: 520px) {
+  body { padding: 0; display: block; background: #000; }
+  .phone { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; }
+  .proto-panel { display: none !important; }
+}
+
+/* Status bar (Figma: status-bar 375x59) */
+.statusbar {
+  position: absolute; inset: 0 0 auto 0; height: 59px; z-index: 30;
+  display: flex; justify-content: space-between; pointer-events: none;
+}
+.statusbar .time { width: 140.5px; display: flex; align-items: center; justify-content: center; padding: 16px 0 12px; font: var(--body-lg-accent); }
+.statusbar .levels { display: flex; gap: 7px; padding: 23px 32px 0; align-items: flex-start; }
+.statusbar .levels img { display: block; }
+.home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 100px; background: var(--label-primary); z-index: 40; pointer-events: none; }
+
+.screen {
+  position: absolute; inset: 59px 0 0 0; overflow-y: auto; overflow-x: hidden;
+  padding: 0 0 40px; scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.with-tabbar { padding-bottom: 120px; }
+.screen.with-footer { padding-bottom: 120px; }
+
+/* ---------- Toolbar (Figma: Toolbar 375x54) ---------- */
+.toolbar {
+  position: sticky; top: 0; z-index: 20; height: 54px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 0 var(--screen-pad) 10px;
+  background: var(--bg-base-android);
+}
+.phone.base .toolbar { background: var(--bg-base); }
+.phone.ambient .toolbar { position: relative; background: none; } /* ambient pages: toolbar scrolls with content, as in Figma */
+.toolbar .title-wrap { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 230px; text-align: center; padding-top: 6px; pointer-events: none; }
+.toolbar .title { font: 590 15px/20px var(--font); letter-spacing: -0.23px; color: #F5F5F5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolbar .subtitle { font: var(--caption); color: #8A8A8A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolbar.plain .title { font: var(--body-lg-accent); color: var(--label-primary); padding-top: 4px; }
+.toolbar .spacer { width: 44px; }
+
+/* Glass circular button (Figma: Button Group / BG Fill + Shadow) */
+.glass-btn {
+  width: var(--size-toolbar-btn); height: var(--size-toolbar-btn); border-radius: var(--radius-pill);
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  background: var(--glass-fill); box-shadow: var(--glass-highlight);
+  backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+  transition: transform var(--dur-fast);
+}
+.glass-btn:active { transform: scale(.94); }
+.icon-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-pill); position: relative; }
+.icon-btn:active { background: var(--fill-quaternary); }
+.icon { width: 24px; height: 24px; display: block; flex-shrink: 0; overflow: visible; }
+.icon-sm { width: 20px; height: 20px; }
+.icon-xs { width: 16px; height: 16px; }
+
+/* ---------- Typography helpers ---------- */
+.t-h1 { font: var(--h1); letter-spacing: var(--h1-ls); }
+.t-h2 { font: var(--h2); letter-spacing: var(--h2-ls); }
+.t-h3 { font: var(--h3); letter-spacing: var(--h3-ls); }
+.t-lg { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+.t-md { font: var(--body-md); letter-spacing: var(--body-md-ls); }
+.t-sm { font: var(--body-sm); letter-spacing: var(--body-sm-ls); }
+.t-xs { font: var(--body-xs); letter-spacing: var(--body-xs-ls); }
+.t-lg-accent { font: var(--body-lg-accent); letter-spacing: var(--body-lg-ls); }
+.t-md-accent { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }
+.t-sm-accent { font: var(--body-sm-accent); letter-spacing: var(--body-sm-ls); }
+.t-xs-accent { font: var(--body-xs-accent); letter-spacing: var(--body-xs-ls); }
+.c-secondary { color: var(--label-secondary); }
+.c-tertiary { color: var(--label-tertiary); }
+.c-red { color: var(--red); }
+.c-green { color: var(--green); }
+.c-primary { color: var(--primary); }
+
+.pad { padding: 0 var(--screen-pad); }
+.stack { display: flex; flex-direction: column; gap: var(--space-3); }
+.row { display: flex; align-items: center; gap: var(--space-3); }
+.grow { flex: 1; min-width: 0; }
+
+/* ---------- Home header ---------- */
+.home-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px var(--screen-pad); height: 50px; }
+.home-header .home-name { display: inline-flex; align-items: center; gap: 4px; font: var(--h2); letter-spacing: var(--h2-ls); }
+.badge-count { position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--red); font: var(--body-xs-accent); display: flex; align-items: center; justify-content: center; }
+
+/* Quick chips row (Turn off all / Temperature / Front door) */
+.chips-row { display: flex; gap: 8px; overflow-x: auto; padding: 8px var(--screen-pad) 4px; scrollbar-width: none; }
+.chips-row::-webkit-scrollbar { display: none; }
+.quick-chip {
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 12px;
+  border-radius: var(--radius-pill); background: var(--fill-tertiary); box-shadow: var(--glass-highlight);
+  white-space: nowrap; flex-shrink: 0; text-align: left;
+}
+.quick-chip b { display: block; font: var(--body-sm-accent); }
+.quick-chip span { display: block; font: var(--body-sm); color: var(--label-secondary); }
+
+/* Section header ("Living Room ›") */
+.section-title { display: flex; align-items: center; gap: 2px; font: var(--body-lg-accent); letter-spacing: var(--body-lg-ls); padding: 24px var(--screen-pad) 12px; }
+.section-label { font: var(--body-sm); color: var(--label-secondary); padding: 20px calc(var(--screen-pad) + 16px) 8px; text-transform: none; }
+
+/* ---------- Device tile (home grid) ---------- */
+.tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 var(--screen-pad); }
+.tile {
+  position: relative; min-width: 0; min-height: 98px; border-radius: var(--radius-lg); padding: 14px 12px 12px;
+  background: var(--fill-tertiary); box-shadow: var(--glass-highlight);
+  display: flex; flex-direction: column; justify-content: flex-end; text-align: left;
+  transition: background var(--dur), transform var(--dur-fast);
+}
+.tile:active { transform: scale(.97); }
+.tile .tile-icon { position: absolute; top: 14px; left: 12px; width: 28px; height: 28px; }
+.tile .tile-power { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: var(--radius-pill); background: var(--fill-tertiary); display: flex; align-items: center; justify-content: center; }
+.tile .tile-name { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); margin-top: 44px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile .tile-status { display: block; font: var(--body-sm); color: var(--label-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile.on { background: var(--tile-on-bg); color: var(--tile-on-label); }
+.tile.on .tile-status { color: var(--tile-on-sublabel); }
+.tile.on .tile-power { background: rgba(120, 120, 128, 0.16); color: var(--tile-on-label); }
+.tile.offline .tile-status { color: var(--red); }
+.tile.add { flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; min-height: 80px; padding: 0 12px; }
+.tile.add .plus { width: 32px; height: 32px; border-radius: var(--radius-pill); background: var(--fill-tertiary); display: flex; align-items: center; justify-content: center; }
+.tile.add span { font: var(--body-md-accent); }
+
+.tag-new { display: inline-flex; padding: 1px 6px; border-radius: 6px; background: var(--yellow); color: #000; font: var(--body-xs-accent); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  height: var(--size-control); border-radius: var(--radius-md); padding: 0 20px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: var(--body-lg-accent); letter-spacing: var(--body-lg-ls);
+  transition: opacity var(--dur-fast), transform var(--dur-fast), background var(--dur-fast);
+}
+.btn:active { transform: scale(.98); }
+.btn[disabled] { opacity: .4; pointer-events: none; }
+.btn-primary { background: var(--primary); color: var(--on-primary); }
+.btn-primary:active { background: var(--primary-pressed); }
+.btn-secondary { background: var(--bg-elevation-2); color: var(--label-primary); }
+.btn-tinted { background: var(--primary-soft); color: var(--primary); }
+.btn-danger { background: var(--bg-elevation-2); color: var(--red); }
+.btn-glass { background: var(--fill-tertiary); color: var(--label-primary); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.btn-block { width: 100%; }
+.btn-sm { height: 32px; padding: 0 12px; border-radius: var(--radius-pill); font: var(--body-sm-accent); background: var(--fill-tertiary); }
+.btn-pill { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); font: var(--body-md-accent); background: var(--fill-tertiary); box-shadow: var(--glass-highlight); display: inline-flex; align-items: center; gap: 6px; }
+.btn-circle { width: 28px; height: 28px; border-radius: var(--radius-pill); background: var(--fill-tertiary); display: inline-flex; align-items: center; justify-content: center; }
+
+.footer-cta { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px var(--screen-pad) 42px; z-index: 25; background: linear-gradient(transparent, var(--bg-base-android) 30%); }
+.phone.ambient .footer-cta { background: none; }
+
+/* ---------- Big power toggle (Figma: On + white knob 100px) ---------- */
+.power-toggle {
+  display: inline-flex; align-items: center; padding: 6px; border-radius: var(--radius-pill);
+  background: var(--fill-tertiary); box-shadow: var(--glass-highlight); position: relative;
+  width: 212px; height: 112px; transition: background var(--dur);
+}
+.power-toggle .label { position: absolute; width: 100px; text-align: center; font: var(--body-lg-accent); transition: left var(--dur) var(--ease); }
+.power-toggle .knob {
+  position: absolute; top: 6px; width: 100px; height: 100px; border-radius: 60px; background: var(--static-white);
+  box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center;
+  transition: left var(--dur) var(--ease), background var(--dur);
+}
+.power-toggle .knob .pwr { display: block; transition: filter var(--dur); } /* Figma asset, red (#FF453A) */
+.power-toggle[aria-pressed="true"] .label { left: 6px; }
+.power-toggle[aria-pressed="true"] .knob { left: 106px; }
+.power-toggle[aria-pressed="false"] .label { left: 106px; color: var(--label-secondary); }
+.power-toggle[aria-pressed="false"] .knob { left: 6px; background: rgba(255, 255, 255, 0.16); }
+.power-toggle[aria-pressed="false"] .knob .pwr { filter: brightness(0) invert(1); } /* white when off */
+.power-toggle[disabled] { opacity: .4; pointer-events: none; }
+
+/* ---------- Glass card / metric ---------- */
+.card { border-radius: var(--radius-md); background: var(--fill-tertiary); box-shadow: var(--glass-highlight); padding: 16px; }
+.card + .card { margin-top: 10px; }
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.metric { height: 64px; border-radius: var(--radius-md); background: var(--fill-tertiary); box-shadow: var(--glass-highlight); padding: 0 16px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.metric span { font: var(--body-sm); color: var(--label-secondary); }
+.metric b { font: var(--body-lg-accent); letter-spacing: var(--body-lg-ls); }
+
+/* Figma "alert-banner": icon 24 (10px top) + one 15px text (13px top); the bold title is only a phrase of the same sentence */
+.banner { display: flex; gap: 12px; align-items: flex-start; border-radius: var(--radius-md); padding: 0 16px; min-height: 44px; font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-primary); }
+.banner > .icon { width: 24px; height: 24px; margin: 10px 0; flex-shrink: 0; }
+.banner > div { flex: 1; min-width: 0; padding: 13px 0; }
+.banner b { font: inherit; display: inline; }
+.banner.danger { background: var(--red-soft); color: var(--label-primary); }
+.banner.danger .icon { color: var(--red); }
+.banner.warn { background: var(--yellow-soft); }
+.banner.warn .icon { color: var(--yellow); }
+.banner.info { background: var(--blue-soft); }
+.banner.info .icon { color: var(--primary); }
+
+/* ---------- List group (settings) ---------- */
+.list { margin: 0 var(--screen-pad); border-radius: 20px; background: var(--bg-elevation-1-alt); overflow: hidden; padding: 4px 16px; } /* Figma 'List items' */
+.phone.ambient .list { background: var(--fill-tertiary); box-shadow: var(--glass-highlight); }
+.list + .list { margin-top: 24px; }
+.list-header { font: var(--body-sm); color: var(--label-secondary); padding: 24px calc(var(--screen-pad) + 16px) 8px; }
+.list-footer { font: var(--body-sm); color: var(--label-tertiary); padding: 8px calc(var(--screen-pad) + 16px) 0; }
+.cell {
+  min-height: 64px; width: 100%; display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; text-align: left; position: relative;
+}
+/* No dividers between list rows (Figma). Dividers exist only in bottom-sheet radio lists. */
+button.cell:active, a.cell:active { background: var(--fill-quaternary); }
+.cell .cell-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: var(--label-secondary); flex-shrink: 0; }   /* Figma: row icons are label/secondary, not blue */
+.cell .cell-main { flex: 1; min-width: 0; }
+.cell .cell-title { font: 500 15px/18px var(--font); letter-spacing: -0.23px; }
+.cell .cell-sub { font: var(--body-sm); color: var(--label-secondary); margin-top: 2px; }
+.cell .cell-value { font: 400 13px/16px var(--font); letter-spacing: -0.08px; color: var(--label-secondary); text-align: right; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chev, .cell .chev { color: var(--label-secondary); width: 20px; height: 20px; flex-shrink: 0; }
+.cell.danger .cell-title { color: var(--red); }
+.cell .cell-tag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--fill-tertiary); font: var(--body-xs); color: var(--label-secondary); vertical-align: 2px; }
+
+/* Readonly info rows (About device) */
+.info-row { display: flex; align-items: center; gap: 12px; padding: 10px var(--screen-pad); }
+.info-row .k { font: var(--body-sm); color: var(--label-secondary); }
+.info-row .v { font: var(--body-lg); letter-spacing: var(--body-lg-ls); margin-top: 4px; }
+
+/* ---------- Switch (iOS) ---------- */
+.switch { width: 51px; height: 31px; border-radius: var(--radius-pill); background: var(--fill-tertiary); position: relative; flex-shrink: 0; transition: background var(--dur); }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .15); transition: left var(--dur) var(--ease); }
+.switch.on, .switch[aria-checked="true"] { background: var(--primary); }
+.switch.on::after, .switch[aria-checked="true"]::after { left: 22px; }
+
+/* ---------- Text field (Figma: Device Name field) ---------- */
+.field { display: block; margin: 0 var(--screen-pad); border-radius: var(--radius-md); background: var(--bg-elevation-1); padding: 10px 16px; position: relative; }
+.phone.ambient .field, .sheet .field { background: var(--bg-elevation-2); }
+.field .field-label { font: var(--body-sm); color: var(--label-secondary); display: block; }
+.field:focus-within .field-label { color: var(--primary); }
+.field input { width: 100%; border: 0; outline: 0; background: transparent; font: var(--body-lg); letter-spacing: var(--body-lg-ls); padding: 2px 32px 0 0; caret-color: var(--primary); }
+.field .field-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; color: rgba(255, 255, 255, 0.32); }
+.field.static { cursor: pointer; }
+.field-error { color: var(--red); font: var(--body-sm); padding: 6px calc(var(--screen-pad) + 16px) 0; }
+
+/* ---------- Chips / segmented ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { height: 32px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); font: var(--body-sm-accent); display: inline-flex; align-items: center; gap: 6px; }
+.chip.on, .chip[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+.segmented { display: flex; padding: 2px; border-radius: 9px; background: var(--fill-tertiary); }
+.segmented button { flex: 1; height: 28px; border-radius: 7px; font: var(--body-sm-accent); color: var(--label-secondary); }
+.segmented button.on { background: var(--segment-active); color: var(--label-primary); box-shadow: 0 3px 8px rgba(0, 0, 0, .12); }
+
+/* ---------- Channel picker in sheets ----------
+   Round numbered buttons; the selected one widens to "1 · Ceiling". Fixed above the scrolling settings. */
+.sheet-tabs { padding: 0 var(--screen-pad) 20px; flex-shrink: 0; }
+.ch-picker { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(-1 * var(--screen-pad)); padding: 2px var(--screen-pad); }
+.ch-picker button {
+  flex: 0 0 auto; display: inline-flex; align-items: center; height: 40px; min-width: 40px; padding: 0 14px; border-radius: 20px;
+  background: var(--fill-tertiary); color: var(--label-secondary); font: 600 15px/20px var(--font); letter-spacing: -0.2px;
+  transition: background 320ms var(--ease), color 220ms, padding 320ms var(--ease), transform var(--dur-fast) var(--ease);
+}
+.ch-picker button b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ch-picker button .nm { max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; transition: max-width 360ms var(--ease), opacity 240ms, margin 360ms var(--ease); }
+.ch-picker button[aria-selected="true"] { background: var(--primary); color: #fff; padding: 0 16px; }
+.ch-picker button[aria-selected="true"] .nm { max-width: 120px; opacity: 1; margin-left: 8px; font-weight: 500; }
+.ch-picker button[aria-selected="true"] b::after { content: "·"; margin-left: 8px; opacity: 0.6; font-weight: 400; }
+.ch-picker button:active { transform: scale(0.93); }
+.sheet-body.swap-next > * { animation: swap-next 320ms var(--ease) both; }
+.sheet-body.swap-prev > * { animation: swap-prev 320ms var(--ease) both; }
+@keyframes swap-next { from { opacity: 0; transform: translateX(14px); } }
+@keyframes swap-prev { from { opacity: 0; transform: translateX(-14px); } }
+
+/* Sheet opens: content cascades in */
+.sheet.entering .sheet-tabs, .sheet.entering .sheet-body > * { animation: rise 420ms var(--ease) both; }
+.sheet.entering .sheet-body > *:nth-child(1) { animation-delay: 60ms; }
+.sheet.entering .sheet-body > *:nth-child(2) { animation-delay: 100ms; }
+.sheet.entering .sheet-body > *:nth-child(n+3) { animation-delay: 140ms; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+/* ---------- Option rows (radio) — Figma "L-cell_Radio 32px" (5303:19427) ----------
+   Rows sit directly on the sheet (no card), separator under each row, 32px radio on the right. */
+.option { width: 100%; min-height: 56px; display: flex; align-items: center; gap: 16px; padding: 16px 0; text-align: left; border-bottom: 1px solid var(--separator); }
+.list:has(> .option) { background: transparent !important; box-shadow: none !important; border-radius: 0; overflow: visible; }
+.option .option-main { flex: 1; }
+.option .option-title { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+.option .option-sub { font: var(--body-sm); color: var(--label-secondary); margin-top: 2px; }
+.option .radio { width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.option .radio::before { content: ""; width: 26.67px; height: 26.67px; border-radius: 50%; background: var(--fill-tertiary); }
+.option .radio svg { display: none; }
+.option[aria-checked="true"] .radio::before { display: none; }
+.option[aria-checked="true"] .radio svg { display: block; animation: check-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes check-pop { from { transform: scale(0.4); opacity: 0; } }
+.option { transition: background var(--dur-fast); }
+.option:active { background: var(--fill-quaternary); }
+
+/* ---------- Bottom sheet ---------- */
+.sheet-backdrop { position: absolute; inset: 0; background: var(--overlay); opacity: 0; pointer-events: none; transition: opacity var(--dur); z-index: 50; }
+.sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 51; max-height: 88%;
+  background: var(--bg-elevation-1); border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  transform: translateY(100%); transition: transform var(--dur-slow) var(--ease);
+  display: flex; flex-direction: column; padding-bottom: 34px;
+}
+.sheet.open { transform: translateY(0); }
+.sheet .grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--label-tertiary); margin: 8px auto 0; flex-shrink: 0; }
+.sheet .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 14px var(--screen-pad) 4px; gap: 12px; }
+.sheet .sheet-title { font: var(--h2); letter-spacing: var(--h2-ls); }
+.sheet .sheet-sub { font: var(--body-md); color: var(--label-secondary); padding: 0 var(--screen-pad) 20px; }
+.sheet .sheet-body { overflow-y: auto; padding: 0 0 8px; }
+.sheet .sheet-body > .pad + .pad { margin-top: 12px; }
+.sheet .list { background: var(--bg-elevation-2); }
+.sheet .sheet-actions { display: flex; gap: 10px; padding: 12px var(--screen-pad) 0; }
+.sheet .sheet-actions .btn { flex: 1; }
+
+/* Full-height sheet (Figma: "Edit") */
+.sheet.sheet-full { height: calc(100% - 70px); max-height: none; }
+.sheet .sheet-top { display: flex; justify-content: flex-end; padding: 4px 8px 0; }
+.sheet .sheet-big-title { font: var(--h1); line-height: 40px; letter-spacing: var(--h1-ls); padding: 0 var(--screen-pad) 8px; }
+.sheet.sheet-full .sheet-body { flex: 1; padding-top: 16px; }
+.sheet .sheet-footer { padding: 12px var(--screen-pad) 0; }
+
+/* Edit form (Figma 5990:67634) */
+.edit-avatar { position: relative; width: 80px; height: 80px; margin: 32px auto 36px; }
+.edit-avatar .ring { width: 80px; height: 80px; border-radius: 50%; background: var(--fill-quaternary); display: flex; align-items: center; justify-content: center; color: var(--label-secondary); }
+.edit-avatar .pen { position: absolute; right: -4px; bottom: -4px; width: 32px; height: 32px; border-radius: 56px; background: var(--fill-tertiary); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; }
+.input-box { display: block; width: 100%; height: 56px; border-radius: 12px; background: var(--fill-quaternary); padding: 8px 16px; text-align: left; position: relative; }
+.input-box + .input-box { margin-top: 16px; }
+.input-box .lbl { display: block; font: var(--body-sm); color: var(--label-secondary); }
+.input-box:focus-within .lbl { color: var(--primary); }
+.input-box input, .input-box .val { display: block; width: 100%; border: 0; outline: 0; background: transparent; font: 400 17px/22px var(--font); letter-spacing: -0.43px; color: var(--label-primary); padding: 0; caret-color: var(--primary); }
+.input-box .trail { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--label-secondary); display: flex; }
+
+/* Icon picker grid */
+.icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.icon-grid button { aspect-ratio: 1; border-radius: var(--radius-md); background: var(--fill-quaternary); display: flex; align-items: center; justify-content: center; color: var(--label-secondary); border: 2px solid transparent; }
+.icon-grid button[aria-pressed="true"] { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+
+/* Sheet card options (Add a device: Zigbee / Wi-Fi) */
+.option-card { width: 100%; display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-radius: var(--radius-md); background: var(--bg-elevation-2); text-align: left; }
+.option-card + .option-card { margin-top: 10px; }
+.option-card .oc-logo { width: 40px; height: 40px; border-radius: 50%; display: block; object-fit: cover; flex-shrink: 0; }
+.sheet .sheet-x { width: 32px; height: 32px; color: rgba(255, 255, 255, 0.32); }
+.sheet .sheet-x .icon { width: 24px !important; height: 24px !important; }
+.option-card b { display: block; font: var(--body-lg-accent); }
+.option-card span { display: block; font: var(--body-md); color: var(--label-secondary); margin-top: 2px; }
+
+/* ---------- Popover menu (+ menu) ---------- */
+.popover {
+  position: absolute; top: 110px; right: 16px; z-index: 52; width: 260px; border-radius: 14px; background: var(--static-white); color: var(--label-opposite);
+  box-shadow: var(--shadow-pop); padding: 6px 0; transform-origin: top right; transform: scale(.9); opacity: 0; pointer-events: none;
+  transition: transform var(--dur) var(--ease), opacity var(--dur);
+}
+.popover.open { transform: scale(1); opacity: 1; pointer-events: auto; }
+.popover button { width: 100%; height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 16px; font: var(--body-lg); letter-spacing: var(--body-lg-ls); color: #333; }
+.popover button .icon { color: rgba(51, 62, 77, 0.64); } /* Figma: #333E4D 64% */
+.popover button:active { background: rgba(0, 0, 0, .05); }
+.popover-backdrop { position: absolute; inset: 0; z-index: 51; display: none; }
+.popover-backdrop.open { display: block; }
+
+/* ---------- Tab bar (Figma: AI + My Home / Scenarios / More) ---------- */
+.tabbar { position: absolute; left: 16px; right: 16px; bottom: 34px; height: 60px; display: flex; gap: 10px; z-index: 25; }
+.tabbar .ai { width: 60px; height: 60px; border-radius: 30px; background: var(--glass-fill); box-shadow: var(--glass-highlight); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; }
+.tabbar .tabs { flex: 1; display: flex; padding: 4px; border-radius: 30px; background: var(--glass-fill); box-shadow: var(--glass-highlight); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.tabbar .tab { flex: 1; border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: 500 10px/12px var(--font); color: var(--label-secondary); }
+.tabbar .tab.on { background: var(--static-white); color: var(--primary); }
+
+/* ---------- Toast ---------- */
+.toast { position: absolute; left: 50%; bottom: 110px; transform: translate(-50%, 20px); z-index: 60; padding: 10px 16px; border-radius: var(--radius-pill); background: rgba(44, 44, 46, .95); font: var(--body-sm-accent); white-space: nowrap; opacity: 0; transition: all var(--dur) var(--ease); pointer-events: none; box-shadow: var(--shadow-pop); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Empty / hero ---------- */
+.hero { text-align: center; padding: 40px 24px 24px; }
+.hero .hero-icon { width: 64px; height: 64px; margin: 0 auto 24px; color: var(--primary); }
+.hero h1 { font: var(--h3); margin: 0 0 8px; }
+.hero p { font: var(--body-md); color: var(--label-secondary); margin: 0; }
+
+/* Searching animation */
+.pulse { position: relative; width: 120px; height: 120px; margin: 24px auto 16px; display: flex; align-items: center; justify-content: center; }
+.pulse::before, .pulse::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--primary); opacity: 0; animation: pulse 2s infinite var(--ease); }
+.pulse::after { animation-delay: 1s; }
+.pulse.stopped::before, .pulse.stopped::after { animation: none; }
+@keyframes pulse { 0% { transform: scale(.4); opacity: .8; } 100% { transform: scale(1.2); opacity: 0; } }
+
+/* Device avatar (settings header) */
+.avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--bg-elevation-2); display: flex; align-items: center; justify-content: center; margin: 12px auto 24px; position: relative; }
+.avatar .avatar-edit { position: absolute; right: -6px; bottom: -4px; width: 32px; height: 32px; border-radius: 50%; background: #3A3A3C; border: 3px solid var(--bg-base-android); display: flex; align-items: center; justify-content: center; }
+
+/* Channel tiles inside device page */
+.channel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.channel-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.channel-grid.cols-3 .tile { min-height: 110px; }
+.channel-grid.cols-3 .tile .tile-power { display: none; }
+.tile .tile-timer { font: var(--body-xs-accent); color: var(--primary); margin-top: 4px; display: flex; gap: 4px; align-items: center; }
+.tile.on .tile-timer { color: var(--primary); }
+
+/* Event log */
+.event-row { display: flex; justify-content: space-between; font: var(--body-sm); padding: 6px 0; color: var(--label-secondary); }
+.event-row b { color: var(--label-primary); font: var(--body-sm-accent); text-transform: capitalize; }
+
+/* Number stepper */
+.stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--fill-tertiary); border-radius: var(--radius-sm); padding: 4px; }
+.stepper button { width: 36px; height: 32px; border-radius: 8px; font: var(--body-lg-accent); }
+.stepper button:active { background: var(--fill-tertiary); }
+.stepper output { min-width: 64px; text-align: center; font: var(--body-lg-accent); }
+
+/* Slider */
+.range { width: 100%; accent-color: var(--primary); }
+
+/* Color swatches */
+.swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+.swatch { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; box-shadow: inset 0 0 0 1px rgba(255,255,255,.15); }
+.swatch[aria-pressed="true"] { border-color: var(--label-primary); }
+
+/* ---------- Prototype side panel (desktop only, not part of the app) ---------- */
+.proto-panel {
+  width: 300px; max-height: 812px; overflow-y: auto; align-self: center;
+  background: #15171c; border: 1px solid #262a33; border-radius: 16px; padding: 16px;
+  font: 13px/1.45 var(--font); color: #c9ced8; letter-spacing: 0;
+}
+.proto-panel h3 { margin: 16px 0 8px; font: 600 11px/1 var(--font); text-transform: uppercase; letter-spacing: .08em; color: #7d8594; }
+.proto-panel h3:first-child { margin-top: 0; }
+.proto-panel .pp-title { font: 600 15px/1.2 var(--font); color: #fff; margin-bottom: 4px; }
+.proto-panel .pp-note { color: #7d8594; font-size: 12px; margin: 4px 0 0; }
+.proto-panel select, .proto-panel .pp-btn { width: 100%; background: #20242c; border: 1px solid #2d323d; color: #e6e9ef; border-radius: 8px; padding: 7px 10px; font-size: 13px; }
+.proto-panel .pp-btn { text-align: left; margin-top: 6px; }
+.proto-panel .pp-btn:hover { border-color: var(--primary); }
+.proto-panel .pp-seg { display: flex; gap: 4px; }
+.proto-panel .pp-seg button { flex: 1; background: #20242c; border: 1px solid #2d323d; border-radius: 6px; padding: 5px 0; color: #c9ced8; }
+.proto-panel .pp-seg button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.proto-panel label.pp-chk { display: flex; gap: 8px; align-items: center; padding: 3px 0; cursor: pointer; }
+.proto-panel label.pp-chk input { accent-color: var(--primary); }
+.proto-panel .pp-group { color: #9aa2b1; font-size: 11px; margin: 10px 0 2px; }
+.proto-panel .pp-row { display: flex; gap: 6px; }
+.proto-panel .pp-row .pp-btn { flex: 1; text-align: center; }
+.proto-panel a { color: var(--primary); }
+
+/* ---------- Micro-interactions ---------- */
+/* Switch: the knob stretches while pressed, like iOS */
+.switch::after { transition: left var(--dur) var(--ease), width var(--dur-fast) var(--ease); }
+.cell:active .switch::after { width: 33px; }
+.cell:active .switch[aria-checked="true"]::after, .cell:active .switch.on::after { left: 16px; }
+/* Tile just toggled: icon bounces */
+.just-toggled .tile-icon { animation: icon-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.just-toggled .tile-power { animation: icon-bounce 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes icon-bounce { 0% { transform: scale(1); } 35% { transform: scale(1.18); } 100% { transform: scale(1); } }
+/* Big power toggle: soft press */
+.power-toggle { transition: background var(--dur), transform var(--dur-fast) var(--ease); }
+.power-toggle:active { transform: scale(0.97); }
+/* Buttons / chips press */
+.chip, .btn-sm, .btn-pill, .quick-chip, .glass-btn, .icon-btn { transition: transform var(--dur-fast) var(--ease), background var(--dur-fast); }
+.chip:active, .btn-sm:active, .btn-pill:active, .quick-chip:active { transform: scale(0.94); }
+/* Page content fades up on load (first render only) */
+.screen.first > * { animation: rise 460ms var(--ease) both; }
+.screen.first > *:nth-child(2) { animation-delay: 30ms; }
+.screen.first > *:nth-child(3) { animation-delay: 60ms; }
+.screen.first > *:nth-child(n+4) { animation-delay: 90ms; }
+/* Stepper value bumps */
+.stepper output { display: inline-block; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+
+/* Tiles never stretch the grid: text truncates instead */
+.tile .tile-name, .tile .tile-status { max-width: 100%; }
+.tile .tag-new { margin-left: 4px; vertical-align: 1px; }
+.tile .tile-status { font-variant-numeric: tabular-nums; }
+
+/* ---------- Timer (like the iOS version): preset grid + progress ring ---------- */
+.preset-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.preset-grid button { height: 76px; border-radius: var(--radius-md); background: var(--fill-tertiary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: transform var(--dur-fast) var(--ease), background var(--dur-fast); }
+.preset-grid button:active { transform: scale(0.95); background: var(--fill-quaternary); }
+.preset-grid b { font: 600 24px/28px var(--font); font-variant-numeric: tabular-nums; }
+.preset-grid span { font: var(--body-sm); color: var(--label-secondary); }
+.ring-timer { position: relative; width: 196px; height: 196px; margin: 4px auto 20px; }
+.ring-timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-timer .track { stroke: var(--fill-tertiary); }
+.ring-timer .prog { stroke: var(--primary); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.ring-timer .t { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-timer .t b { font: 300 44px/52px var(--font); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.ring-timer .t span { font: var(--body-sm); color: var(--label-secondary); }
+
+/* ---------- Scrollbars: never take space, no track background ---------- */
+.phone *, .phone { scrollbar-width: none; }
+.phone *::-webkit-scrollbar { width: 0; height: 0; background: transparent; }
+
+.toast.top { top: 66px; bottom: auto; transform: translate(-50%, -16px); }
+.toast.top.show { transform: translate(-50%, 0); }
+.ch-picker { position: relative; }
+
+/* ---------- Device page layout ----------
+   Tappable = glass + chevron / blue text + press feedback. Information = flat, no card. */
+.v2-head { display: flex; align-items: baseline; justify-content: space-between; padding: 24px calc(var(--screen-pad) + 4px) 10px; font: var(--body-lg-accent); letter-spacing: -0.43px; }
+.v2-head.muted { font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-secondary); padding: 32px var(--screen-pad) 8px; }   /* Figma: 15px label/secondary at 16px */
+.v2-links { display: flex; gap: 4px; }
+.link-btn { padding: 4px 8px; margin: -4px -4px; border-radius: 8px; font: 500 15px/20px var(--font); letter-spacing: -0.23px; color: var(--primary); transition: opacity var(--dur-fast), background var(--dur-fast); }
+.link-btn + .link-btn { margin-left: 8px; }
+.link-btn:active { opacity: 0.5; background: var(--primary-soft); }
+.link-btn[disabled] { opacity: 0.35; pointer-events: none; }
+.stat-block { padding: 0 calc(var(--screen-pad) + 4px); }
+.stat-main { display: flex; align-items: baseline; gap: 6px; }
+.stat-main b { font: 300 44px/52px var(--font); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.stat-main span { font: var(--body-md); color: var(--label-secondary); }
+.stat-row { display: flex; gap: 28px; margin-top: 6px; }
+.stat-row b { display: block; font: 500 17px/22px var(--font); font-variant-numeric: tabular-nums; }
+.stat-row span { display: block; font: var(--body-sm); color: var(--label-secondary); margin-top: 1px; }
+.flat-list .event-row { padding: 9px 4px; }
+.flat-list .event-row + .event-row { border-top: 1px solid var(--separator); }
+
+/* v2: Power & energy — one information card, 2×2 like the first design (label above value).
+   Flat (no glass highlight, no chevron) so it never looks tappable. */
+.stat-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-radius: var(--radius-md); background: rgba(120, 120, 128, 0.12); overflow: hidden; }
+.stat-card > div { padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.stat-card span { font: var(--body-sm); color: var(--label-secondary); }
+.stat-card b { font: var(--body-lg-accent); letter-spacing: -0.43px; font-variant-numeric: tabular-nums; }
+
+/* v2: All on / All off — one small glass capsule with two halves.
+   The half that would do nothing (e.g. "All on" when all are on) dims, so the useful action stands out. */
+.all-pill { display: inline-flex; align-items: center; height: 34px; padding: 2px; border-radius: 17px; background: var(--fill-tertiary); box-shadow: var(--glass-highlight); }
+.all-pill button { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 15px; font: 600 13px/16px var(--font); letter-spacing: -0.08px; color: var(--label-primary); transition: background var(--dur-fast), opacity var(--dur), transform var(--dur-fast) var(--ease); }
+.all-pill button + button { position: relative; }
+.all-pill button + button::before { content: ""; position: absolute; left: -1px; top: 8px; bottom: 8px; width: 1px; background: var(--separator); }
+.all-pill button:active { background: rgba(255, 255, 255, 0.12); transform: scale(0.95); }
+.all-pill button[disabled] { opacity: 0.38; pointer-events: none; }
+.all-pill .icon { color: var(--primary); }
+.v2-head { align-items: center; }
+
+/* v2: master control — full-width card, state text + switch (Google Home style group toggle) */
+.master { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 16px 12px 12px; border-radius: var(--radius-lg); background: var(--fill-tertiary); box-shadow: var(--glass-highlight); text-align: left; transition: background 360ms var(--ease), color 360ms, transform var(--dur-fast) var(--ease); }
+.master:active { transform: scale(0.98); }
+.master[disabled] { opacity: 0.45; pointer-events: none; }
+.master .m-icon { width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, 0.10); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 360ms, color 360ms; }
+.master .m-text { flex: 1; min-width: 0; }
+.master .m-text b { display: block; font: var(--body-lg-accent); letter-spacing: -0.43px; }
+.master .m-text span { display: block; font: var(--body-sm); color: var(--label-secondary); margin-top: 1px; }
+.master.on { background: var(--tile-on-bg); color: var(--tile-on-label); }
+.master.on .m-icon { background: rgba(255, 214, 10, 0.18); color: #E0A800; }
+.master.on .m-text span { color: var(--tile-on-sublabel); }
+.master.on .m-switch { background: var(--primary); }
+.master .m-switch[aria-checked="true"]::after { left: 22px; }
+.master.just-toggled .m-icon { animation: icon-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* v2: Power & energy — separate cards, flat (no glass highlight / chevron) so they read as information */
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.info-card { min-height: 68px; padding: 12px 16px; border-radius: var(--radius-md); background: var(--fill-tertiary); display: flex; flex-direction: column; justify-content: center; gap: 4px; position: relative; }   /* Figma: fills/tertiary */
+/* Figma "Device temperature" / "Battery": a full-width card with a 24px icon on the right */
+.info-card.wide { grid-column: 1 / -1; padding-right: 52px; }
+.info-card > .icon { position: absolute; right: 16px; top: 50%; margin-top: -12px; width: 24px; height: 24px; color: var(--label-secondary); }
+.info-card span { font: var(--body-sm); color: var(--label-secondary); }
+.info-card b { font: var(--body-lg-accent); letter-spacing: -0.43px; font-variant-numeric: tabular-nums; }
+
+/* v2: one plain-language action under the tiles ("Turn off all lights" / "Turn on all lights") */
+.all-action { width: 100%; height: 52px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 8px; font: var(--body-lg-accent); letter-spacing: -0.43px; background: var(--fill-tertiary); box-shadow: var(--glass-highlight); transition: background 320ms var(--ease), color 320ms, transform var(--dur-fast) var(--ease); }
+.all-action:active { transform: scale(0.98); }
+.all-action[disabled] { opacity: 0.4; pointer-events: none; }
+.all-action.turn-on .icon { color: var(--yellow); }
+.all-action.turn-off .icon { color: var(--label-secondary); }
+.all-action span { animation: rise 280ms var(--ease); }
+.all-action.just-toggled .icon { animation: icon-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* Row press feedback (no dividers): soft highlight reaching into the card padding */
+button.cell, a.cell { border-radius: 14px; }
+button.cell:active, a.cell:active { background: transparent; }
+button.cell::after, a.cell::after { content: ""; position: absolute; inset: 2px -10px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); opacity: 0; transition: opacity var(--dur-fast); pointer-events: none; }
+button.cell:active::after, a.cell:active::after { opacity: 1; }
+.cell .chev { width: 16px; height: 16px; }
+/* Delete button — Figma: tertiary fill glass, red text */
+.btn-danger { background: var(--fill-tertiary); color: var(--red); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+/* Radio lists inside sheets keep their rows without a card (Figma "Select a room") */
+.list:has(> .option) { padding: 0; }
+
+/* ---------- Apple-style nav bar on plain pages (Figma 5528:17009 "Scroll") ----------
+   Bar = status bar + nav (107 px). Transparent at rest; on scroll a blurred base (80%) fades in,
+   fading out at its bottom edge. With a large title, the centered title appears once the large title
+   has scrolled under the bar. */
+.phone:not(.ambient) .screen { inset: 0; }
+.phone .toolbar.plain { top: 0; height: 107px; padding: 59px 8px 0; background: transparent; isolation: isolate; }
+.phone .toolbar.plain::before { content: ""; position: absolute; inset: 0 0 -16px; z-index: -1; background: rgba(18, 18, 20, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent); mask-image: linear-gradient(#000 calc(100% - 28px), transparent); opacity: 0; transition: opacity 240ms var(--ease); }
+.phone.scrolled .toolbar.plain::before { opacity: 1; }
+.toolbar.plain .title-wrap { top: 59px; height: 48px; padding-top: 0; display: flex; flex-direction: column; justify-content: center; }
+.toolbar.plain .title { font: 590 17px/22px var(--font); letter-spacing: -0.43px; padding-top: 0; }
+.toolbar.has-large .title-wrap { opacity: 0; transform: translate(-50%, 6px); transition: opacity 200ms var(--ease), transform 280ms var(--ease); }
+.phone.collapsed .toolbar.has-large .title-wrap { opacity: 1; transform: translate(-50%, 0); }
+.large-head { display: flex; flex-direction: column; gap: 8px; padding: 0 var(--screen-pad) 16px; }
+.large-head h1 { margin: 0; font: 700 30px/40px var(--font); letter-spacing: 0.12px; transition: opacity 200ms var(--ease); }
+.large-head p { margin: 0; font: var(--body-md); letter-spacing: -0.23px; color: var(--label-secondary); }
+.phone.collapsed .large-head h1 { opacity: 0; }
+
+/* Device pages (ambient background): same Apple behavior — header stays, blurred bar fades in on scroll.
+   Content scrolls under the status bar + nav instead of being cut at the top. */
+.phone.ambient .screen { inset: 0; }
+.phone.ambient .toolbar { position: sticky; top: 0; height: 107px; padding: 59px 16px 0; background: none; isolation: isolate; z-index: 20; }
+.phone.ambient .toolbar::before { content: ""; position: absolute; inset: 0 0 -16px; z-index: -1; background: rgba(2, 8, 20, 0.72); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent); mask-image: linear-gradient(#000 calc(100% - 28px), transparent); opacity: 0; transition: opacity 240ms var(--ease); }
+.phone.ambient.scrolled .toolbar::before { opacity: 1; }
+.phone.ambient .toolbar .title-wrap { top: 59px; height: 48px; padding-top: 0; display: flex; flex-direction: column; justify-content: center; }
+.phone.ambient .home-header { padding-top: 59px; height: auto; }
+/* Home (no nav bar): content scrolling under the status bar gets the same blurred backing */
+.phone.ambient .statusbar::before { content: ""; position: absolute; inset: 0 0 -14px; z-index: -1; background: rgba(2, 8, 20, 0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 20px), transparent); mask-image: linear-gradient(#000 calc(100% - 20px), transparent); opacity: 0; transition: opacity 240ms var(--ease); }
+.phone.ambient.scrolled:not(:has(.toolbar)) .statusbar::before { opacity: 1; }
+.statusbar { isolation: isolate; }
+
+/* Nav bar backing — opaque over the whole bar (status + nav = 107 px), fades only BELOW it */
+.phone .toolbar.plain::before, .phone.ambient .toolbar::before {
+  inset: 0 0 -24px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 107px, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 107px, transparent 100%);
+  backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+.phone .toolbar.plain::before { background: rgba(18, 18, 20, 0.86); }
+.phone.ambient .toolbar::before { background: rgba(3, 9, 22, 0.86); }
+.phone.ambient .statusbar::before { background: rgba(3, 9, 22, 0.86); inset: 0 0 -20px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 59px, transparent 100%); mask-image: linear-gradient(to bottom, #000 0, #000 59px, transparent 100%); }
+
+
+/* =====================================================================
+   MOTION LAYER — compositor-friendly (transform / opacity), one token set.
+   Overrides earlier ad-hoc transitions.
+   ===================================================================== */
+
+/* Big power toggle: knob and label slide with transform, colours fade */
+.power-toggle { transition: background-color var(--dur) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+.power-toggle .label, .power-toggle .knob { left: 6px !important; will-change: transform; }
+.power-toggle .label { transition: transform var(--dur-move) var(--ease), color var(--dur) var(--ease-out); }
+.power-toggle .knob { transition: transform var(--dur-move) var(--ease), background-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out); }
+.power-toggle[aria-pressed="true"] .label { transform: translateX(0); }
+.power-toggle[aria-pressed="true"] .knob { transform: translateX(100px); }
+.power-toggle[aria-pressed="false"] .label { transform: translateX(100px); }
+.power-toggle[aria-pressed="false"] .knob { transform: translateX(0); }
+.power-toggle .knob .pwr { transition: filter var(--dur) var(--ease-out), transform var(--dur-move) var(--ease-spring); }
+.power-toggle:active .knob { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
+.power-toggle:active { transform: scale(0.98); }
+
+/* Switch: knob slides with transform; stretches while pressed (iOS) */
+.switch { transition: background-color var(--dur) var(--ease-out); }
+.switch::after { left: 2px !important; transition: transform var(--dur-move) var(--ease), width var(--dur-fast) var(--ease-out) !important; }
+.switch.on::after, .switch[aria-checked="true"]::after { transform: translateX(20px); }
+.cell:active .switch::after { width: 33px; }
+.cell:active .switch.on::after, .cell:active .switch[aria-checked="true"]::after { transform: translateX(14px); }
+
+/* Tiles: state change crossfades; press is quick in, soft out */
+.tile { transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out); }
+.tile:active { transform: scale(0.97); transition-duration: var(--dur-micro); }
+.tile .tile-status, .tile .tile-icon, .tile .tile-power { transition: color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out); }
+@keyframes icon-bounce { 0% { transform: scale(1); } 40% { transform: scale(1.16); } 100% { transform: scale(1); } }
+.just-toggled .tile-icon { animation: icon-bounce 420ms var(--ease-spring); }
+
+/* Buttons & rows: consistent press feedback */
+.btn, .all-action, .chip, .btn-sm, .btn-pill, .glass-btn, .preset-grid button, .ch-picker button { transition-timing-function: var(--ease-out); }
+.btn:active, .all-action:active, .preset-grid button:active { transform: scale(0.97); }
+.all-action { transition: background-color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out); }
+.all-action span { animation: none; }
+
+/* Channel picker: background/colour crossfade; name reveal is short and decelerating */
+.ch-picker button { transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), padding var(--dur-move) var(--ease), transform var(--dur-micro) var(--ease-out); }
+.ch-picker button .nm { transition: max-width var(--dur-move) var(--ease), opacity var(--dur) var(--ease-out) 60ms, margin var(--dur-move) var(--ease); }
+
+/* Sheet: slide with the iOS curve; backdrop fades; content cascade only on open */
+.sheet { transition: transform var(--dur-slow) var(--ease); will-change: transform; }
+.sheet-backdrop { transition: opacity var(--dur-slow) var(--ease-out); }
+.option .radio::before, .option .radio svg { transition: opacity var(--dur-fast) var(--ease-out); }
+
+/* Toast: only transform + opacity */
+.toast { transition: opacity var(--dur) var(--ease-out), transform var(--dur-move) var(--ease); }
+
+/* Nav bar backing fades with the same curve */
+.phone .toolbar.plain::before, .phone.ambient .toolbar::before, .phone.ambient .statusbar::before { transition: opacity var(--dur) var(--ease-out); }
+.toolbar.has-large .title-wrap { transition: opacity var(--dur) var(--ease-out), transform var(--dur-move) var(--ease); }
+
+/* Pointer devices only: hover never sticks on touch */
+/* Hover (pointer devices only) uses the same soft layer as press, at half strength — same shape, no hard box */
+@media (hover: hover) {
+  button.cell:hover::after, a.cell:hover::after { opacity: 0.5; }
+  .option:hover { background-color: rgba(255, 255, 255, 0.03); }
+}
+button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ease-out); }
+
+
+/* ---------- Collapse: sections that open/close with a toggle never jump ----------
+   Height animates via grid rows (0fr ↔ 1fr) — no measuring, works with any content.
+   Content fades slightly after the height starts (open) / before it ends (close). */
+.collapse { display: grid; grid-template-rows: 1fr; opacity: 1;
+  transition: grid-template-rows var(--dur-move) var(--ease), opacity var(--dur) var(--ease-out) 60ms; }
+.collapse[aria-hidden="true"] { grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows var(--dur-move) var(--ease), opacity var(--dur-fast) var(--ease-in); }
+.collapse > .collapse-inner { overflow: hidden; min-height: 0; }
+.collapse > .collapse-inner > .list { margin-left: var(--screen-pad); margin-right: var(--screen-pad); }
+.collapse[aria-hidden="true"] > .collapse-inner { visibility: hidden; transition: visibility 0s linear var(--dur-move); }
+
+/* Sheet: clip while its height glides */
+.sheet { overflow: hidden; }
+
+/* ---------- Scrolling ---------- */
+.screen, .sheet .sheet-body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.ch-picker, .chips-row { overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
+.ch-picker button, .quick-chip { scroll-snap-align: start; scroll-margin-inline: 16px; }
+
+/* New rows (e.g. a discovered device) slide in */
+.row-in { animation: rise 360ms var(--ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse, .collapse[aria-hidden="true"] { transition: none; }
+}
+/* Collapse inside a list card: leave room for the press/hover layer that bleeds 10px past the row */
+.list > .collapse > .collapse-inner { margin-inline: -10px; padding-inline: 10px; }
+
+/* Channel picker — FLIP-driven (see UI placeTabs). No max-width/padding transitions: those
+   ran out of sync (max-width cap ≠ real width) and made the row wobble. */
+.ch-picker { scroll-snap-type: none; }
+.ch-picker button { overflow: hidden; white-space: nowrap; transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), transform var(--dur-micro) var(--ease-out) !important; }
+.ch-picker button .nm { transition: none !important; }
+.ch-picker button[aria-selected="true"] .nm, .ch-picker button[aria-selected="true"] b::after { animation: name-in 260ms var(--ease-out) 100ms both; }
+@keyframes name-in { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+.sheet-body.swap-next > *, .sheet-body.swap-prev > * { animation: none; }
+
+
+/* ---------- Bottom sheet: pinned actions (Figma "Bottom actions") ----------
+   Body scrolls, the footer never moves; content fades under it. */
+.sheet .sheet-body { min-height: 0; flex: 1 1 auto; }
+.sheet .sheet-footer { flex-shrink: 0; position: relative; padding: 12px var(--screen-pad) 0; background: var(--bg-elevation-1); }
+.sheet .sheet-body { padding-bottom: 16px; }
+
+/* ---------- Sheet sections (Figma 5439:59603 "Access rights") ----------
+   Used only when a sheet has more than one part. A sheet with a single radio list keeps the flat list. */
+.sheet-group { padding: 0 var(--screen-pad); }
+.sheet-group + .sheet-group { margin-top: 32px; }
+.group-title { margin: 0 0 12px; padding: 0 16px; font: 700 20px/24px var(--font); letter-spacing: -0.45px; color: var(--label-primary); }
+.group-card { border-radius: var(--radius-md); background: var(--fill-quaternary); padding: 0 16px; }
+.group-card > .cell, .group-card > .option { min-height: 0; padding: 16px 0; border-bottom: 1px solid var(--separator); }
+.group-card > .cell:last-child, .group-card > .option:last-child { border-bottom: 0; }
+.group-card > .cell .cell-title { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+.group-card > .option .radio { margin: -4px 0; }
+.group-card .group-pad { padding: 16px 0; }
+.group-card button.cell::after { inset: 2px -12px; }
+
+/* ---------- Nav bar material (Apple "bar" material, HIG) ----------
+   No dark gradient/shadow under the bar: a translucent, blurred + saturated layer with a hard
+   bottom edge and a 0.5 px hairline — content stays visible through it. */
+.phone .toolbar.plain::before, .phone.ambient .toolbar::before, .phone.ambient .statusbar::before {
+  inset: 0;
+  -webkit-mask-image: none; mask-image: none;
+  backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: inset 0 -0.5px 0 rgba(255, 255, 255, 0.10);
+}
+.phone .toolbar.plain::before { background: rgba(22, 22, 24, 0.62); }
+.phone.ambient .toolbar::before, .phone.ambient .statusbar::before { background: rgba(8, 14, 28, 0.55); }
+
+
+/* ===== Fixes 2026-11-03 (round 2) ===== */
+/* Sheet group titles: same small secondary section header as everywhere else (not H3) */
+.sheet-group .group-title { margin: 0; padding: 0 16px 8px; font: var(--body-sm); letter-spacing: var(--body-sm-ls); color: var(--label-secondary); }
+.sheet-group + .sheet-group { margin-top: 24px; }
+
+/* Bottom actions (Figma 5439:58496): solid elevation-1 bar, 12 px top / 16 px sides, no gradient/shadow.
+   Content scrolls behind it and is simply clipped at its top edge. */
+.sheet .sheet-footer { padding: 12px var(--screen-pad) 8px; background: var(--bg-elevation-1); box-shadow: none; }
+.sheet { padding-bottom: 26px; }
+
+/* Nav bar material is driven by scroll position (--bar-a set per frame), not by a timed transition */
+.phone .toolbar.plain::before, .phone.ambient .toolbar::before, .phone.ambient .statusbar::before {
+  opacity: var(--bar-a, 0); transition: none !important; will-change: opacity;
+}
+/* Device page: material extends 8 px below the round 44 px buttons so they never touch the edge */
+.phone.ambient .toolbar::before { inset: 0 0 -8px; }
+
+/* Channel picker, iOS style: the pill grows and its label is revealed by the growing edge (clip),
+   starting on the same frame as the tap — no delayed fade. Spring-like curve (UIKit default spring). */
+.ch-picker button[aria-selected="true"] .nm, .ch-picker button[aria-selected="true"] b::after { animation: none !important; opacity: 1; }
+.ch-picker button { transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out), transform 160ms var(--ease-out) !important; }
+.ch-picker button:active { transform: scale(0.94); }
+.phone.ambient:has(.toolbar) .statusbar::before { display: none; }
+
+/* Bar material on the compositor: a scroll-driven animation tied to the page scroller, so the blur
+   appears in the same frame the content moves (no JS, no 1-frame lag). JS --bar-a is the fallback. */
+@keyframes bar-in { from { opacity: 0; } to { opacity: 1; } }
+@supports (animation-timeline: scroll()) {
+  .phone { timeline-scope: --page; }
+  .phone .screen { scroll-timeline: --page block; }
+  .phone .toolbar.plain::before, .phone.ambient .toolbar::before, .phone.ambient .statusbar::before {
+    animation: bar-in linear both; animation-timeline: --page; animation-range: 0px 24px;
+  }
+}
+/* lighter material = cheaper per-frame backdrop pass */
+.phone .toolbar.plain::before, .phone.ambient .toolbar::before, .phone.ambient .statusbar::before {
+  backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+/* Channel picker — label is laid out once at full width and revealed by the growing pill (clip).
+   No per-frame text re-layout/ellipsis ("L…", "La…") → opens in one continuous motion.
+   Digit sits in a fixed 40 px slot, so it never moves while the pill grows/shrinks. */
+.ch-picker button { justify-content: flex-start !important; padding: 0 !important; min-width: 40px; }
+.ch-picker button b { flex: 0 0 40px; text-align: center; }
+.ch-picker button[aria-selected="true"] b::after { content: none; }
+.ch-picker button .nm { flex-shrink: 0; text-overflow: clip; margin: 0 !important; }
+.ch-picker button[aria-selected="true"] { padding-right: 16px !important; }
+.ch-picker button[aria-selected="true"] .nm { max-width: 140px; margin-left: -8px !important; }
+.ch-picker button[aria-selected="true"] .nm::before { content: "·"; margin-right: 8px; opacity: 0.6; font-weight: 400; }
+
+/* Radio options: same hover/press as settings rows — a rounded highlight inset from the dividers
+   and extended past the text edge, instead of a flat edge-to-edge rectangle that looked cut off. */
+.option { position: relative; background: none !important; }
+.option::after { content: ""; position: absolute; inset: 4px -12px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease-out); }
+@media (hover: hover) { .option:hover::after { opacity: 0.5; } }
+.option:active::after { opacity: 1; transition-duration: 0ms; }
+.list:has(> .option), .group-card { overflow: visible; }
+.list > .option::after { inset: 4px -8px; }
+
+/* Icons stay still on press/toggle: no bounce. State change is shown by colour/fill only
+   (the card itself gives the press feedback). */
+.just-toggled .tile-icon, .just-toggled .tile-power, .master.just-toggled .m-icon, .all-action.just-toggled .icon { animation: none !important; }
+
+/* ===== Fixes 2026-11-04 ===== */
+/* Channel picker — background lives on .pill so UI placeTabs can grow/shrink it with clip-path while
+   the buttons slide with transform (no width animation → no per-frame layout → no stutter).
+   Press feedback uses `scale` (separate from `transform`), so it never fights the slide. */
+.ch-picker button { position: relative; isolation: isolate; overflow: visible !important; background: none !important;
+  transition: color 340ms cubic-bezier(0.4, 0, 0.2, 1), scale 160ms var(--ease-out) !important; }
+.ch-picker button:active { transform: none; scale: 0.94; }
+.ch-picker .pill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; z-index: -1; border-radius: 20px;
+  background: var(--fill-tertiary); transition: background-color 340ms cubic-bezier(0.4, 0, 0.2, 1); will-change: clip-path; }
+.ch-picker button[aria-selected="true"] .pill { background: var(--primary); }
+.ch-picker button .nm { overflow: visible; }
+
+/* Rolling numbers (UI roll, [data-num]) — slot style: each changed digit drops in from above inside
+   its own slot while the old one drops out below; the slot's top/bottom edges are softly faded. */
+[data-num] { font-variant-numeric: tabular-nums; }
+.nr { position: relative; display: inline-block; vertical-align: top; overflow: hidden; white-space: pre;
+  -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); }
+.nr-in { display: inline-block; animation: nr-in var(--nr-dur, 320ms) cubic-bezier(0.3, 0, 0.2, 1) both; }
+.nr-out { position: absolute; left: 0; top: 0; animation: nr-out var(--nr-dur, 320ms) cubic-bezier(0.3, 0, 0.2, 1) both; pointer-events: none; }
+@keyframes nr-in { from { transform: translateY(-100%); opacity: 0.3; filter: blur(1.5px); } to { transform: none; opacity: 1; filter: none; } }
+@keyframes nr-out { from { transform: none; opacity: 1; filter: none; } to { transform: translateY(100%); opacity: 0.3; filter: blur(1.5px); } }
+@media (prefers-reduced-motion: reduce) { .nr-in, .nr-out { animation: none; } .nr-out { display: none; } }
+
+/* ==========================================================================
+   Curtain (js/devices/curtain.js)
+   The picture is a glass "window": a room with sky light behind a curtain rod and fabric.
+   JS sets --l / --r (fabric widths), --h (roller height), --fold (pleat width) and --open (0…1)
+   every frame, so it moves exactly like the motor. Folds tighten as the fabric gathers.
+   ========================================================================== */
+.cw-pick { padding-top: 8px; margin-bottom: 4px; }
+.cw-pick .ch-picker { margin: 0; padding: 2px 0; }
+.cw-gap { margin-top: 8px; }
+
+.cw-card { position: relative; margin-top: 12px; padding: 10px; border-radius: 26px; background: var(--fill-tertiary); box-shadow: var(--glass-highlight); outline: none; }
+.cw-card.can-drag { cursor: grab; touch-action: none; }
+.cw-card.can-drag:focus-visible { box-shadow: var(--glass-highlight), 0 0 0 3px var(--primary); }
+.cw-card.dragging { cursor: grabbing; }
+
+/* the scene itself is an SVG drawn by curtain.js (scene()) */
+.cw-stage { position: relative; aspect-ratio: 400 / 300; overflow: visible; }
+.cw-stage svg.cs { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.cw-bubble { position: absolute; z-index: 6; transform: translate(-50%, -50%) scale(0.9); padding: 6px 12px; border-radius: var(--radius-pill);
+  background: rgba(20, 20, 24, 0.82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font: 600 15px/20px var(--font); font-variant-numeric: tabular-nums; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out); }
+.cw-card.dragging .cw-bubble { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+/* readout under the picture */
+.cw-readout { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 16px calc(var(--screen-pad) + 4px) 14px; }
+.cw-pct { font: 700 44px/48px var(--font); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.cw-pct small { font: 600 22px/28px var(--font); color: var(--label-secondary); margin-left: 2px; letter-spacing: 0; }
+.cw-unknown { color: var(--label-tertiary); }
+.cw-state { font: var(--body-md); color: var(--label-secondary); margin-top: 2px; }
+.cw-hint { font: var(--body-sm); color: var(--label-tertiary); text-align: right; padding-bottom: 4px; }
+
+/* Open / Stop / Close */
+.cw-ctl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.cw-ctl button { height: 68px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  background: var(--fill-tertiary); box-shadow: var(--glass-highlight); font: var(--body-sm-accent); color: var(--label-primary);
+  transition: background-color 240ms var(--ease-out), color 240ms var(--ease-out), scale 160ms var(--ease-out); }
+.cw-ctl button:active { scale: 0.96; }
+.cw-ctl button[aria-pressed="true"] { background: var(--primary); color: #fff; }
+.cw-ctl button[disabled] { opacity: 0.4; pointer-events: none; }
+.cg { width: 24px; height: 24px; flex-shrink: 0; }
+.cg.sm { width: 18px; height: 18px; }
+
+/* quick positions */
+.cw-note { font: var(--body-sm); color: var(--label-tertiary); }
+.cw-chips { display: flex; gap: 8px; overflow-x: auto; padding: 0 var(--screen-pad); scrollbar-width: none; }
+.cw-chip { flex: 0 0 auto; height: 38px; padding: 0 15px; border-radius: var(--radius-pill); display: inline-flex; align-items: center; gap: 6px;
+  background: var(--fill-tertiary); box-shadow: var(--glass-highlight); font: var(--body-md-accent); font-variant-numeric: tabular-nums;
+  transition: background-color 240ms var(--ease-out), color 240ms var(--ease-out), scale 160ms var(--ease-out); }
+.cw-chip .icon { width: 16px !important; height: 16px !important; color: var(--yellow); }
+.cw-chip:active { scale: 0.95; }
+.cw-chip[aria-pressed="true"] { background: var(--primary); color: #fff; }
+.cw-chip[aria-pressed="true"] .icon { color: #fff; }
+.cw-chip[disabled] { opacity: 0.4; pointer-events: none; }
+.cw-step { gap: 4px; }
+.cw-step button { width: 44px; display: flex; align-items: center; justify-content: center; }
+.cw-step button[disabled] { opacity: 0.35; }
+
+/* "Finish setup" / "Curtain setup" call to action */
+.cw-setup { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-md); text-align: left;
+  background: var(--primary-soft); box-shadow: inset 0 0 0 1px rgba(10, 132, 255, 0.35); transition: scale 160ms var(--ease-out); }
+.cw-setup:active { scale: 0.98; }
+.cw-setup b { display: block; font: var(--body-md-accent); }
+.cw-setup .grow span { display: block; font: var(--body-sm); color: var(--label-secondary); margin-top: 2px; }
+.cw-setup-ic { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cw-setup-ic .icon { width: 20px !important; height: 20px !important; }
+.cw-setup .chev { color: var(--label-tertiary); }
+
+/* setup wizard */
+.wz-dots { display: flex; gap: 6px; }
+.wz-dots i { width: 28px; height: 4px; border-radius: 2px; background: var(--fill-tertiary); transition: background-color 300ms var(--ease-out); }
+.wz-dots i.on { background: var(--primary); }
+.wz-live { padding: 0 var(--screen-pad) 12px; font: var(--body-sm-accent); color: var(--primary); font-variant-numeric: tabular-nums; min-height: 16px; }
+.wz-row { display: flex; gap: 8px; padding: 0 var(--screen-pad); margin-top: 8px; }
+.wz-row .btn { height: 48px; gap: 6px; }
+.sheet-footer .wz-row { padding: 0; }
+.wz-q { margin-top: 16px; }
+.wz-q > b { display: block; padding: 0 calc(var(--screen-pad) + 4px) 4px; font: var(--body-lg-accent); }
+.wz-list { margin: 0; padding: 0 var(--screen-pad) 0 calc(var(--screen-pad) + 20px); font: var(--body-md); color: var(--label-secondary); }
+.wz-list li { margin-bottom: 14px; }
+.wz-list li b { color: var(--label-primary); font-weight: 600; }
+.wz-list li .wz-row { padding: 0; margin-top: 10px; }
+.wz-list li.done { opacity: 0.45; }
+.wz-list li.wait { opacity: 0.4; }
+.wz-hint { padding: 4px var(--screen-pad) 0; font: var(--body-sm); color: var(--label-tertiary); }
+.sheet .banner { margin: 0 var(--screen-pad); }
+.cw-ok { color: var(--primary); display: flex; }
+
+/* opening-style picker */
+.cw-styles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 var(--screen-pad); }
+.cw-style { padding: 8px 8px 12px; border-radius: 18px; background: var(--fill-quaternary); box-shadow: inset 0 0 0 2px transparent; text-align: left;
+  transition: box-shadow 220ms var(--ease-out), scale 160ms var(--ease-out); }
+.cw-style:active { scale: 0.97; }
+.cw-style[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--primary); }
+.cw-style > span { display: block; margin: 10px 4px 0; font: var(--body-sm-accent); }
+.cs-mini { aspect-ratio: 400 / 300; border-radius: 12px; overflow: hidden; background: #0e1116; padding: 4px; }
+.cs-mini svg { display: block; width: 100%; height: 100%; }
+.cw-pct:empty { display: none; }
+.cw-state.big { font: var(--h3); letter-spacing: var(--h3-ls); color: var(--label-primary); margin: 0; }
+#brVal, #tiltVal { font-variant-numeric: tabular-nums; }
+
+/* Rolling digits must look exactly like the number they belong to. Parent rules such as
+   `.ring-timer .t span`, `.info-card span` or `.quick-chip span` also match these spans, so lock
+   type, colour and box to the host (fixed 2026-11-04: ring timer digits shrank to 13 px mid-roll). */
+[data-num] .nr, [data-num] .nr-in, [data-num] .nr-out {
+  font: inherit !important; color: inherit !important; letter-spacing: inherit !important; line-height: inherit !important;
+  margin: 0 !important; padding: 0 !important; background: none !important; border: 0 !important; opacity: 1;
+  text-transform: inherit !important; white-space: pre !important; max-width: none !important; }
+[data-num] .nr { display: inline-block !important; position: relative !important; vertical-align: top !important; }
+[data-num] .nr-in { display: inline-block !important; }
+[data-num] .nr-out { display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; }
+
+/* Ambient light (Safari fix 2026-11-04): Safari does not paint the 180 px blur filter on these blobs,
+   so the same soft light is drawn as radial gradients (Gaussian profile of the blurred shape). No filter. */
+.phone.ambient::before, .phone.ambient::after { filter: none; border-radius: 0; }
+.phone.ambient::before { width: 1320px; height: 1320px; left: calc(50% + 122.5px - 660px); top: calc(50% + 341px - 660px);
+  background: radial-gradient(closest-side, rgba(60,180,255,0.620) 0%, rgba(60,180,255,0.560) 15%, rgba(60,180,255,0.412) 30%, rgba(60,180,255,0.247) 45%, rgba(60,180,255,0.121) 60%, rgba(60,180,255,0.048) 75%, rgba(60,180,255,0.016) 90%, rgba(60,180,255,0.000) 100%); }
+.phone.ambient::after { width: 1213px; height: 1320px; left: calc(50% - 188px - 606.5px); top: calc(50% + 98px - 660px);
+  background: radial-gradient(closest-side, rgba(124,255,207,0.450) 0%, rgba(124,255,207,0.405) 15%, rgba(124,255,207,0.296) 30%, rgba(124,255,207,0.176) 45%, rgba(124,255,207,0.085) 60%, rgba(124,255,207,0.033) 75%, rgba(124,255,207,0.010) 90%, rgba(124,255,207,0.000) 100%); }
+
+/* Channel picker (Safari fix): Safari ignores flex-basis when it sizes a <button>, so the selected pill
+   was ~30 px too narrow and covered the next tab. A real width on the digit slot fixes it. */
+.ch-picker button b { width: 40px; min-width: 40px; }
+
+/* Curtain scene sits directly on the dark page (no glass card, no window frame) — the fabric is the hero */
+.cw-card { background: none !important; box-shadow: none !important; padding: 0 !important; margin-top: 24px !important; }   /* room under the header: the rod never touches it */
+.cw-card.can-drag:focus-visible { box-shadow: 0 0 0 3px var(--primary) !important; border-radius: 18px; }
+
+/* curtain scene layers: window/light behind, fabric in front */
+.cw-stage .cs-layer { position: absolute; inset: 0; }
+.cw-stage svg.cs, .cs-mini svg.cs { position: absolute; inset: 0; }
+.cs-mini { position: relative; }
+
+/* On a real phone the device has its own status bar and home indicator: hide the mock ones (keep their space) */
+@media (max-width: 520px) {
+  .statusbar .time, .statusbar .levels { visibility: hidden; }
+  .home-indicator { display: none; }
+}
+
+/* ===== Range slider — Figma "Button backlight" (6142:73760) =====
+   Track 15 px, white, fully round; blue fill up to the thumb's centre; thumb 25 px blue with a 3 px white
+   ring and the blue-glow shadow. --v (0…1) is set inline and kept current by UI (input listener). */
+.range { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 25px; margin: 0; padding: 0; background: none; cursor: pointer; touch-action: pan-y; accent-color: var(--primary); --v: .5; }
+.range:focus { outline: none; }
+.range::-webkit-slider-runnable-track { height: 15px; border-radius: 24px;
+  background: linear-gradient(90deg, var(--blue, #0A84FF) calc(12.5px + var(--v) * (100% - 25px)), var(--static-white, #fff) 0); }
+.range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 25px; height: 25px; margin-top: -5px; border-radius: 50%;
+  background: var(--blue, #0A84FF); border: 3px solid var(--static-white, #fff); box-shadow: 0 0 12px rgba(10, 132, 255, 0.5); box-sizing: border-box;
+  transition: transform 160ms var(--ease-out); }
+.range:active::-webkit-slider-thumb { transform: scale(1.12); }
+.range::-moz-range-track { height: 15px; border-radius: 24px; background: var(--static-white, #fff); }
+.range::-moz-range-progress { height: 15px; border-radius: 24px; background: var(--blue, #0A84FF); }
+.range::-moz-range-thumb { width: 25px; height: 25px; border-radius: 50%; background: var(--blue, #0A84FF); border: 3px solid var(--static-white, #fff); box-shadow: 0 0 12px rgba(10, 132, 255, 0.5); box-sizing: border-box; }
+.range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.45), 0 0 12px rgba(10, 132, 255, 0.5); }
+.range[disabled] { opacity: .4; cursor: default; }
+/* the row around it: label (body/lg) + value (body/md, secondary), slider 16 px below; 12 px top / 24 px bottom */
+.cell.slider-row { flex-direction: column; align-items: stretch; gap: 16px; padding-top: 12px; padding-bottom: 24px; min-height: 0; }
+.cell.slider-row .cell-title { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+.slider-val { font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-secondary); font-variant-numeric: tabular-nums; }
+
+/* Curtain quick positions: three equal segments (Open / Close are the big buttons above) that always fit the screen */
+.cw-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; overflow: visible; padding: 0 var(--screen-pad); }
+.cw-chip { min-width: 0; padding: 0 4px; justify-content: center; white-space: nowrap; font: var(--body-md-accent); letter-spacing: -0.2px; }
+
+/* Curtain motor direction sheet: test buttons */
+.dir-hint { margin: 0 0 12px; font: var(--body-md); color: var(--label-secondary); }
+.dir-test { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.dir-test .btn { height: 44px; gap: 6px; font: var(--body-md-accent); }
+.dir-test .btn { background: var(--fill-tertiary); }
+
+/* ===== Relay Figma pass (6195:78800) ===== */
+/* Section headings: body/md, primary label, 16 px inset, 12 px to the card (settings page + sheets) */
+.list-header { font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-primary); padding: 24px calc(var(--screen-pad) + 16px) 12px; }
+.list-gap { height: 24px; }
+.sheet-group .group-title { padding: 0 16px 12px; font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-primary); }
+/* Channel rows on the settings page: grey 28 px icon, 17 px name */
+.cell.ch-row .cell-icon { color: var(--label-secondary); }
+.cell.ch-row .cell-title { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+/* "Turn on/off all devices": white icon (Figma 6165:76338) */
+.all-action { height: 56px; border-radius: 16px; }
+.all-action.turn-on .icon, .all-action.turn-off .icon { color: var(--label-primary); }
+/* Select an icon (Figma 6130:72061): plain icons, selected = blue outline */
+.icon-grid { gap: 12px; }
+.icon-grid button { background: transparent; border-radius: 16px; }
+.icon-grid button[aria-pressed="true"] { background: var(--primary-soft); }
+/* Light colours (Figma 6142:73804): 36 px dots, 16 px gap, inner white selection ring */
+.swatches.sw-card { gap: 16px; padding: 20px 0; }
+.swatch { position: relative; border: 0; box-shadow: inset 1.2px 1.2px 2.4px rgba(255,255,255,.24); }
+.swatch[aria-pressed="true"]::after { content: ''; position: absolute; inset: 4.8px; border: 2.4px solid #fff; border-radius: 50%; }
+/* Steppers inside rows: compact like Figma (Delay, Protection limits) */
+.cell .stepper { padding: 2px; }
+.cell .stepper button { height: 30px; }
+.swatch[aria-label="white"][aria-pressed="true"]::after { border-color: rgba(0,0,0,.55); }
+
+
+
+/* ==========================================================================
+   Contact sensor (door / window) — Figma style: same cards, banners and lists as relay / curtain
+   ========================================================================== */
+.tile-status.tone-warn > [data-num] { color: var(--orange); }
+.tile-status.tone-danger > [data-num] { color: var(--red); }
+
+/* Live picture — minimal on purpose: frame, the part that moves, the sensor and its magnet. Enough to read
+   open / closed at a glance; no rooms, skies or light effects. Palette: graphite + cool greys + the app blue.
+   Motion (Emil Kowalski rules): transform/opacity transitions that retarget mid-swing, ease-in-out, reduced-motion variant. */
+.ct-card { position: relative; margin-top: 24px; height: 248px; display: flex; justify-content: center; align-items: center; }
+.ct-stage { position: relative; width: 136px; height: 204px; margin-bottom: 20px; }
+.ct-card.win .ct-stage { width: 232px; height: 164px; margin-bottom: 20px; }
+/* frame with a little volume: lit from the top-left, inner bevel, soft drop shadow */
+.ct-frame { position: absolute; inset: 0; border-radius: 6px 6px 2px 2px; background: linear-gradient(160deg, #474e59 0%, #353b45 45%, #2b3038 100%);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .12), inset -1px -1px 0 rgba(0, 0, 0, .35), 0 18px 28px -14px rgba(0, 0, 0, .65);
+  perspective: 640px; perspective-origin: 50% 45%; }
+.ct-card.win .ct-frame { inset: 0 0 7px; border-radius: 6px; perspective-origin: 75% 50%; }   /* vanishing point on the moving sash */
+/* the opening: clean light in the app blue, recessed — the jamb's inner faces show the wall's thickness */
+.ct-hole { position: absolute; inset: 10px 10px 0; background: linear-gradient(180deg, #0b2747 0%, #1560a6 72%, #2a86d6 100%); }
+.ct-card.win .ct-hole { inset: 10px; background: linear-gradient(180deg, #0b2747 0%, #1560a6 80%, #2378c4 100%); }
+/* depth: a thin, soft inner shadow along the top and the hinge side — the wall's thickness without a hard band */
+.ct-hole::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 3px 3px 4px rgba(0, 0, 0, .42), inset -1px 0 2px rgba(0, 0, 0, .2); }
+.ct-card.win .ct-hole::after { box-shadow: inset 2px 2px 3px rgba(0, 0, 0, .4), inset -1px -1px 2px rgba(0, 0, 0, .18); }
+/* window: a hint of soft light in the opened part (radial gradient, not a filter) */
+.ct-card.win .ct-hole::before { content: ''; position: absolute; left: 50%; right: 0; top: 0; bottom: 0; pointer-events: none;
+  background: radial-gradient(70% 55% at 55% 70%, rgba(120, 190, 255, .35), rgba(120, 190, 255, 0) 75%); opacity: 0; transition: opacity 520ms var(--ease-out); }
+.ct-card.win.is-open .ct-hole::before { opacity: 1; transition: opacity 640ms var(--ease-in-out) 180ms; }
+.ct-card.win.is-tilt .ct-hole::before { opacity: .45; transition: opacity 640ms var(--ease-in-out) 180ms; }
+/* grounding: a soft contact shadow (no floor lines); a threshold under the door, a sill under the window — both with a lit top edge */
+.ct-ground { position: absolute; left: -6%; right: -6%; top: calc(100% - 8px); height: 18px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .5), transparent); }
+.ct-card.door .ct-frame::after { content: ''; position: absolute; left: -5px; right: -5px; bottom: -4px; height: 4px; border-radius: 1.5px;
+  background: linear-gradient(180deg, #6a727e 0 1px, #4a515c 1px, #3a4049); }
+.ct-sill { position: absolute; left: -9px; right: -9px; bottom: 0; height: 7px; border-radius: 2px; background: linear-gradient(180deg, #6a727e 0 1px, #4d5560 1px 3px, #3a4049 3px); }
+/* No filter: blur() here — Safari paints it unreliably (it vanished or popped). Softness comes from gradients,
+   masks and box-shadow, which every engine paints the same; only opacity animates.
+   Light on the floor: a real plane lying on the floor in perspective — exactly the doorway's width where it
+   leaves the threshold, wider toward you, soft sides (mask), fading out. */
+/* Light on the floor: one smooth elliptical pool from the threshold, fading evenly to the sides and toward you
+   (a radial gradient — no edges, no layers, no blur filter). */
+.ct-beam { position: absolute; left: -30px; right: -30px; top: 100%; height: 44px; opacity: 0; will-change: opacity; transition: opacity 360ms var(--ease-out);
+  background: radial-gradient(50% 100% at 50% 0%, rgba(42, 134, 214, .3), rgba(42, 134, 214, .1) 50%, rgba(42, 134, 214, 0) 100%); }
+.ct-card.is-open .ct-beam { opacity: 1; transition: opacity 640ms var(--ease-in-out) 120ms; }
+/* bloom: the opening's light bleeds softly past the frame (a box-shadow glow behind the frame) */
+.ct-bloom { position: absolute; left: 10px; right: 10px; top: 10px; bottom: 0; border-radius: 4px; box-shadow: 0 0 22px 2px rgba(42, 134, 214, .5);
+  opacity: 0; will-change: opacity; transition: opacity 360ms var(--ease-out); }
+.ct-card.door.is-open .ct-bloom { opacity: .45; transition: opacity 640ms var(--ease-in-out) 120ms; }
+.ct-card.win .ct-bloom { left: 52%; right: 10px; top: 10px; bottom: 17px; }
+.ct-card.win.is-open .ct-bloom { opacity: .4; transition: opacity 640ms var(--ease-in-out) 180ms; }
+.ct-card.win.is-tilt .ct-bloom { opacity: .2; transition: opacity 640ms var(--ease-in-out) 180ms; }
+
+/* door: hinge left, swings away from you, darker as it turns */
+.ct-leaf { position: absolute; inset: 10px 10px -1px; transform-origin: 0 50%; border-radius: 2px; backface-visibility: hidden;
+  background: linear-gradient(90deg, #d8dce2, #c2c7cf); box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .55), inset -1px -1px 0 rgba(0, 0, 0, .18); transition: transform 640ms var(--ease-in-out); }
+.ct-leaf::after { content: ''; position: absolute; inset: 0; background: rgba(8, 12, 18, .42); opacity: 0; transition: opacity 640ms var(--ease-in-out); }
+.ct-card.is-open .ct-leaf { transform: rotateY(72deg); transition-delay: 120ms; }
+.ct-card.is-open .ct-leaf::after { opacity: 1; transition-delay: 120ms; }
+.ct-lever { position: absolute; right: 9px; top: 51%; width: 8px; height: 8px; border-radius: 50%; background: #8e959e; }
+.ct-lever::before { content: ''; position: absolute; right: 3.5px; top: 2.25px; width: 15px; height: 3.5px; border-radius: 2px; transform-origin: 100% 50%; background: #8e959e; }
+.ct-card.is-open .ct-lever::before { animation: ct-press 520ms var(--ease-in-out); }
+@keyframes ct-press { 0%, 100% { transform: none; } 35%, 55% { transform: rotate(-26deg); } }
+
+/* window: fixed pane, centre post with the sensor, sash that opens (hinge right) or tilts; the handle shows the mode */
+.ct-pane, .ct-turn { position: absolute; top: 10px; bottom: 10px; }
+.ct-pane { left: 10px; width: calc(50% - 14px); background: rgba(6, 13, 24, .6); }
+.ct-mull { position: absolute; left: calc(50% - 4px); width: 8px; top: 10px; bottom: 10px; background: #3d444f; }
+.ct-glass { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 55%); }
+.ct-turn { left: calc(50% + 4px); right: 10px; transform-origin: 100% 50%; transform-style: preserve-3d; transition: transform 640ms var(--ease-in-out); }
+.ct-sash { position: absolute; inset: 0; transform-origin: 50% 100%; border: 5px solid #59616d; border-radius: 2px; backface-visibility: hidden;
+  border-color: #66707c #4c545f #454c56 #5d6672;   /* bevel: light top-left, shade bottom-right */
+  background: rgba(6, 13, 24, .6); transition: transform 640ms var(--ease-in-out); }
+.ct-shade { position: absolute; inset: 0; background: rgba(8, 12, 18, .3); opacity: 0; transition: opacity 640ms var(--ease-in-out); }
+/* the move that leaves starts at once, the move that arrives waits for the handle (and for the other move to clear) */
+.ct-card.win.is-open .ct-turn { transform: rotateY(52deg); transition-delay: 180ms; }
+.ct-card.win.is-tilt .ct-sash { transform: rotateX(-18deg); transition-delay: 180ms; }
+.ct-card.win.is-open .ct-shade, .ct-card.win.is-tilt .ct-shade { opacity: 1; transition-delay: 180ms; }
+.ct-card.win.is-tilt .ct-shade { background: linear-gradient(180deg, rgba(8, 12, 18, .5), rgba(8, 12, 18, .12) 60%); }
+.ct-whandle { position: absolute; left: -2px; top: calc(50% - 4px); width: 8px; height: 8px; border-radius: 2px; background: #c9ced5; transform-origin: 50% 50%; transition: transform 220ms var(--ease-in-out) 480ms; }
+.ct-whandle::before { content: ''; position: absolute; left: 2.25px; top: 4px; width: 3.5px; height: 15px; border-radius: 2px; background: #c9ced5; }
+.ct-card.win.is-open .ct-whandle { transform: rotate(-90deg); transition-delay: 0ms; }
+.ct-card.win.is-tilt .ct-whandle { transform: rotate(-180deg); transition-delay: 0ms; }
+
+/* sensor on the frame, magnet on the moving part */
+.ct-magnet { position: absolute; right: 3px; top: 22px; width: 6px; height: 18px; border-radius: 2px; background: #f4f5f7; }
+.ct-sash .ct-magnet { right: auto; left: -4px; top: 12px; width: 5px; height: 16px; }
+.ct-sensor { position: absolute; right: 1px; top: 28px; width: 8px; height: 26px; }
+.ct-card.win .ct-sensor { right: auto; left: calc(50% - 3.5px); top: 22px; width: 7px; height: 24px; }
+.ct-base, .ct-cover { position: absolute; inset: 0; border-radius: 2.5px; }
+.ct-base { background: #6f7680; transition: box-shadow var(--dur) var(--ease-out); }
+.ct-cover { background: #f4f5f7; box-shadow: 0 1px 2px rgba(0, 0, 0, .35); transition: transform 320ms var(--ease-out); }
+.ct-led { position: absolute; left: 50%; top: 4px; width: 3px; height: 3px; margin-left: -1.5px; border-radius: 50%; background: rgba(0, 0, 0, .14); }
+.ct-wave { position: absolute; left: 50%; top: 40%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; border: 1.5px solid rgba(62, 160, 255, .9); opacity: 0; pointer-events: none; }
+.ct-card.blink .ct-led { animation: ct-led 900ms var(--ease-out); }
+.ct-card.blink .ct-wave { animation: ct-wave 900ms var(--ease-out); }
+.ct-card.blink .ct-wave.w2 { animation-delay: 160ms; }
+@keyframes ct-led { 0%, 55% { background: #3ea0ff; box-shadow: 0 0 6px 2px rgba(62, 160, 255, .85); } 100% { background: rgba(0, 0, 0, .14); box-shadow: none; } }
+@keyframes ct-wave { 0% { opacity: .9; transform: scale(.4); } 100% { opacity: 0; transform: scale(2.8); } }
+.ct-card.is-tamper .ct-cover { transform: translate(9px, 18px) rotate(24deg); }
+.ct-card.is-tamper .ct-base { box-shadow: 0 0 0 1.5px var(--red), 0 0 12px rgba(255, 69, 58, .65); }
+
+/* other: just the sensor and its magnet; the magnetic field fades as the magnet moves away */
+.ct-card.other .ct-stage { width: 220px; height: 160px; }
+.ct-shadow { position: absolute; left: 68px; width: 50px; top: 131px; height: 10px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .32), transparent); }
+.ct-mshadow { position: absolute; left: -3px; right: -3px; top: calc(100% + 1px); height: 8px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .28), transparent); }
+.ct-card.other .ct-sensor { right: auto; left: 70px; top: 20px; width: 46px; height: 116px; }
+.ct-card.other .ct-base, .ct-card.other .ct-cover { border-radius: 12px; }
+.ct-card.other .ct-cover { box-shadow: 0 1px 3px rgba(0, 0, 0, .25); }
+.ct-card.other .ct-led { top: 14px; width: 7px; height: 7px; margin-left: -3.5px; }
+.ct-card.other .ct-wave { width: 40px; height: 40px; margin: -20px 0 0 -20px; top: 12%; }
+.ct-card.other.is-tamper .ct-cover { transform: translate(20px, 46px) rotate(24deg); }
+.ct-mag { position: absolute; left: 122px; top: 38px; width: 28px; height: 80px; border-radius: 9px; background: #f4f5f7; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform 640ms var(--ease-in-out); }
+.ct-mark { position: absolute; left: 4px; top: 50%; margin-top: -6px; border: 6px solid transparent; border-left: 7px solid #c3c8cf; border-right: 0; }
+.ct-card.other.is-open .ct-mag { transform: translateX(64px) rotate(8deg); }
+.ct-field { position: absolute; left: 114px; top: 50px; width: 12px; height: 56px; border: 2px dashed rgba(62, 160, 255, .55); border-left: 0; border-radius: 0 30px 30px 0; transition: opacity 400ms var(--ease-out); }
+.ct-card.other.is-open .ct-field { opacity: 0; }
+
+.ct-card.knock .ct-leaf, .ct-card.knock .ct-sash, .ct-card.knock .ct-mag { animation: ct-knock 420ms var(--ease-out); }
+@keyframes ct-knock { 0%, 100% { translate: 0 0; } 15% { translate: -2.5px 0; } 30% { translate: 2.5px 0; } 45% { translate: -1.5px 0; } 60% { translate: 1.5px 0; } 75% { translate: -.5px 0; } }
+.ct-card.is-off .ct-stage { opacity: .45; }
+@media (prefers-reduced-motion: reduce) {   /* fewer, gentler: the state still changes, nothing swings or shakes */
+  .ct-leaf, .ct-turn, .ct-sash, .ct-whandle, .ct-cover, .ct-mag { transition-duration: 1ms !important; transition-delay: 0ms !important; }
+  .ct-card .ct-wave, .ct-card.knock .ct-leaf, .ct-card.knock .ct-sash, .ct-card.knock .ct-mag, .ct-card.is-open .ct-lever::before { animation: none !important; }
+}
+
+/* readout under the picture: state word in its colour + "Since 08:13" / "For 5 min" */
+.ct-readout { padding-top: 20px; }
+.ct-word { font: 700 34px/40px var(--font); letter-spacing: 0.4px; color: var(--label-primary); transition: color var(--dur) var(--ease-out); }
+.ct-word.closed { color: var(--green); }
+.ct-word.open { color: var(--orange); }
+.ct-count { padding: 40px calc(var(--screen-pad) + 4px) 8px; }
+
+/* Event history: 24-hour strip (orange = open) */
+.ct-strip { padding: 4px 0 2px; }
+.ct-strip .bar { position: relative; height: 12px; border-radius: 6px; background: var(--green-soft); overflow: hidden; }
+.ct-strip .bar i { position: absolute; top: 0; bottom: 0; background: var(--orange); border-radius: 2px; }
+.ct-strip .bar b { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--label-primary); border-radius: 1px; }
+.ct-strip .axis { display: flex; justify-content: space-between; margin-top: 6px; font: var(--body-xs); color: var(--label-tertiary); }
+
+/* Icon grid with names (Name & icon) */
+.icon-grid.labeled button { aspect-ratio: auto; flex-direction: column; gap: 6px; padding: 12px 4px 10px; }
+.icon-grid.labeled button span { font: var(--body-xs); color: var(--label-secondary); }
+.icon-grid.labeled button[aria-pressed="true"] span { color: var(--primary); }
+
+/* Simulated push notification */
+.push { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 90; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 22px;
+  background: rgba(38, 38, 42, .86); backdrop-filter: blur(16px) saturate(1.6); -webkit-backdrop-filter: blur(16px) saturate(1.6); box-shadow: var(--shadow-pop);
+  transform: translateY(-130%); transition: transform var(--dur-slow) var(--ease); cursor: pointer; }
+.push.show { transform: translateY(0); }
+.push-app { width: 36px; height: 36px; border-radius: 9px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.push-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.push-top { display: flex; justify-content: space-between; font: var(--body-xs); color: var(--label-secondary); letter-spacing: .3px; }
+.push-txt > b { font: var(--body-md-accent); font-weight: 600; }
+.push-body { font: var(--body-sm); color: var(--label-secondary); }
+.push.danger .push-app { background: var(--red); }
+.push.warn .push-app { background: var(--orange); }
+
+/* ==========================================================================
+   Light — Figma light sketches (6560:50289) in the current style (relay toggle, 15 px section labels,
+   glass tracks, Position-style chips). Motion: transform / opacity only; the lamp glow follows "Fade time".
+   ========================================================================== */
+/* power toggle: exactly the relay's (no glow — the user's call, 2026-11-10) */
+
+/* brightness: a 50 px pill; white fill grows from the left (scaleX, clipped by the round track) */
+.lt-bar { position: relative; height: 50px; border-radius: 25px; overflow: hidden; background: var(--fill-tertiary); box-shadow: var(--glass-highlight); cursor: pointer; touch-action: none; outline: none; }
+/* The suns never blend: a dark pair sits on the track and a light pair inside the white fill, so each sun switches
+   colour exactly at the fill's edge. The fill is a plain overflow-hidden box whose width follows the value (its
+   inner layer is as wide as the bar, so the suns inside never move). Why not clip-path / scaleX: WebKit left the
+   fill's children unclipped at rest and clipped while dragging, and the exported mix-blend-mode: difference
+   re-resolved when the fill changed GPU layers — both made the icons flicker ("o'ynayapti"). */
+.lt-bar { container-type: inline-size; }
+.lt-bar .lt-fill { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--v, .5) * 100%); overflow: hidden; background: #fff; contain: paint;
+  transition: width 160ms var(--ease-out), opacity var(--dur) var(--ease-out); }
+.lt-bar .lt-in { position: absolute; left: 0; top: 0; bottom: 0; width: 100cqw; }
+.lt-bar.is-off .lt-fill { opacity: 0; }
+.lt-bar .icon { position: absolute; top: 13px; width: 24px; height: 24px; pointer-events: none; }
+.lt-bar .icon g { mix-blend-mode: normal !important; }
+.lt-bar .lt-lo { left: 13px; } .lt-bar .lt-hi { right: 13px; }
+.lt-bar > .icon { filter: brightness(0); }        /* on the track: dark, as before */
+.lt-bar .lt-fill .icon { filter: invert(1); }      /* on the white fill: light grey, as before */
+.lt-bar.is-off > .icon { filter: invert(1); opacity: .5; }
+
+/* white tone: warm → cold track (the bulb's own range), white knob with two grip bars */
+.lt-ct { position: relative; height: 50px; border-radius: 25px; background: linear-gradient(90deg, var(--from), var(--mid), var(--to)); cursor: pointer; touch-action: none; outline: none; transition: opacity var(--dur) var(--ease-out); }
+.lt-knob { position: absolute; top: 3px; left: calc(3px + var(--v, .5) * (100% - 50px)); width: 44px; height: 44px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); transition: left 160ms var(--ease-out); }
+.lt-knob::before, .lt-knob::after { content: ''; position: absolute; top: 14px; width: 2px; height: 16px; border-radius: 1px; background: rgba(0, 0, 0, .2); }
+.lt-knob::before { left: 18px; } .lt-knob::after { left: 24px; }
+.lt-ct.is-colour { opacity: .45; }
+
+/* Colour — Figma 6560:49941: a 44 px column (white dot, a separator, four colour dots; the chosen one gets a white
+   ring inside it) and the colour picture (radius 24, hairline border, a soft blurred copy behind it as a halo).
+   The halo is a static blur — it never animates, so Safari keeps it steady. */
+.lt-colour { display: flex; gap: 12px; align-items: stretch; }
+.lt-colour.is-disabled { opacity: .35; pointer-events: none; }
+.lt-dots { flex: none; width: 44px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 4px 0; }
+.lt-dots button { position: relative; width: 30px; height: 30px; border-radius: 100px; box-shadow: inset 1px 1px 2px rgba(255, 255, 255, .24); transition: transform var(--dur-micro) var(--ease-out); }
+.lt-dots button:active { transform: scale(.92); }
+.lt-dots button[aria-pressed="true"]::after { content: ''; position: absolute; left: 4px; top: 4px; width: 22px; height: 22px; box-sizing: border-box; border: 2px solid #fff; border-radius: 100px; }
+.lt-sep { width: 24px; height: 1px; border-radius: 56px; background: var(--separator-opaque); }
+.lt-field { position: relative; flex: 1; aspect-ratio: 287 / 202.33;   /* Figma 6560:49952: 287 × 202 — the dot column stretches to it, so the gaps are 8.67 px */
+  cursor: crosshair; touch-action: none; outline: none; }
+.lt-glow, .lt-pic { position: absolute; inset: 0; border-radius: 24px; background-position: 50% 52%; background-size: 105.8% 106.3%; background-repeat: no-repeat; }
+.lt-glow { filter: blur(10px); opacity: .5; }
+.lt-pic { box-shadow: inset 0 0 0 1px var(--separator-opaque); }
+.lt-ring { position: absolute; left: calc(var(--x, .5) * 100%); top: calc(var(--y, .5) * 100%); width: 36px; height: 36px; margin: -18px 0 0 -18px; box-sizing: border-box; border-radius: 100px;
+  border: 3px solid #fff; box-shadow: 0 0 3px rgba(0, 0, 0, .1); transition: opacity var(--dur) var(--ease-out), left 120ms var(--ease-out), top 120ms var(--ease-out); }
+.lt-ring.hidden { opacity: 0; }
+.dragging .lt-fill, .dragging .lt-knob, .dragging .lt-ring { transition: none; }   /* 1:1 with the finger */
+.lt-bar:focus-visible, .lt-ct:focus-visible, .lt-field:focus-visible { box-shadow: 0 0 0 3px var(--primary); }
+[data-lt][aria-disabled="true"] { opacity: .35; pointer-events: none; }
+.lt-reset { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; color: var(--label-secondary); }
+.lt-reset:disabled { opacity: .35; }
+.v2-head.muted .lt-reset .icon { width: 24px; height: 24px; }
+
+/* effects: Position-style chips, three per row */
+.lt-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.lt-chips .cw-chip { width: 100%; justify-content: center; }
+@media (prefers-reduced-motion: reduce) {
+  .lt-bar .lt-fill, .lt-knob, .lt-ring { transition: none; }
+}
+
+/* Timer — Custom (UI.timerSheet, relay + light): iOS-style hours / minutes wheel. Rows are 40 px, the centre band marks
+   the value, rows fade out towards the edges (mask), scroll-snap settles on a row. */
+.preset-grid button .icon { color: var(--label-primary); }
+.tw { position: relative; display: flex; justify-content: center; gap: 24px; height: 200px; }
+.tw::before { content: ''; position: absolute; left: 0; right: 0; top: 80px; height: 40px; border-radius: 10px; background: var(--fill-tertiary); pointer-events: none; }
+.tw-col { position: relative; display: flex; align-items: center; gap: 6px; }
+.tw-wheel { width: 56px; height: 200px; overflow-y: auto; scroll-snap-type: y mandatory; padding: 80px 0; box-sizing: border-box; scrollbar-width: none; outline: none; overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(transparent, #000 35%, #000 65%, transparent); mask-image: linear-gradient(transparent, #000 35%, #000 65%, transparent); }
+.tw-wheel::-webkit-scrollbar { display: none; }
+.tw-wheel { cursor: grab; user-select: none; -webkit-user-select: none; }
+.tw-wheel.drag { scroll-snap-type: none; cursor: grabbing; }   /* mouse drag: follow 1:1, settle on release */
+.tw-wheel span { display: block; height: 40px; line-height: 40px; text-align: right; padding-right: 4px; scroll-snap-align: center; font: 400 22px/40px var(--font); font-variant-numeric: tabular-nums; color: var(--label-secondary); transition: color var(--dur-fast) var(--ease-out); }
+.tw-wheel span.on { color: var(--label-primary); font-weight: 500; }
+.tw-wheel:focus-visible { box-shadow: inset 0 0 0 2px var(--primary); border-radius: 10px; }
+.tw-unit { font: var(--body-lg); color: var(--label-primary); min-width: 44px; }
+.tw-end { margin: 12px 0 0; text-align: center; font: var(--body-sm); color: var(--label-secondary); }
+.tw-btns { display: flex; gap: 10px; } .tw-btns .btn { flex: 1; }
+.btn-primary:disabled { opacity: .4; }

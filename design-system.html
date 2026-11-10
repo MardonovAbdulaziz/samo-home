@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Samo-home · Design System</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    body.ds { display: block; padding: 0; background: #0b0d12; }
+    .ds-wrap { max-width: 1120px; margin: 0 auto; padding: 48px 32px 96px; }
+    .ds-nav { position: sticky; top: 0; z-index: 10; background: rgba(11, 13, 18, .9); backdrop-filter: blur(12px); border-bottom: 1px solid #1f232b; }
+    .ds-nav .in { max-width: 1120px; margin: 0 auto; padding: 14px 32px; display: flex; gap: 20px; align-items: center; font: var(--body-sm-accent); }
+    .ds-nav a { color: var(--label-secondary); } .ds-nav a:hover { color: var(--label-primary); }
+    .ds-nav .brand { color: var(--label-primary); font: var(--body-lg-accent); margin-right: auto; display: flex; gap: 8px; align-items: center; }
+    .ds-nav .brand i { width: 22px; height: 22px; border-radius: 6px; background: var(--primary); display: inline-block; }
+    h1.ds-h { font: var(--h1); letter-spacing: var(--h1-ls); margin: 0 0 8px; }
+    h2.ds-h { font: var(--h2); margin: 64px 0 6px; padding-top: 16px; }
+    h3.ds-h { font: var(--body-lg-accent); margin: 32px 0 12px; color: var(--label-secondary); }
+    .ds-lead { font: var(--body-lg); color: var(--label-secondary); max-width: 720px; margin: 0; }
+    .ds-p { font: var(--body-md); color: var(--label-secondary); max-width: 760px; line-height: 22px; }
+    .ds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+    .sw { border-radius: 12px; overflow: hidden; background: #15171c; border: 1px solid #22262e; }
+    .sw .c { height: 72px; background-image: linear-gradient(45deg, #222 25%, transparent 25%), linear-gradient(-45deg, #222 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #222 75%), linear-gradient(-45deg, transparent 75%, #222 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0; position: relative; }
+    .sw .c::after { content: ""; position: absolute; inset: 0; background: var(--v); }
+    .sw .m { padding: 10px 12px; font: var(--body-xs); color: var(--label-secondary); }
+    .sw .m b { display: block; font: var(--body-sm-accent); color: var(--label-primary); margin-bottom: 2px; font-family: var(--font-mono); font-size: 12px; }
+    table.ds-t { width: 100%; border-collapse: collapse; font: var(--body-sm); }
+    table.ds-t td, table.ds-t th { padding: 14px 12px; border-bottom: 1px solid #1f232b; text-align: left; vertical-align: middle; }
+    table.ds-t th { color: var(--label-tertiary); font-weight: 500; }
+    table.ds-t code, .ds-p code { font-family: var(--font-mono); font-size: 12px; color: #9cc8ff; }
+    .ds-demo { background: #15171c; border: 1px solid #22262e; border-radius: 16px; padding: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+    .ds-demo.ambient { background: var(--ambient-base); position: relative; overflow: hidden; isolation: isolate; }
+    .ds-demo.ambient::before { content: ""; position: absolute; width: 500px; height: 500px; right: -200px; bottom: -300px; background: var(--ambient-blob-1); filter: blur(140px); opacity: .7; z-index: -1; }
+    .ds-demo.col { flex-direction: column; align-items: stretch; }
+    .ds-cap { font: var(--body-xs); color: var(--label-tertiary); margin-top: 8px; font-family: var(--font-mono); }
+    .ds-box { display: flex; flex-direction: column; align-items: flex-start; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .ds-demo .list, .ds-demo .field { margin: 0; }
+    .bar { height: 16px; background: var(--primary); border-radius: 4px; }
+    .phone-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  </style>
+</head>
+<body class="ds">
+  <nav class="ds-nav"><div class="in">
+    <span class="brand"><i></i>Samo-home DS</span>
+    <a href="#foundations">Foundations</a><a href="#color">Color</a><a href="#type">Typography</a><a href="#layout">Layout</a><a href="#components">Components</a><a href="#patterns">Device patterns</a><a href="index.html">Open prototype →</a>
+  </div></nav>
+  <div class="ds-wrap" id="ds"></div>
+
+  <script src="js/icons.js"></script>
+  <script>
+  (() => {
+    const css = getComputedStyle(document.documentElement);
+    const v = (n) => css.getPropertyValue(n).trim();
+    const sw = (n, note = '') => `<div class="sw"><div class="c" style="--v:var(${n})"></div><div class="m"><b>${n}</b>${v(n)}${note ? '<br>' + note : ''}</div></div>`;
+    const group = (title, names) => `<h3 class="ds-h">${title}</h3><div class="ds-grid">${names.map((x) => (Array.isArray(x) ? sw(x[0], x[1]) : sw(x))).join('')}</div>`;
+
+    const TYPE = [
+      ['--h1', 'Heading H1', '30 / 36 · Bold · 0.4', 'Large page titles (About device)'],
+      ['--h2', 'Heading H2', '24 / 32 · Bold · 0.07', 'Home name, sheet titles'],
+      ['--h3', 'Heading H3', '20 / 28 · Semibold · -0.45', 'Empty states'],
+      ['--body-lg', 'Body lg', '17 / 24 · Regular · -0.43', 'List cells, inputs'],
+      ['--body-md', 'Body md', '15 / 18 · Regular · -0.23', 'Descriptions'],
+      ['--body-sm', 'Body sm', '13 / 16 · Regular · -0.08', 'Secondary text, labels'],
+      ['--body-xs', 'Body ex-sm', '11 / 14 · Regular · 0.06', 'Captions'],
+      ['--body-lg-accent', 'Body lg accent', '17 / 22 · Semibold', 'Buttons, section titles, values'],
+      ['--body-md-accent', 'Body md accent', '15 / 18 · Medium', 'Tile names'],
+      ['--body-sm-accent', 'Body sm accent', '13 / 16 · Semibold', 'Chips, quick actions'],
+      ['--body-xs-accent', 'Body ex-sm accent', '11 / 12 · Bold', 'Badges'],
+    ];
+
+    let h = `<h1 class="ds-h">Samo-home Design System</h1>
+      <p class="ds-lead">Dark, glassy smart-home UI. Built on the <b>Hamroh</b> base system (labels, backgrounds, fills, system colors, SF Pro type scale) with a Samo-home product layer: ambient blue gradient, glass surfaces, white “on” tiles. <b>Primary color: blue ${v('--primary')}</b>.</p>
+      <p class="ds-p">Sources: Figma <code>Samo-home / HUB Tidied</code> and <code>Hamroh / Colors, Typography</code>. All tokens live in <code>css/tokens.css</code>, all components in <code>css/components.css</code>. This page renders the real CSS, so it never drifts from the prototype.</p>
+
+      <h2 class="ds-h" id="foundations">Foundations</h2>
+      <table class="ds-t"><tr><th>Principle</th><th>What it means in UI</th></tr>
+        <tr><td><b>Device first</b></td><td>Controls appear only when the paired device supports the feature (capability-driven UI).</td></tr>
+        <tr><td><b>State is color</b></td><td>On = white tile (<code>--tile-on-bg</code>). Off = glass (<code>--fill-tertiary</code>). Offline = red status text. Primary blue = interactive / selected.</td></tr>
+        <tr><td><b>Two surfaces</b></td><td><b>Ambient</b> (home, device view): gradient + glass. <b>Elevated</b> (settings, flows): flat <code>--bg-base-android</code> + <code>--bg-elevation-1</code> lists.</td></tr>
+        <tr><td><b>Sheets for choices</b></td><td>Every setting opens a bottom sheet with one decision. Sheets always have a clear “Done” or primary action.</td></tr>
+      </table>
+
+      <h2 class="ds-h" id="color">Color</h2><p class="ds-p">Dark mode values shown. Light mode values are kept in <code>[data-theme="light"]</code> for later.</p>
+      ${group('Brand', [['--primary', 'Main color'], '--primary-pressed', '--primary-soft', '--on-primary'])}
+      ${group('Label', ['--label-primary', '--label-secondary', '--label-tertiary', '--label-quaternary', '--label-opposite'])}
+      ${group('Background', [['--bg-base', 'base-ios'], ['--bg-base-android', 'base-android · elevated pages'], ['--bg-elevation-1', 'lists, fields'], ['--bg-elevation-2', 'sheet lists, secondary buttons']])}
+      ${group('Fill & separator', [['--fill-tertiary', 'glass cards, tiles'], '--fill-quaternary', '--separator', ['--glass-fill', 'toolbar buttons'], ['--tile-on-bg', 'tile ON']])}
+      ${group('System', ['--red', '--green', '--blue', '--yellow', '--orange', '--gray'])}
+      ${group('Non-opaque', ['--red-soft', '--green-soft', '--blue-soft', '--yellow-soft', '--overlay', '--segment-active'])}
+      <h3 class="ds-h">Ambient background</h3>
+      <div class="ds-demo ambient" style="height:160px;align-items:flex-end"><span class="t-sm c-secondary"><code>--ambient-base</code> + blobs <code>--ambient-blob-1 #3CB4FF</code> (80%, blur 180) and <code>--ambient-blob-2 #7CFFCF</code> (40%, blur 180)</span></div>
+
+      <h2 class="ds-h" id="type">Typography</h2><p class="ds-p">SF Pro (system font on Apple devices; falls back to Inter / system-ui). Use the shorthand token: <code>font: var(--body-lg)</code>, plus the matching <code>letter-spacing</code>. Helper classes: <code>.t-h1 … .t-xs-accent</code>.</p>
+      <table class="ds-t"><tr><th>Token</th><th>Spec</th><th>Use</th><th>Example</th></tr>
+      ${TYPE.map(([t, n, spec, use]) => `<tr><td><code>${t}</code><br><span class="c-tertiary">${n}</span></td><td>${spec}</td><td class="c-secondary">${use}</td><td style="font:var(${t})">Living Room</td></tr>`).join('')}</table>
+
+      <h2 class="ds-h" id="layout">Layout</h2>
+      <div class="two"><div><h3 class="ds-h">Spacing (4-pt grid)</h3><table class="ds-t">${[1, 2, 3, 4, 5, 6, 8, 10].map((n) => `<tr><td><code>--space-${n}</code></td><td>${v('--space-' + n)}</td><td style="width:50%"><div class="bar" style="width:var(--space-${n})"></div></td></tr>`).join('')}
+        <tr><td><code>--screen-pad</code></td><td>${v('--screen-pad')}</td><td>Side padding of every screen</td></tr></table></div>
+      <div><h3 class="ds-h">Radius</h3><table class="ds-t">${[['xs', 'small chips'], ['sm', 'steppers'], ['md', 'cards, lists, inputs, buttons'], ['lg', 'device tiles'], ['xl', 'bottom sheets'], ['pill', 'toggles, pills, toolbar buttons']].map(([r, u]) => `<tr><td><code>--radius-${r}</code></td><td>${v('--radius-' + r)}</td><td><div style="width:56px;height:40px;background:var(--fill-tertiary);border-radius:var(--radius-${r})"></div></td><td class="c-secondary">${u}</td></tr>`).join('')}</table>
+        <h3 class="ds-h">Sizes</h3><table class="ds-t"><tr><td>Screen</td><td>375 × 812</td></tr><tr><td>Status bar / toolbar</td><td>59 / 54</td></tr><tr><td>Toolbar button</td><td>44</td></tr><tr><td>Button / field</td><td>56</td></tr><tr><td>List cell</td><td>min 64</td></tr><tr><td>Icon</td><td>24 (line, 1.8 stroke)</td></tr></table></div></div>
+
+      <h2 class="ds-h" id="components">Components</h2>
+      <h3 class="ds-h">Buttons</h3>
+      <div class="ds-demo">
+        <div class="ds-box"><button class="btn btn-primary" style="width:220px">Save</button><div class="ds-cap">.btn.btn-primary</div></div>
+        <div class="ds-box"><button class="btn btn-secondary" style="width:160px">Cancel</button><div class="ds-cap">.btn.btn-secondary</div></div>
+        <div class="ds-box"><button class="btn btn-danger" style="width:160px">Delete</button><div class="ds-cap">.btn.btn-danger</div></div>
+        <div class="ds-box"><button class="btn btn-tinted" style="width:160px">New room</button><div class="ds-cap">.btn.btn-tinted</div></div>
+        <div class="ds-box"><button class="btn btn-primary" disabled style="width:140px">Next</button><div class="ds-cap">[disabled]</div></div>
+        <div class="ds-box"><button class="btn-sm">Add</button><div class="ds-cap">.btn-sm</div></div>
+        <div class="ds-box"><button class="btn-pill">${icon('pen', 'icon icon-xs')} Edit</button><div class="ds-cap">.btn-pill</div></div>
+        <div class="ds-box"><button class="btn-circle">${icon('cross', 'icon icon-xs')}</button><div class="ds-cap">.btn-circle</div></div>
+      </div>
+      <h3 class="ds-h">On the ambient surface</h3>
+      <div class="ds-demo ambient">
+        <div class="ds-box"><button class="glass-btn">${icon('back')}</button><div class="ds-cap">.glass-btn</div></div>
+        <div class="ds-box"><button class="power-toggle" aria-pressed="true" onclick="this.setAttribute('aria-pressed', this.getAttribute('aria-pressed')!=='true');this.querySelector('.label').textContent=this.getAttribute('aria-pressed')==='true'?'On':'Off'"><span class="label">On</span><span class="knob"><img class="pwr" src="assets/icons/power.svg" width="36" height="36" alt=""></span></button><div class="ds-cap">.power-toggle (tap)</div></div>
+        <div class="ds-box" style="width:170px"><div class="tile" style="width:100%"><span class="tile-icon">${icon('dev-bulb', 'icon', 'style="width:28px;height:28px"')}</span><span class="tile-power">${icon('power', 'icon icon-sm')}</span><span class="tile-name">Hallway</span><span class="tile-status">Off <span class="tag-new">NEW</span></span></div><div class="ds-cap">.tile</div></div>
+        <div class="ds-box" style="width:170px"><div class="tile on" style="width:100%"><span class="tile-icon" style="color:var(--yellow)">${icon('dev-bulb', 'icon', 'style="width:28px;height:28px"')}</span><span class="tile-power">${icon('power', 'icon icon-sm')}</span><span class="tile-name">Desk Lamp</span><span class="tile-status">On · 80%</span></div><div class="ds-cap">.tile.on</div></div>
+        <div class="ds-box" style="width:170px"><div class="tile offline" style="width:100%"><span class="tile-icon">${icon('dev-drop', 'icon', 'style="width:28px;height:28px"')}</span><span class="tile-name">Water Leak</span><span class="tile-status">Offline</span></div><div class="ds-cap">.tile.offline</div></div>
+        <div class="ds-box" style="width:170px"><div class="metric" style="width:100%"><span>Power</span><b>42 W</b></div><div class="ds-cap">.metric</div></div>
+        <div class="ds-box"><button class="quick-chip">${icon('power')}<span><b>Turn off all</b><span>3 devices on</span></span></button><div class="ds-cap">.quick-chip</div></div>
+      </div>
+      <h3 class="ds-h">Lists, fields and controls</h3>
+      <div class="two">
+        <div class="ds-demo col">
+          <label class="field"><span class="field-label">Device name</span><input value="Air Conditioner 12"></label>
+          <div class="list">
+            <button class="cell"><span class="cell-main cell-title">Room</span><span class="cell-value">Living Room</span>${icon('chevron-right', 'chev')}</button>
+            <button class="cell" onclick="const s=this.querySelector('.switch');s.setAttribute('aria-checked',s.getAttribute('aria-checked')!=='true')"><span class="cell-main cell-title">Show on Home Screen</span><span class="switch" role="switch" aria-checked="true"></span></button>
+            <button class="cell has-icon"><span class="cell-icon">${icon('bolt-crossed')}</span><span class="cell-main"><span class="cell-title" style="display:block">After a power cut</span><span class="cell-sub" style="display:block">Light: Remember last state</span></span>${icon('chevron-right', 'chev')}</button>
+          </div>
+          <div class="ds-cap">.field · .list > .cell · .cell.has-icon · .switch</div>
+        </div>
+        <div class="ds-demo col">
+          <div class="list">
+            <button class="option" role="radio" aria-checked="false"><span class="option-main"><span class="option-title" style="display:block">Stay off</span><span class="option-sub" style="display:block">Safer for heaters and irons</span></span><span class="radio">${icon('radio-on')}</span></button>
+            <button class="option" role="radio" aria-checked="true"><span class="option-main"><span class="option-title" style="display:block">Remember last state</span><span class="option-sub" style="display:block">Recommended</span></span><span class="radio">${icon('radio-on')}</span></button>
+          </div>
+          <div class="chips"><button class="chip on">Ceiling</button><button class="chip">Hall</button><button class="chip">${icon('plus', 'icon icon-xs')} New room</button></div>
+          <div class="row"><div class="stepper"><button>−</button><output>5 s</output><button>+</button></div><div class="segmented" style="width:200px"><button class="on">Day</button><button>Week</button></div></div>
+          <div class="banner danger">${icon('bolt-crossed')}<div><b>Offline</b>The relay has no power.</div></div>
+          <div class="banner warn">${icon('hourglass')}<div><b>Power is back</b>Waiting 5 s before switching on.</div></div>
+          <div class="ds-cap">.option[role=radio] · .chip · .stepper · .segmented · .banner</div>
+        </div>
+      </div>
+      <h3 class="ds-h">Overlays</h3>
+      <p class="ds-p"><b>Bottom sheet</b> (<code>UI.sheet</code>): grabber, H2 title, close circle, optional description, body, primary action. <b>Confirm</b> (<code>UI.confirm</code>): two equal buttons, destructive on the right in red. <b>Rename</b> (<code>UI.prompt</code>): field + clear + primary Save. <b>Popover</b> (<code>UI.popover</code>): white menu from the + button. <b>Toast</b> (<code>UI.toast</code>): short confirmation above the tab bar.</p>
+      <h3 class="ds-h">Icons</h3><p class="ds-p">Exported from Figma (Samo-home + Hamroh icon library) into <code>assets/icons/figma/</code>. <code>tools/build-icons.py</code> builds <code>js/icons.js</code>; icons take the CSS <code>color</code>. Use: <code>icon('dev-bulb')</code>.</p>
+      <div class="ds-demo" style="gap:6px">${ICON_NAMES.map((k) => `<div style="width:84px;text-align:center;padding:8px 0">${icon(k)}<div class="ds-cap" style="margin-top:6px">${k}</div></div>`).join('')}</div>
+
+      <h2 class="ds-h" id="patterns">Device patterns</h2>
+      <p class="ds-p">Each device feature has a <b>type</b>. The type decides the control, so new features (and new device types from <code>Device Interface 3</code>) reuse the same UI.</p>
+      <table class="ds-t"><tr><th>Feature type</th><th>Device page</th><th>Settings</th><th>Relay examples</th></tr>
+        <tr><td><code>control</code></td><td>Power toggle (1 ch) or channel tiles (multi)</td><td>—</td><td>On/off, Timer, All on/off</td></tr>
+        <tr><td><code>reading</code></td><td>Metric grid</td><td>About device rows</td><td>Power & energy, Device temperature</td></tr>
+        <tr><td><code>event</code></td><td>Recent events card</td><td>—</td><td>Button presses</td></tr>
+        <tr><td><code>choice</code></td><td>—</td><td>Cell → sheet with radio options</td><td>After a power cut, Wall switch type, Status light</td></tr>
+        <tr><td><code>toggle</code></td><td>—</td><td>Cell → sheet with switch</td><td>Child lock, Interlock, Lights off at night</td></tr>
+        <tr><td><code>number</code> / <code>inch</code></td><td>—</td><td>Stepper</td><td>Delay after power returns, Auto-off</td></tr>
+        <tr><td><code>color</code> / <code>backlight</code> / <code>protect</code></td><td>—</td><td>Custom sheet</td><td>Light colours, Button backlight, Protection</td></tr>
+        <tr><td><code>action</code></td><td>—</td><td>Tappable cell</td><td>Find this device</td></tr>
+        <tr><td><code>perCh: true</code></td><td>—</td><td>Channel chips at top of the sheet; value summary per channel</td><td>Timer, After a power cut, Auto-off</td></tr>
+      </table>
+      <div class="phone-links"><a class="btn btn-primary" href="index.html">Open prototype</a><a class="btn btn-secondary" href="../Device%20Interface%203/2.%20Relay_Interface.html">Relay spec</a></div>`;
+    document.getElementById('ds').innerHTML = h;
+  })();
+  </script>
+</body>
+</html>

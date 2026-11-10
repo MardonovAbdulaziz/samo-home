@@ -1,0 +1,166 @@
+/* ==========================================================================
+   Samo-home Design Tokens
+   Base: Hamroh design system (labels, backgrounds, fills, colors, type scale)
+   Product layer: Samo-home (glass surfaces, ambient gradient, blue primary)
+   Default theme: dark (the Samo-home app is dark-first)
+   ========================================================================== */
+
+:root {
+  /* ---------- Brand ---------- */
+  --primary: #0A84FF;                 /* Samo-home main color = Hamroh color/blue (dark) */
+  --primary-pressed: #0070E0;
+  --primary-soft: rgba(10, 132, 255, 0.16);   /* non-opaque/blue */
+  --on-primary: #FFFFFF;
+
+  /* ---------- Label (Hamroh) ---------- */
+  --label-primary: #FFFFFF;
+  --label-secondary: rgba(255, 255, 255, 0.64);
+  --label-tertiary: rgba(255, 255, 255, 0.32);
+  --label-quaternary: rgba(255, 255, 255, 0.16);
+  --label-opposite: #333333;
+
+  /* ---------- Background (Hamroh) ---------- */
+  --bg-base: #000000;                 /* base-ios */
+  --bg-base-android: #121214;
+  --bg-elevation-1: #1C1C1E;
+  --bg-elevation-1-alt: #1C1C1E;
+  --bg-elevation-2: #2C2C2E;
+
+  /* ---------- Fills (Hamroh) ---------- */
+  --fill-quaternary: rgba(120, 120, 128, 0.18);
+  --fill-tertiary: rgba(120, 120, 128, 0.24);
+
+  /* ---------- Separator ---------- */
+  --separator: rgba(255, 255, 255, 0.10);
+  --separator-opaque: rgba(117, 128, 138, 0.16);   /* Figma separator/opaque */
+
+  /* ---------- Static ---------- */
+  --static-black: #333333;
+  --static-white: #FFFFFF;
+
+  /* ---------- System colors ---------- */
+  --red: #FF453A;
+  --green: #30D158;
+  --blue: #0A84FF;
+  --yellow: #FFD60A;
+  --orange: #FF7C0A;
+  --gray: #888888;
+
+  /* ---------- Non-opaque colors ---------- */
+  --red-soft: rgba(255, 69, 58, 0.16);
+  --green-soft: rgba(48, 209, 88, 0.16);
+  --blue-soft: rgba(10, 132, 255, 0.16);
+  --yellow-soft: rgba(255, 214, 10, 0.16);
+
+  /* ---------- Service ---------- */
+  --segment-active: #636366;
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  /* ---------- Samo-home glass layer ---------- */
+  --glass-fill: rgba(153, 153, 153, 0.17);           /* toolbar buttons */
+  --glass-card: var(--fill-tertiary);                /* cards on the gradient */
+  --glass-highlight: inset 1px 1px 2px 0 rgba(255, 255, 255, 0.10);
+  --glass-blur: 20px;
+  --tile-on-bg: #FFFFFF;                             /* device tile when ON */
+  --tile-on-label: #333333;
+  --tile-on-sublabel: rgba(51, 62, 77, 0.64);
+
+  /* Ambient background (Figma "background" component) */
+  --ambient-base: linear-gradient(rgba(0, 89, 255, 0.10), rgba(0, 89, 255, 0.10)), #000;
+  --ambient-blob-1: #3CB4FF;
+  --ambient-blob-2: #7CFFCF;
+
+  /* ---------- Typography ---------- */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Text", "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Heading */
+  --h1: 700 30px/36px var(--font);   --h1-ls: 0.4px;
+  --h2: 700 24px/32px var(--font);   --h2-ls: 0.07px;
+  --h3: 600 20px/28px var(--font);   --h3-ls: -0.45px;
+  /* Body */
+  --body-lg: 400 17px/24px var(--font);  --body-lg-ls: -0.43px;
+  --body-md: 400 15px/18px var(--font);  --body-md-ls: -0.23px;
+  --body-sm: 400 13px/16px var(--font);  --body-sm-ls: -0.08px;
+  --body-xs: 400 11px/14px var(--font);  --body-xs-ls: 0.06px;
+  /* Body accent */
+  --body-lg-accent: 600 17px/22px var(--font);
+  --body-md-accent: 500 15px/18px var(--font);
+  --body-sm-accent: 600 13px/16px var(--font);
+  --body-xs-accent: 700 11px/12px var(--font);
+  /* Samo-home extras */
+  --caption: 500 12px/16px var(--font);
+  --bold-16: 700 16px/21px var(--font);
+
+  /* ---------- Spacing (4pt grid) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --screen-pad: 16px;
+
+  /* ---------- Radius ---------- */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;     /* cards, inputs, list groups */
+  --radius-lg: 20px;     /* device tiles */
+  --radius-xl: 24px;     /* bottom sheets */
+  --radius-pill: 1000px;
+
+  /* ---------- Sizes ---------- */
+  --size-control: 56px;      /* primary button / list cell */
+  --size-cell: 64px;
+  --size-toolbar-btn: 44px;
+  --size-icon: 24px;
+  --phone-w: 375px;
+  --phone-h: 812px;
+
+  /* ---------- Shadow ---------- */
+  --shadow-sm: 0 3px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 15px rgba(0, 0, 0, 0.04);
+  --shadow-pop: 0 10px 40px rgba(0, 0, 0, 0.35);
+
+  /* ---------- Motion ---------- */
+  /* Motion — one system for the whole app.
+     Durations: micro (press/hover) 120 · state change 240 · movement 360 · sheets/pages 420.
+     Easing: --ease (iOS sheet curve, decelerating) for movement, --ease-out for fades/colors,
+     --ease-spring only for small "pop" feedback. Animate transform/opacity only. */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* strong ease-in-out: things moving on screen (door / sash swing) */
+  --dur-micro: 120ms;
+  --dur-fast: 150ms;
+  --dur: 240ms;
+  --dur-move: 360ms;
+  --dur-slow: 420ms;
+}
+
+/* Light mode values from Hamroh (kept for future light theme) */
+[data-theme="light"] {
+  --label-primary: #333333;
+  --label-secondary: rgba(51, 62, 77, 0.64);
+  --label-tertiary: rgba(51, 62, 77, 0.32);
+  --label-quaternary: rgba(51, 62, 77, 0.16);
+  --label-opposite: #FFFFFF;
+  --bg-base: #FFFFFF;
+  --bg-base-android: #FFFFFF;
+  --bg-elevation-1: #FFFFFF;
+  --bg-elevation-1-alt: #F5F6F7;
+  --bg-elevation-2: #FFFFFF;
+  --fill-quaternary: rgba(0, 16, 36, 0.04);
+  --fill-tertiary: rgba(0, 16, 36, 0.06);
+  --separator: rgba(117, 128, 138, 0.16);
+  --red: #FF3B30;
+  --green: #34C759;
+  --blue: #007AFF;
+  --primary: #007AFF;
+  --yellow: #F6B51E;
+  --orange: #FF7C0A;
+  --segment-active: #FFFFFF;
+}
