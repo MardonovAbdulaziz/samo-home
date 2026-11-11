@@ -13,6 +13,7 @@ Usage:  python3 tools/bundle.py                     → dist/samo-home.html
         python3 tools/bundle.py --edition light     → dist/samo-home-lights.html (lights only)
         python3 tools/bundle.py --edition climate   → dist/samo-home-climate.html (temperature & humidity sensors only)
         python3 tools/bundle.py --edition motion    → dist/samo-home-motion.html (motion sensors only)
+        python3 tools/bundle.py --edition plug      → dist/samo-home-plugs.html (smart plugs and sockets only)
 """
 import base64, json, mimetypes, pathlib, re
 
@@ -111,6 +112,22 @@ EDITIONS = {
       return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
     }''',
     },
+    'plug': {
+        'out': 'samo-home-plugs.html', 'title': 'Samo-home · Smart plugs', 'types': ['plug'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-living', name: 'Living Room' }, { id: 'r-bedroom', name: 'Bedroom' }];
+      const P = Devices.plug;
+      const washer = P.create('third', { name: 'Washing machine', roomId: 'r-kitchen' }); washer.channels[0].display = 'switch'; washer.channels[0].icon = 'dev-washing';
+      const kettle = P.create('double', { name: 'Kitchen socket', roomId: 'r-kitchen', channelNames: ['Kettle', 'Toaster'] });
+      const tv = P.create('tuya', { name: 'TV', roomId: 'r-living' });
+      const strip = P.create('strip', { name: 'Desk strip', roomId: 'r-living' });
+      const heater = P.create('sonoff', { name: 'Heater', roomId: 'r-bedroom' }); heater.channels[0].display = 'heater';
+      const phone = P.create('aqara', { name: 'Phone charger', roomId: 'r-bedroom' });
+      const devs = [washer, kettle, tv, strip, heater, phone]; devs.forEach((d) => { d.isNew = false; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-kitchen', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
 }
 PAGES = {  # route → page script
     'index.html': 'js/pages/home.js',
@@ -119,7 +136,7 @@ PAGES = {  # route → page script
     'about-device.html': 'js/pages/about-device.js',
     'add-device.html': 'js/pages/add-device.js',
 }
-CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/store.js']
+CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/store.js']
 CSS = ['css/tokens.css', 'css/components.css']
 
 
@@ -145,7 +162,7 @@ def js(rel):
         src = src.replace("const go = (url) => { location.href = url; };",
                           "const go = (url) => { window.__go(url); };", 1)
         assert '__ROUTE' in src and '__go' in src, 'ui.js routing patch failed'
-    if rel in ('js/devices/relay.js', 'js/devices/curtain.js'):
+    if rel in ('js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js'):
         src = src.replace("location.href = 'index.html';", "window.__go('index.html');")
     return src.replace('</script', '<\\/script')
 

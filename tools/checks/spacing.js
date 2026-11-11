@@ -13,7 +13,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   // one device per type with every feature on
   const ids = await ev(() => {
     const out = [];
-    for (const [type, preset] of [['relay', 'all'], ['curtain', 'all'], ['contact', 'all'], ['light', 'all'], ['light', 'moes3'], ['climate', 'all'], ['motion', 'all']]) {
+    for (const [type, preset] of [['relay', 'all'], ['curtain', 'all'], ['contact', 'all'], ['light', 'all'], ['light', 'moes3'], ['climate', 'all'], ['motion', 'all'], ['plug', 'all'], ['plug', 'aqara']]) {
       const T = Devices[type], d = T.create(preset, { name: 'Audit ' + type, roomId: 'r-living' }); d.isNew = false;
       if (type === 'curtain') d.curtains.forEach((m) => { m.calibrated = true; m.q = 40; });
       Store.state.devices.push(d); out.push(d.id);
@@ -49,10 +49,10 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
       const name = await ev(() => document.title + '');
       (await measure()).forEach((x) => all.push(`${url} ${x}`));
       // every row that opens a sheet
-      const pick = () => [...UI.screen.querySelectorAll('[data-action]')].filter((e) => /feature|timer|history|display|icon|room|firmware|ls-|rs-|cs2-|th-/.test(e.dataset.action) && !/toggle|identify|delete|rename|show-home|soon/.test(e.dataset.action));
+      const pick = () => [...UI.screen.querySelectorAll('[data-action]')].filter((e) => /feature|timer|history|display|icon|room|firmware|ls-|rs-|cs2-|th-/.test(e.dataset.action) && !/toggle|identify|delete|rename|show-home|soon|group|pe-reset|pn-/.test(e.dataset.action));
       const acts = await ev(`(${pick})().map((e, i) => ({ i, a: e.dataset.action, k: e.dataset.k || '' }))`);
       for (const x of acts) {
-        await ev(`(${pick})()[${x.i}].click()`); await sl(650);
+        const hit = await ev(`(() => { const e = (${pick})()[${x.i}]; if (e) e.click(); return !!e; })()`); if (!hit) continue; await sl(650);
         const open = await ev(() => !!document.querySelector('.sheet.open, #sheet.open'));
         if (open) {
           (await measure()).forEach((m) => all.push(`${url} [${x.a}${x.k ? ':' + x.k : ''}] ${m}`));

@@ -1401,3 +1401,11 @@ html[data-bg="9"] .phone.ambient::after { width: 460px; height: 460px; left: -14
 /* 10 Context glow — the device page's light follows the device (--ctx is set by device.js; home stays blue) */
 html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 22%, color-mix(in srgb, var(--ctx, #3cb4ff) 34%, transparent) 0%, color-mix(in srgb, var(--ctx, #3cb4ff) 20%, transparent) 30%,
   color-mix(in srgb, var(--ctx, #3cb4ff) 9%, transparent) 58%, color-mix(in srgb, var(--ctx, #3cb4ff) 2%, transparent) 80%, transparent 100%), #05070c; }
+
+/* Smart plug — energy per day (Event History). Bars grow from the bottom; today in the app blue. */
+.pl-bars { display: flex; align-items: flex-end; gap: 8px; height: 150px; padding-top: 18px; }
+.pl-bar { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+.pl-bar i { display: block; width: 100%; max-width: 26px; border-radius: 6px; background: var(--fill-secondary, rgba(255, 255, 255, .22)); }
+.pl-bar.now i { background: var(--primary); }
+.pl-bar b { font: var(--body-xs); color: var(--label-secondary); font-variant-numeric: tabular-nums; }
+.pl-bar span { font: var(--body-xs); color: var(--label-tertiary); }

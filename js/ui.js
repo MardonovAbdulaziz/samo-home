@@ -462,9 +462,9 @@ const UI = (() => {
       title: 'Timer', sub: cfg.sub, tabs: cfg.tabs,
       render: () => {
         const t = cfg.running();
-        if (t) { const r = ring(t); return `<div class="ring-timer"><svg viewBox="0 0 196 196"><circle class="track" cx="98" cy="98" r="${R}" fill="none" stroke-width="8"/><circle class="prog" data-live="ring" cx="98" cy="98" r="${R}" fill="none" stroke-width="8" stroke-dasharray="${LEN}" stroke-dashoffset="${r.off}"/></svg><div class="t"><b data-num data-live="tm">${fmtDur(r.left)}</b><span>until off</span></div></div>`; }
+        if (t) { const r = ring(t); return `<div class="ring-timer"><svg viewBox="0 0 196 196"><circle class="track" cx="98" cy="98" r="${R}" fill="none" stroke-width="8"/><circle class="prog" data-live="ring" cx="98" cy="98" r="${R}" fill="none" stroke-width="8" stroke-dasharray="${LEN}" stroke-dashoffset="${r.off}"/></svg><div class="t"><b data-num data-live="tm">${fmtDur(r.left)}</b><span>${cfg.until ? cfg.until() : 'until off'}</span></div></div>`; }
         if (st.custom) return `<div class="pad"><div class="tw">${wheel('h', 23, st.h, 'hours')}${wheel('m', 59, st.m, 'min')}</div><p class="tw-end" data-live="tw-end">${endsAt()}</p></div>`;
-        return `<div class="pad preset-grid">${TM_PRE.map(([sec, n, u]) => `<button data-action="tm-set" data-s="${sec}"><b>${n}</b><span>${u}</span></button>`).join('')}
+        return `${cfg.word && cfg.word() ? `<div class="list-header" style="padding-top:0">${cfg.word()}</div>` : ''}<div class="pad preset-grid">${TM_PRE.map(([sec, n, u]) => `<button data-action="tm-set" data-s="${sec}"><b>${n}</b><span>${u}</span></button>`).join('')}
           <button data-action="tm-custom" aria-label="Custom time">${icon('pen', 'icon', 'style="width:24px;height:24px"')}<span>Custom</span></button></div>`;
       },
       footer: () => (cfg.running() ? '<button class="btn btn-secondary btn-block" data-action="tm-cancel">Cancel timer</button>'

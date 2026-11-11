@@ -16,11 +16,13 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Lights | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-lights.html |
 | Temperature & humidity sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-climate.html |
 | Motion sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-motion.html |
+| Smart plugs & sockets | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-plugs.html |
 | Light page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-light |
 | Curtain page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-curtain |
 | Contact sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-contact |
 | Temperature sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-climate |
 | Motion sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-motion |
+| Smart plug page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-plug |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 | Design lab · contact “Other” open / closed (5 ideas) | https://mardonovabdulaziz.github.io/samo-home/design/other-open.html |
 | Design lab · 10 pictures of “contact” | https://mardonovabdulaziz.github.io/samo-home/design/contact-ideas.html |
@@ -137,6 +139,17 @@ Built from `Device Interface 3/6. Motion_Sensor_Interface.html` (181 PIR sensors
 - Behaviour: PIR sees movement only — sitting still clears to "no motion"; movement during the rest time is not reported; a cat is ignored unless sensitivity is High; daylight keeps the light off
 - Prototype panel: walk in / sit still / leave / cat, day / night, Away, cover, battery, offline, demo ×10
 - Check: `tools/checks/motion.js` · edition: `python3 tools/bundle.py --edition motion` → `dist/samo-home-motion.html`
+
+## Smart plug (step 7)
+
+Built from `Device Interface 3/5. Smart_Plug_Interface.html` (328 plugs, double sockets, strips). Type `plug` (`js/devices/plug.js`). A plug works like a relay, so relay.js is now `makeSwitch(K)` — the relay and the plug share it, each with its own catalogue (`RELAY_K`, `PLUG_K`); plug-only behaviour sits behind `has(d, …)`, so a relay never shows it.
+
+- Device page: the relay's big switch (or a tile per socket + "Turn on all sockets"), Timer, Auto-off (inching), Power & energy (power / voltage / current / kWh, + frequency and power factor), "Something plugged in" (Aqara), plug temperature. Banners: offline, "Turned off for safety · reason" with "Turn back on", "Plug is 76 °C — too hot"
+- Timer flips the state (spec): on → "Turn off in…", off → "Turn on in…"; the ring says "until on / until off"
+- Settings: Power cut, Safety (Overload protection — only the limits the plug has: Aqara max power, SONOFF power / current / voltage; Turn off when finished — Aqara fixed 2 W / 20 min), Output (Auto-off with "turn off / turn on again" mode, Metering only), Button & lights (child lock, button reacts on, button controls, status light, brightness, night, network light, backlight), Notifications (safety, too hot, offline; Appliance started / finished), Energy (reset counter, with a confirm). Event History: kWh per day for 7 days + today, safety events
+- Simulated (prototype panel): what is plugged in per socket (charger fading to 1 W, TV, kettle, heater, washing machine cycle, fridge compressor), power cut, voltage spike 262 V, the plug's button, 1 s = 1 min
+- Presets: Tuya with metering, Aqara EU, SONOFF S60, Third Reality, double socket, 4 + USB strip, wall socket 2 + USB, All features
+- Check: `tools/checks/plug.js` · edition: `python3 tools/bundle.py --edition plug` → `dist/samo-home-plugs.html`
 
 ## Performance on weak phones
 
