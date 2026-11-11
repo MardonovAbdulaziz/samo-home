@@ -98,7 +98,7 @@ Devices.vibration = (() => {
     if (st.alarmAt) return `${EVW[st.ev.kind]}!`;
     return recent(d) ? EVW[st.ev.kind] : 'Calm';
   }
-  const tone = (d) => (!d.online ? '' : appliance(d) ? (d.st.shaking ? 'on' : 'closed') : d.st.alarmAt ? 'alarm' : recent(d) ? 'open' : 'closed');
+  const tone = (d) => (!d.online ? '' : d.st.alarmAt ? 'alarm' : d.st.shaking || recent(d) ? 'on' : 'closed');
   function subText(d) {
     const st = d.st;
     if (!d.online) return `Last report ${when(st.lastSeen)}`;
@@ -126,8 +126,10 @@ Devices.vibration = (() => {
     if (!d.online) h += Kit.banner('ban-off', 'danger', 'bolt-crossed', `<b>Offline</b> · No report since ${when(st.lastSeen)}`);
     if (st.tamper) h += Kit.banner('ban-tamper', 'danger', 'banner-error', '<b>Cover opened</b> · Someone opened the sensor or pulled it off');
     if (has(d, 'battery') && d.battery <= 20) h += Kit.banner('ban-batt', 'warn', 'battery', `<b>Battery low · ${d.battery} %</b>`);
-    const state = !d.online ? 'calm' : st.alarmAt ? 'alarm' : appliance(d) ? (st.shaking ? 'on' : 'calm') : recent(d) ? 'warn' : 'calm';
-    h += Kit.mark(d, 'pulse-fill', state, `${d.name}: ${word(d)}`).replace('class="lk-mark', `class="lk-mark ${st.shaking || recent(d) ? 'vb-shake' : ''}`);
+    // one animation for every use (washer, window, safe…): while it shakes the mark trembles with a blue ring; an alarm is the same, in red
+    const shaking = st.shaking || recent(d);
+    const state = !d.online ? 'calm' : st.alarmAt ? 'alarm' : shaking ? 'on' : 'calm';
+    h += Kit.mark(d, 'pulse-fill', state, `${d.name}: ${word(d)}`).replace('class="lk-mark', `class="lk-mark ${d.online && (shaking || st.alarmAt) ? 'vb-shake' : ''}`);
     h += Kit.readout(word(d), tone(d), subText(d), '');
     if (!appliance(d) && st.alarmAt) h += `<div class="pad sm-acts" data-key="acts"><button class="btn btn-opposite" data-action="vb-ok">${icon('check')}It’s fine</button></div>`;
     h += Kit.cards([

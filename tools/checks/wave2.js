@@ -76,6 +76,17 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   ok('Presence: leaves → “Leaving…” with a countdown', (await word()) === 'Leaving…' && /Empty in \d+ s/.test(await sub()), await sub());
   await ev(() => { const d = Store.device('d-presence'); d.st.emptyAt = Date.now() - 1; Store.save(); }); await sl(1300);
   ok('Presence: then “Empty”', (await word()) === 'Empty');
+  s = await ev(() => document.querySelector('.screen').textContent);
+  ok('Presence: no metres on the page (words instead)', !/\d\s?m\b/.test(s.replace(/\d+ min/g, '')), (s.match(/\d\s?m\b/) || [''])[0]);
+  await ev(() => { const d = Store.device('d-presence'), T = Devices.presence, p = T.PRESETS.find((x) => x.id === 'fp1'); Object.assign(d, { preset: 'fp1', features: p.feats.slice(), settings: {} }); T.applyDefaults(d); Store.save(); });
+  await go('device.html?id=d-presence'); await click('[data-action="pp-sofa"]'); await sl(1300);
+  s = await ev(() => ({ sub: document.querySelector('[data-live="sub"]').textContent, lit: [...document.querySelectorAll('.pr-z.on text')].map((x) => x.textContent).join(',') }));
+  ok('Presence (FP1): on the sofa → “At the sofa”, the Sofa place lights up', /^At the sofa/.test(s.sub) && s.lit === 'Sofa', JSON.stringify(s));
+  await click('[data-action="pr-zones"]'); await sl(400); await click('[data-action="pr-znew"]'); await sl(250);
+  await ev(() => document.querySelector('[data-action="pr-cell"][data-c="3,1"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); await sl(250);
+  s = await dev('d-presence');
+  ok('Presence: paint a new place — tapping a square adds it', s.zones.length === 4 && s.zones[3].cells.includes('3,1'), JSON.stringify(s.zones[3]));
+  await ev(() => UI.closeSheet()); await sl(300);
 
   // ---- vibration
   await go('device.html?id=d-vibration');

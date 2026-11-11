@@ -1371,6 +1371,7 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .ct-word { font: 700 34px/40px var(--font); letter-spacing: 0.4px; color: var(--label-primary); transition: color var(--dur) var(--ease-out); }
 .ct-word.closed { color: var(--label-primary); }   /* neutral states (Closed, Dry, No motion) are white, not green (user, 2026-11-11) */
 .ct-word.open { color: var(--orange); }
+.ct-word.on { color: var(--primary); }   /* active, not a warning (Open, Watering, Running, Someone here) — the same blue as the mark */
 .ct-count { padding: 40px calc(var(--screen-pad) + 4px) 8px; }
 
 /* Event history: 24-hour strip (orange = open) */
@@ -1682,28 +1683,42 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .aq-bars { gap: 3px; }
 .aq-bars i.zy { background: var(--yellow); } .aq-bars i.z1 { background: var(--orange); } .aq-bars i.z2 { background: var(--red); }
 
-/* ---------- Presence: the room from above. The dot glides when the person walks (transform transition) and breathes
-   when they sit still; it fades out while the room empties. Zones light up in color/blue when occupied. ---------- */
-.pr-map { position: relative; margin-top: 16px; padding: 12px 8px 8px; border-radius: var(--radius-lg, 24px); background: var(--fill-quaternary); }
-.pr-map svg { display: block; width: 100%; height: auto; overflow: visible; }
-.pr-fan { fill: var(--fill-tertiary); }
-.pr-ring { fill: none; stroke: var(--separator); stroke-width: 1; stroke-dasharray: 3 4; }
-.pr-m { fill: var(--label-tertiary); font: 500 10px/1 var(--font); }
-.pr-ign { fill: none; stroke: var(--primary-soft); }
-.pr-zone { fill: transparent; stroke: var(--label-quaternary); stroke-width: 1; transition: fill 400ms var(--ease-out), stroke 400ms var(--ease-out); }
-.pr-zone.on { fill: var(--primary-soft); stroke: var(--primary); }
-.pr-zl { fill: var(--label-secondary); font: 500 11px/1 var(--font); text-anchor: middle; dominant-baseline: middle; }
-.pr-dev { fill: var(--label-secondary); }
+/* ---------- Presence: the room as a plan from above — walls, a door at the bottom, a window on the left, the sensor
+   on the top wall with the part of the room it watches (a soft fan of light). Places the user painted are soft
+   colour patches with their name; the occupied one lights up. The person is a small figure: it glides when they
+   walk (transform transition), breathes when they sit still, fades while the room empties. No metres anywhere. ---------- */
+.pr-map { position: relative; margin-top: 12px; padding: 10px 8px 4px; border-radius: 24px; background: var(--fill-quaternary); }
+.pr-map.edit { margin-top: 4px; }
+.pr-plan { display: block; width: 100%; height: auto; overflow: visible; }
+.pr-floor { fill: rgba(255, 255, 255, .03); }
+.pr-wall { fill: none; stroke: var(--label-tertiary); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.pr-door { fill: none; stroke: var(--label-quaternary); stroke-width: 1.5; stroke-dasharray: 3 4; }
+.pr-win { stroke: var(--primary); stroke-width: 4; stroke-linecap: round; opacity: .55; }
+.pr-dev { fill: var(--label-primary); }
+.pr-fan { fill: var(--primary); opacity: .07; }
+.pr-off { fill: rgba(0, 0, 0, .32); }
+.pr-z rect { fill: var(--zc); fill-opacity: .16; stroke: var(--zc); stroke-opacity: .35; stroke-width: 1; transition: fill-opacity 400ms var(--ease-out), stroke-opacity 400ms var(--ease-out); }
+.pr-z text { fill: var(--label-secondary); font: 590 12px/1 var(--font); text-anchor: middle; transition: fill 400ms var(--ease-out); }
+.pr-z.on rect { fill-opacity: .38; stroke-opacity: .9; } .pr-z.on text { fill: var(--label-primary); }
+.pr-z.sel rect { fill-opacity: .34; stroke-opacity: 1; stroke-width: 2; } .pr-z.sel text { fill: var(--label-primary); }
+.t-green { --zc: var(--green); } .t-orange { --zc: var(--orange); } .t-purple { --zc: var(--purple, #BF5AF2); } .t-teal { --zc: var(--teal, #64D2FF); } .t-pink { --zc: var(--pink, #FF375F); } .t-yellow { --zc: var(--yellow); }
+.pr-cell { fill: transparent; stroke: var(--label-quaternary); stroke-width: 1; stroke-dasharray: 3 3; cursor: pointer; }
+.pr-cell:active { fill: rgba(255, 255, 255, .06); }
 .pr-dot { transition: transform 1100ms cubic-bezier(0.32, 0.72, 0, 1), opacity 600ms var(--ease-out); }
 .pr-core { fill: var(--primary); }
-.pr-halo { fill: var(--primary); opacity: .22; transform-box: fill-box; transform-origin: center; }
+.pr-halo { fill: var(--primary); opacity: .2; transform-box: fill-box; transform-origin: center; }
 .pr-map.is-still .pr-halo { animation: pr-breathe 3200ms ease-in-out infinite; }
 .pr-map.is-leaving .pr-dot { opacity: .35 !important; }
-@keyframes pr-breathe { 0%, 100% { transform: scale(0.8); opacity: .3; } 50% { transform: scale(1.25); opacity: .12; } }
-.pr-only { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); color: var(--label-secondary); transition: color 400ms var(--ease-out); }
-.pr-map.is-occ .pr-only { color: var(--primary); }
-.pr-bands { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 8px var(--screen-pad) 4px; }
-.pr-bands .va-chip { height: 48px; font: var(--body-sm-accent); }
+@keyframes pr-breathe { 0%, 100% { transform: scale(0.8); opacity: .26; } 50% { transform: scale(1.2); opacity: .1; } }
+.pr-stripbtn { fill: transparent; stroke: var(--label-quaternary); stroke-dasharray: 3 3; cursor: pointer; transition: fill 200ms var(--ease-out); }
+.pr-stripbtn.on { fill: rgba(0, 0, 0, .34); stroke: var(--label-tertiary); stroke-dasharray: none; }
+.pr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.pr-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border-radius: 17px; background: var(--fill-tertiary); color: var(--label-secondary); font: var(--body-sm-accent); border: 1.5px solid transparent; }
+.pr-chip i { width: 10px; height: 10px; border-radius: 3px; background: var(--zc); }
+.pr-chip.on { color: var(--label-primary); border-color: var(--zc); }
+.pr-chip.add { color: var(--primary); }
+.pr-names { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 4px; padding-bottom: 4px; }
+.pr-names .va-chip { height: 40px; font: var(--body-sm-accent); }
 .pr-strip-card .ct-strip .bar { background: var(--fill-tertiary); } .pr-strip-card .ct-strip .bar i { background: var(--primary); }
 @media (prefers-reduced-motion: reduce) { .pr-map.is-still .pr-halo { animation: none; } .pr-dot { transition: opacity 200ms; } }
 
@@ -1747,7 +1762,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-remote { padding-top: 28px; }
 /* the press: a shade that sinks the surface (::after fades in fast, out slower) */
 .ir-k, .ir-rk button, .ir-dpad button { position: relative; -webkit-tap-highlight-color: transparent; }
-.ir-k::after, .ir-rk button::after, .ir-dpad button::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 240ms var(--ease-out); }
+.ir-k::after, .ir-rk button::after, .ir-dpad button::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 360ms var(--ease-out); }
 .ir-k:active::after, .ir-rk button:active::after, .ir-dpad button:active::after { opacity: 1; transition-duration: 70ms; }
 .ir-k::after { background: radial-gradient(120% 110% at 50% 50%, rgba(0, 0, 0, .04) 30%, rgba(0, 0, 0, .30) 100%); }
 .ir-k .icon, .ir-k span, .ir-rk button .icon, .ir-dpad button > span { transition: transform 160ms var(--ease-out); }
@@ -1756,16 +1771,28 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-dpad { position: relative; width: 228px; height: 228px; margin: 0 auto; border-radius: 50%; background: var(--fill-tertiary); overflow: hidden; }
 .ir-dpad button { position: absolute; display: flex; color: var(--label-primary); border-radius: 0; }
 .ir-dpad button > span { display: grid; place-items: center; width: 40px; height: 40px; }
-.ir-dpad .u { left: 0; top: 0; width: 100%; height: 50%; clip-path: polygon(0 0, 100% 0, 50% 100%); justify-content: center; align-items: flex-start; padding-top: 12px; }
-.ir-dpad .d { left: 0; bottom: 0; width: 100%; height: 50%; clip-path: polygon(50% 0, 100% 100%, 0 100%); justify-content: center; align-items: flex-end; padding-bottom: 12px; }
-.ir-dpad .l { left: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(0 0, 100% 50%, 0 100%); justify-content: flex-start; align-items: center; padding-left: 12px; }
-.ir-dpad .r { right: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(100% 0, 100% 100%, 0 50%); justify-content: flex-end; align-items: center; padding-right: 12px; }
-.ir-dpad .u::after { background: radial-gradient(circle at 50% 100%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
-.ir-dpad .d::after { background: radial-gradient(circle at 50% 0, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
-.ir-dpad .l::after { background: radial-gradient(circle at 100% 50%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
-.ir-dpad .r::after { background: radial-gradient(circle at 0 50%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
-.ir-dpad .u:active > span { transform: translateY(2px) scale(0.92); } .ir-dpad .d:active > span { transform: translateY(-2px) scale(0.92); }
-.ir-dpad .l:active > span { transform: translateX(2px) scale(0.92); } .ir-dpad .r:active > span { transform: translateX(-2px) scale(0.92); }
+.ir-dpad button.u { left: 0; top: 0; width: 100%; height: 50%; clip-path: polygon(0 0, 100% 0, 50% 100%); justify-content: center; align-items: flex-start; padding-top: 12px; }
+.ir-dpad button.d { left: 0; bottom: 0; width: 100%; height: 50%; clip-path: polygon(50% 0, 100% 100%, 0 100%); justify-content: center; align-items: flex-end; padding-bottom: 12px; }
+.ir-dpad button.l { left: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(0 0, 100% 50%, 0 100%); justify-content: flex-start; align-items: center; padding-left: 12px; }
+.ir-dpad button.r { right: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(100% 0, 100% 100%, 0 50%); justify-content: flex-end; align-items: center; padding-right: 12px; }
+/* the press shade is not cut to the wedge: it is a soft patch on the disc that fades into the surface around it
+   (fast in, slow out) — the wedge is only the touch area */
+.ir-dpad button::after, .ir-rk button::after { display: none; }
+.ir-dpad .sh, .ir-rk .sh { position: absolute; pointer-events: none; opacity: 0; transition: opacity 360ms var(--ease-out); }
+.ir-dpad .sh { inset: 0; border-radius: 50%; }
+.ir-dpad .sh.u { background: radial-gradient(ellipse 58% 46% at 50% 6%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
+.ir-dpad .sh.d { background: radial-gradient(ellipse 58% 46% at 50% 94%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
+.ir-dpad .sh.l { background: radial-gradient(ellipse 46% 58% at 6% 50%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
+.ir-dpad .sh.r { background: radial-gradient(ellipse 46% 58% at 94% 50%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
+.ir-dpad:has(button.u:active) .sh.u, .ir-dpad:has(button.d:active) .sh.d, .ir-dpad:has(button.l:active) .sh.l, .ir-dpad:has(button.r:active) .sh.r { opacity: 1; transition-duration: 70ms; }
+.ir-rk .sh { left: 0; right: 0; height: 70%; }
+.ir-rk .sh.up { top: 0; background: radial-gradient(ellipse 85% 70% at 50% 0%, rgba(0, 0, 0, .32), rgba(0, 0, 0, .12) 50%, rgba(0, 0, 0, 0) 100%); }
+.ir-rk .sh.dn { bottom: 0; background: radial-gradient(ellipse 85% 70% at 50% 100%, rgba(0, 0, 0, .32), rgba(0, 0, 0, .12) 50%, rgba(0, 0, 0, 0) 100%); }
+.ir-rk:has(button.up:active) .sh.up, .ir-rk:has(button.dn:active) .sh.dn { opacity: 1; transition-duration: 70ms; }
+.ir-rk { position: relative; }
+.ir-rk button { position: relative; z-index: 1; }
+.ir-dpad button.u:active > span { transform: translateY(2px) scale(0.92); } .ir-dpad button.d:active > span { transform: translateY(-2px) scale(0.92); }
+.ir-dpad button.l:active > span { transform: translateX(2px) scale(0.92); } .ir-dpad button.r:active > span { transform: translateX(-2px) scale(0.92); }
 .ir-dpad .ok { left: 62px; top: 62px; width: 104px; height: 104px; border-radius: 50%; background: var(--label-primary); color: var(--label-opposite); font: 590 15px/20px var(--font); letter-spacing: -0.23px; justify-content: center; align-items: center; z-index: 1; box-shadow: 0 0 0 6px rgba(0, 0, 0, .06); transition: transform 140ms var(--ease-out); }
 .ir-dpad .ok::after { background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, .16) 100%); }
 .ir-dpad .ok:active { transform: scale(0.96); }
@@ -1784,9 +1811,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-rk { padding: 0; gap: 0; justify-content: space-between; overflow: hidden; }
 .ir-rk::after { display: none; }
 .ir-rk button { flex: 1; width: 100%; display: grid; place-items: center; color: var(--label-primary); }
-.ir-rk .up::after { border-radius: 24px 24px 0 0; background: linear-gradient(to bottom, rgba(0, 0, 0, .32), rgba(0, 0, 0, .06)); }
-.ir-rk .dn::after { border-radius: 0 0 24px 24px; background: linear-gradient(to top, rgba(0, 0, 0, .32), rgba(0, 0, 0, .06)); }
-.ir-rk .up:active .icon { transform: translateY(2px) scale(0.92); } .ir-rk .dn:active .icon { transform: translateY(-2px) scale(0.92); }
+.ir-rk button.up:active .icon { transform: translateY(2px) scale(0.92); } .ir-rk button.dn:active .icon { transform: translateY(-2px) scale(0.92); }
 .ir-rk span { pointer-events: none; font: 590 15px/20px var(--font); }
 .ir-pair { display: grid; grid-template-rows: 1fr 1fr; gap: 4px; }
 .ir-pair .ir-k { height: auto; }
@@ -1848,11 +1873,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 
 /* ---------- Air quality: dust when the air gets bad — soft specks drifting slowly around the mark (calm, not busy).
    Moderate: a few; Poor: more; Unhealthy: most. They fade in when the air turns bad. ---------- */
-.aq-dust { position: absolute; inset: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
-.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .55); filter: blur(.4px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
-.aq-dust.lv3 span { background: rgba(236, 214, 186, .62); }
-.aq-dust.lv4 span { background: rgba(240, 205, 180, .7); }
-@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .9; } 80% { opacity: .7; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
+.aq-dust { position: absolute; inset: 0; z-index: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
+.lk-mark:has(.aq-dust) .lk-disc { z-index: 1; }   /* the dust drifts behind the icon */
+.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .38); filter: blur(.3px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
+.aq-dust.lv3 span { background: rgba(236, 214, 186, .42); }
+.aq-dust.lv4 span { background: rgba(240, 205, 180, .48); }
+@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .75; } 80% { opacity: .55; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
 @keyframes aq-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .aq-dust { display: none; } }
 
@@ -6814,7 +6840,7 @@ Devices.leak = (() => {
   const frost = (d) => has(d, 'temperature') && d.online && d.temp < 3;
   // water valves that agreed to close on a leak (valve settings → Automation → Close on leak or gas)
   const valves = () => Store.state.devices.filter((x) => x.type === 'valve' && Devices.valve && Devices.valve.linkable(x, 'leak'));
-  const closeValves = (d, why) => { valves().forEach((v) => Devices.valve.alarmClose(v, why)); d.st.valveClosed = true; logEv(d, 'valve'); };
+  const closeValves = (d, why) => { valves().forEach((v) => Devices.valve.alarmClose(v, why, { quiet: true })); d.st.valveClosed = true; logEv(d, 'valve'); };
 
   function applyDefaults(d) {
     for (const k in F) { const def = F[k].def; if (def !== undefined && d.settings[k] === undefined) d.settings[k] = clone(def); }
@@ -6859,9 +6885,9 @@ Devices.leak = (() => {
     if (!alarm(d)) return '';
     if (test) { notifyPush(d, `Test alarm · ${W(d)}`, 'Test mode — no valve closed, nobody else alarmed'); return 'Test mode: the alarm path works'; }
     const what = absence(d) ? 'No water' : 'Water leak';
-    notifyPush(d, `${what} · ${W(d)}`, absence(d) ? `${room(d)}: the water is gone` : `${room(d)} — check it now`, 'danger');
-    // a safety scenario (our hub): close the valve
-    if (!absence(d) && has(d, 'autoClose') && S(d, 'autoClose').on && valves().length) closeValves(d, `leak · ${d.name}`);
+    // a safety scenario (our hub): close the valve first, so ONE push says both things
+    const closed = !absence(d) && has(d, 'autoClose') && S(d, 'autoClose').on && valves().length ? (closeValves(d, `leak · ${d.name}`), valves().map((v) => v.name)) : [];
+    notifyPush(d, `${what} · ${W(d)}`, absence(d) ? `${room(d)}: the water is gone` : closed.length ? `${room(d)} — ${closed.join(', ')} closed` : `${room(d)} — check it now`, 'danger');
     return '';
   }
 
@@ -8079,11 +8105,11 @@ Devices.valve = (() => {
     return true;
   }
   /** Close by an alarm elsewhere (leak sensor, gas detector). Returns true if it closed something. */
-  function alarmClose(d, why) {
+  function alarmClose(d, why, opts = {}) {
     let did = false; d.ch.forEach((c, i) => { if (c.open && setOpen(d, i, false, why)) did = true; });
     if (!d.ch.some((c) => c.open)) d.st.closedBy = { why, t: Date.now() };
     Kit.logEv(d, 'alarmClose', { why });
-    if (has(d, 'notify') && S(d, 'notify').closedBy) Kit.push(`${d.name} closed`, why, 'warn');
+    if (!opts.quiet && has(d, 'notify') && S(d, 'notify').closedBy) Kit.push(`${d.name} closed`, why, 'warn');   // quiet: the alarm's own push already says it
     return did || true;
   }
   const linkable = (d, what) => d.online && has(d, 'linkAlarms') && S(d, 'linkAlarms')[what] && (what === 'gas' ? kindOf(d) === 'gas' : kindOf(d) !== 'gas');
@@ -8616,9 +8642,9 @@ Devices.air = (() => {
       Positions come from the index (not Math.random), so a re-render keeps every speck where it is. */
   function dust(l) {
     if (l < 2) return '';
-    const n = l === 2 ? 9 : l === 3 ? 15 : 22, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    const n = l === 2 ? 14 : l === 3 ? 22 : 32, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
     let h = '';
-    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(2 + f(i, 3) * 2.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
+    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(1.2 + f(i, 3) * 1.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
     return `<i class="aq-dust lv${l}" aria-hidden="true">${h}</i>`;
   }
   const lvTone = (l) => (l >= 4 ? 'z2' : l === 3 ? 'z1' : l === 2 ? 'zy' : '');
@@ -8697,9 +8723,11 @@ Devices.air = (() => {
 /* ===== js/devices/presence.js ===== */
 /* ==========================================================================
    Presence sensor (mmWave radar) — device interface (spec: Device Interface 3 / 9. Presence_Sensor_Interface.html)
-   Unlike a motion sensor it sees people who sit still, work or sleep. The page shows the room from above: the
-   sensor at the top, rings every metre up to its range, and the person as a dot — gliding when they walk,
-   breathing softly when they sit still. Zones (FP1) are named places in the room: Sofa, Desk, Door.
+   Unlike a motion sensor it sees people who sit still, work or sleep. The page shows the room as a plan from above —
+   walls, a door, a window, the sensor on the top wall and the part of the room it watches — and the person as a
+   small figure that glides when they walk and breathes softly when they sit still. No metres: “near the sensor”,
+   “on the sofa”. Zones are places the user paints on the room grid (the sensor does not see furniture — the FP1
+   reports which painted place is occupied).
    ========================================================================== */
 Devices.presence = (() => {
   const { esc, has, when, ago } = Kit;
@@ -8709,14 +8737,14 @@ Devices.presence = (() => {
     presence: { name: 'Someone in the room', grp: 'Device page', short: 'Sees people even when they sit still or sleep' },
     motionState: { name: 'Moving or still', grp: 'Device page', short: 'Large movement, small movement, or still' },
     distance: { name: 'Distance to the person', grp: 'Device page', short: 'How far the nearest person is' },
-    zones: { name: 'Zones', grp: 'Zones & areas', short: 'Named places in the room (sofa, desk, door) — the sensor says which is occupied', row: (d) => Kit.row('pr-zones', 'z', 'Zones', d.zones.map((z) => z.name).join(', ')) },
-    ignore: { name: 'Ignore areas', grp: 'Zones & areas', short: 'Distances the radar should not look at — a fan, a curtain', row: (d) => Kit.row('pr-ignore', 'i', 'Ignore areas', S(d, 'ignore').some(Boolean) ? `${S(d, 'ignore').filter(Boolean).length} bands off` : 'None'), def: Array(12).fill(false) },
+    zones: { name: 'Places in the room', grp: 'Zones & areas', short: 'You paint where the sofa, desk or door is — the sensor then says which place is occupied', row: (d) => Kit.row('pr-zones', 'z', 'Places in the room', d.zones.length ? d.zones.map((z) => z.name).join(', ') : 'None yet') },
+    ignore: { name: 'Parts not to watch', grp: 'Zones & areas', short: 'Strips of the room the radar should ignore — where a fan or a curtain moves', row: (d) => Kit.row('pr-ignore', 'i', 'Parts not to watch', S(d, 'ignore').some(Boolean) ? `${S(d, 'ignore').filter(Boolean).length} of 7 strips` : 'None'), def: Array(7).fill(false) },
     relay: { name: 'Built-in relay', grp: 'Device page', short: 'Switches the light itself: someone here + dark → on' },
     light: { name: 'Light level', grp: 'Device page', short: 'So “someone here + dark → light on” needs one device' },
     climate: { name: 'Temperature & humidity', grp: 'Device page', short: 'Some also measure these' },
     battery: { name: 'Battery', grp: 'Device page', short: 'Battery ones (PIR + radar) report charge' },
     range: { name: 'Detection range', grp: 'Detection', type: 'fields', def: { min: 0.3, max: 4.5 }, short: 'Cut it short so it doesn’t see through a wall',
-      fields: [{ id: 'min', label: 'Ignore closer than', unit: 'm', min: 0, max: 3, step: 0.1 }, { id: 'max', label: 'Detect up to', unit: 'm', min: 1, max: 9, step: 0.5 }] },
+      fields: [{ id: 'min', label: 'Ignore closer than', unit: 'm', min: 0, max: 3, step: 0.5, hint: 'Shown on the room plan' }, { id: 'max', label: 'Watch up to', unit: 'm', min: 1, max: 7, step: 0.5, hint: '1 m ≈ one strip of the room plan' }] },
     sensitivity: { name: 'Sensitivity', grp: 'Detection', type: 'fields', def: { move: 7, still: 6 }, short: 'How small a movement counts',
       fields: [{ id: 'move', label: 'Movement', min: 0, max: 10 }, { id: 'still', label: 'Still person', min: 0, max: 10 }] },
     timing: { name: 'Enter & leave delays', grp: 'Detection', type: 'fields', def: { enter: 0, leave: 30 }, short: 'Wait before “someone is here”, longer before “empty”',
@@ -8743,51 +8771,61 @@ Devices.presence = (() => {
     { id: 'fp300', name: 'Aqara FP300 (battery, PIR + radar)', model: 'PS-S04D', manufacturer: 'Aqara', feats: ['presence', 'distance', 'light', 'climate', 'battery', 'ignore', 'range', 'timing', 'learn', 'indicator', 'presenceLight', 'notify', 'history'] },
     { id: 'all', name: 'All features (design)', model: 'every feature on', manufacturer: 'Samo', feats: Object.keys(F) },
   ];
-  // zones: an angle range (−60…60°) and a distance range (m) on the room map
-  const ZONES = [{ name: 'Sofa', a: [-60, -15], r: [1.5, 3] }, { name: 'Desk', a: [20, 60], r: [1, 2.6] }, { name: 'Door', a: [-15, 20], r: [3, 9] }];
+  /* The room plan: 4 columns × 7 strips seen from the sensor on the top wall (strip 1 = next to the sensor, each
+     strip ≈ 1 m) — the FP1's own zone grid. A zone is a set of squares "col,row" the user painted. */
+  const COLS = 4, ROWS = 7;
+  const NAMES = ['Sofa', 'Desk', 'Bed', 'Door', 'TV', 'Dining', 'Kitchen', 'Play', 'Chair', 'Window', 'Bath', 'Other'];
+  const TONES = ['green', 'orange', 'purple', 'teal', 'pink', 'yellow'];
+  const ZONES = [{ name: 'Sofa', cells: ['1,4', '1,5', '2,4', '2,5'] }, { name: 'Desk', cells: ['4,3', '4,4'] }, { name: 'Door', cells: ['2,7', '3,7'] }];
+  const cellOf = (x, y) => `${Math.min(COLS, Math.floor(x) + 1)},${Math.min(ROWS, Math.floor(y) + 1)}`;
+  const AT = { sofa: [1.0, 4.4], desk: [3.5, 3.4], door: [2.4, 6.6], walk: [2.9, 5.8], middle: [2.0, 3.6] };
 
   function create(presetId, opts = {}) {
     const p = PRESETS.find((x) => x.id === presetId) || PRESETS[0], now = Date.now();
     const d = Kit.base('presence', p, Object.assign({ name: 'Presence sensor' }, opts), {
-      battery: 78, zones: ZONES.map((z) => Object.assign({}, z)),
-      st: { occ: true, move: 'still', dist: 2.2, ang: -35, zone: 'Sofa', since: now - 47 * 60000, lastSeen: now - 20000, emptyAt: 0, lux: 42, t: 22.8, h: 44, relay: true, learnUntil: 0, learned: 0, today: [[now - 9 * 3600000, now - 8.2 * 3600000], [now - 4 * 3600000, now - 3.1 * 3600000], [now - 47 * 60000, 0]] },
-      phys: { here: true, move: 'still', dist: 2.2, ang: -35, fan: false },
+      battery: 78, zones: ZONES.map((z) => ({ name: z.name, cells: z.cells.slice() })),
+      st: { occ: true, move: 'still', x: AT.sofa[0], y: AT.sofa[1], zone: 'Sofa', since: now - 47 * 60000, lastSeen: now - 20000, emptyAt: 0, lux: 42, t: 22.8, h: 44, relay: true, learnUntil: 0, learned: 0, today: [[now - 9 * 3600000, now - 8.2 * 3600000], [now - 4 * 3600000, now - 3.1 * 3600000], [now - 47 * 60000, 0]] },
+      phys: { here: true, move: 'still', x: AT.sofa[0], y: AT.sofa[1], fan: false },
     });
     Kit.applyDefaults(F, d); if (p.v) Object.assign(d.settings, Kit.clone(p.v));
     return d;
   }
-  const applyDefaults = (d) => { Kit.applyDefaults(F, d); d.zones = d.zones || ZONES.map((z) => Object.assign({}, z)); };
-  const maxR = (d) => (has(d, 'range') ? S(d, 'range').max : 6);
-  const zoneOf = (d, ang, dist) => (has(d, 'zones') ? (d.zones.find((z) => ang >= z.a[0] && ang <= z.a[1] && dist >= z.r[0] && dist <= z.r[1]) || {}).name || null : null);
-  const band = (dist) => Math.min(11, Math.floor(dist / 0.75));
+  function applyDefaults(d) {
+    Kit.applyDefaults(F, d);
+    // data saved before the room plan: angle/metre zones → painted squares; 12 distance bands → 7 strips
+    if (!d.zones || (d.zones[0] && !d.zones[0].cells)) d.zones = ZONES.map((z) => ({ name: z.name, cells: z.cells.slice() }));
+    if (!Array.isArray(d.settings.ignore) || d.settings.ignore.length !== ROWS) d.settings.ignore = Array(ROWS).fill(false);
+    if (d.phys && d.phys.x === undefined) Object.assign(d.phys, { x: AT.sofa[0], y: AT.sofa[1] });
+    if (d.st && d.st.x === undefined) Object.assign(d.st, { x: AT.sofa[0], y: AT.sofa[1] });
+  }
+  const zoneOf = (d, x, y) => (has(d, 'zones') ? (d.zones.find((z) => z.cells.includes(cellOf(x, y))) || {}).name || null : null);
+  const reach = (d) => (has(d, 'range') ? S(d, 'range') : { min: 0, max: ROWS });
+  const where = (y) => (y < 2.4 ? 'near the sensor' : y < 4.8 ? 'in the middle of the room' : 'on the far side');
 
   /* ---------- Behaviour: what the radar reports from the room ---------- */
   function sees(d) {
-    const P = d.phys;
+    const P = d.phys, R = reach(d);
     if (has(d, 'mode') && S(d, 'mode') === 'off') return false;
-    if (P.here) { if (has(d, 'range') && (P.dist < S(d, 'range').min || P.dist > S(d, 'range').max)) return false; if (has(d, 'ignore') && S(d, 'ignore')[band(P.dist)]) return false; return true; }
-    // a fan moving 1.5 m away looks like a person — unless that band is ignored or the room was learned
-    if (P.fan) return !(has(d, 'ignore') && S(d, 'ignore')[band(1.5)]) && !d.st.learned;
+    if (P.here) { if (P.y < R.min || P.y > R.max) return false; if (has(d, 'ignore') && S(d, 'ignore')[Math.min(ROWS - 1, Math.floor(P.y))]) return false; return true; }
+    // a fan in the corner looks like a person — unless that strip is ignored or the room was learned
+    if (P.fan) return !(has(d, 'ignore') && S(d, 'ignore')[1]) && !d.st.learned;
     return false;
   }
   function tick(d) {
     if (!d.online) return false;
     const st = d.st, P = d.phys, now = Date.now(); let ch = false;
     if (st.learnUntil && now >= st.learnUntil) { st.learnUntil = 0; st.learned = now; Kit.logEv(d, 'learned'); ch = true; }
-    const see = sees(d);
-    if (see) {
+    if (sees(d)) {
       st.emptyAt = 0;
-      const ghost = !P.here;
-      const dist = ghost ? 1.5 : P.dist, ang = ghost ? 40 : P.ang, move = ghost ? 'small' : P.move;
-      if (!st.occ) { st.occ = true; st.since = now; st.today.push([now, 0]); Kit.logEv(d, 'in', { z: zoneOf(d, ang, dist) }); ch = true; if (has(d, 'notify') && S(d, 'notify').zone && zoneOf(d, ang, dist) === 'Door') Kit.push(`${d.name}: someone at the door`, Kit.room(d)); }
-      if (st.dist !== dist || st.ang !== ang || st.move !== move) { const z = zoneOf(d, ang, dist); if (z && z !== st.zone) Kit.logEv(d, 'zone', { z }); Object.assign(st, { dist, ang, move, zone: z }); ch = true; }
+      const ghost = !P.here, x = ghost ? 3.6 : P.x, y = ghost ? 1.4 : P.y, move = ghost ? 'small' : P.move;
+      if (!st.occ) { st.occ = true; st.since = now; st.today.push([now, 0]); Kit.logEv(d, 'in', { z: zoneOf(d, x, y) }); ch = true; if (has(d, 'notify') && S(d, 'notify').zone && zoneOf(d, x, y) === 'Door') Kit.push(`${d.name}: someone at the door`, Kit.room(d)); }
+      if (st.x !== x || st.y !== y || st.move !== move) { const z = zoneOf(d, x, y); if (z && z !== st.zone) Kit.logEv(d, 'zone', { z }); Object.assign(st, { x, y, move, zone: z }); ch = true; }
       st.lastSeen = now;
     } else if (st.occ) {
       const leave = has(d, 'timing') ? S(d, 'timing').leave : 30;
       if (!st.emptyAt) { st.emptyAt = now + leave * 1000; st.move = 'none'; ch = true; }
       else if (now >= st.emptyAt) { st.occ = false; st.emptyAt = 0; st.zone = null; const last = st.today[st.today.length - 1]; if (last && !last[1]) last[1] = now; Kit.logEv(d, 'out'); ch = true; }
     }
-    // the light that follows presence (built-in relay or our automation)
     const wantLight = st.occ && st.lux < (has(d, 'presenceLight') ? S(d, 'presenceLight').lux : 60);
     if (has(d, 'relay') && st.relay !== wantLight) { st.relay = wantLight; Kit.logEv(d, 'relay', { on: wantLight }); ch = true; }
     if (has(d, 'presenceLight') && S(d, 'presenceLight').on && st.autoLight !== wantLight) { st.autoLight = wantLight; ch = true; }
@@ -8803,7 +8841,11 @@ Devices.presence = (() => {
     if (!d.online) return `Last report ${when(st.lastSeen)}`;
     if (st.learnUntil) return `Keep the room empty · ${Math.ceil((st.learnUntil - Date.now()) / 1000)} s`;
     if (st.occ && st.emptyAt) return `Empty in ${Math.max(0, Math.ceil((st.emptyAt - Date.now()) / 1000))} s if nobody moves`;
-    if (st.occ) { const b = [has(d, 'zones') && st.zone ? `On the ${st.zone.toLowerCase()}` : '', has(d, 'motionState') && MOVE[st.move], has(d, 'distance') && `${st.dist.toFixed(1)} m away`].filter(Boolean); return `${b.length ? b.join(' · ') + ' · ' : ''}for ${Kit.dur((Date.now() - st.since) / 1000)}`; }
+    if (st.occ) {
+      const place = has(d, 'zones') && st.zone ? `At the ${st.zone.toLowerCase()}` : has(d, 'distance') ? where(st.y).replace(/^./, (c) => c.toUpperCase()) : '';
+      const b = [place, has(d, 'motionState') && MOVE[st.move]].filter(Boolean);
+      return `${b.length ? b.join(' · ') + ' · ' : ''}for ${Kit.dur((Date.now() - st.since) / 1000)}`;
+    }
     return `Empty since ${when(st.today.length ? st.today[st.today.length - 1][1] || st.lastSeen : st.lastSeen)}`;
   }
   function tileStatus(d) {
@@ -8813,37 +8855,45 @@ Devices.presence = (() => {
   }
   const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: 'radar-fill', on: false, status: s.text, tone: s.tone, controllable: false, offline: !d.online }]; };
 
-  /* ---------- The room map ---------- */
-  function radar(d) {
-    const st = d.st, R = maxR(d), W = 300, H = 178, cx = 150, cy = 14, sc = (H - 24) / R;
-    const pt = (ang, dist) => [cx + Math.sin(ang * Math.PI / 180) * dist * sc, cy + Math.cos(ang * Math.PI / 180) * dist * sc];
-    const arc = (r) => { const [x1, y1] = pt(-60, r), [x2, y2] = pt(60, r); return `M${x1.toFixed(1)} ${y1.toFixed(1)} A${(r * sc).toFixed(1)} ${(r * sc).toFixed(1)} 0 0 0 ${x2.toFixed(1)} ${y2.toFixed(1)}`; };
-    const rings = []; for (let m = 1; m <= Math.floor(R); m++) rings.push(`<path d="${arc(m)}" class="pr-ring"/><text x="${(cx + 4).toFixed(0)}" y="${(cy + m * sc - 3).toFixed(0)}" class="pr-m">${m} m</text>`);
-    const ign = has(d, 'ignore') ? S(d, 'ignore').map((on, i) => (on ? `<path d="${arc(Math.min(R, (i + 0.5) * 0.75))}" class="pr-ign" style="stroke-width:${(0.75 * sc).toFixed(1)}"/>` : '')).join('') : '';
-    const zones = has(d, 'zones') ? d.zones.map((z) => { const [a, b] = z.a, [r0, r1] = [z.r[0], Math.min(z.r[1], R)]; const p = [pt(a, r0), pt(b, r0), pt(b, r1), pt(a, r1)]; const [lx, ly] = pt((a + b) / 2, (r0 + r1) / 2); return `<path d="M${p[0]} L${p[1]} L${p[2]} L${p[3]} Z" class="pr-zone ${st.occ && st.zone === z.name ? 'on' : ''}"/><text x="${lx.toFixed(0)}" y="${ly.toFixed(0)}" class="pr-zl">${esc(z.name)}</text>`; }).join('') : '';
-    const [px, py] = pt(st.ang, Math.min(st.dist, R));
-    const show = d.online && st.occ && (has(d, 'distance') || has(d, 'zones'));
-    return `<div class="pad" data-key="scene"><div class="pr-map ${st.occ && d.online ? 'is-occ' : ''} ${st.move === 'still' ? 'is-still' : ''} ${st.emptyAt ? 'is-leaving' : ''}" role="img" aria-label="${esc(word(d))}">
-      <svg viewBox="0 0 ${W} ${H}"><path d="M${cx} ${cy} L${pt(-60, R).join(' ')} A${(R * sc).toFixed(1)} ${(R * sc).toFixed(1)} 0 0 0 ${pt(60, R).join(' ')} Z" class="pr-fan"/>${ign}${zones}${rings.join('')}
-        <rect x="${cx - 14}" y="2" width="28" height="9" rx="4.5" class="pr-dev"/>
-        <g class="pr-dot" style="transform:translate(${px.toFixed(1)}px,${py.toFixed(1)}px);opacity:${show ? 1 : 0}"><circle r="15" class="pr-halo"/><circle r="7" class="pr-core"/></g></svg>
-      ${!has(d, 'distance') && !has(d, 'zones') ? `<span class="pr-only">${icon(d.userIcon || 'radar-fill', 'icon', 'style="width:40px;height:40px"')}</span>` : ''}</div></div>`;
+  /* ---------- The room plan ---------- */
+  const W = 320, CW = 76, CH = 40, X0 = 8, Y0 = 18;   // 4 × 76 = 304 wide, 7 × 40 = 280 deep
+  const cx = (x) => X0 + x * CW, cy = (y) => Y0 + y * CH;
+  function plan(d, o = {}) {
+    const st = d.st, R = reach(d), H = Y0 + ROWS * CH + 10;
+    const ign = has(d, 'ignore') ? S(d, 'ignore') : [];
+    const cells = (z, k) => z.cells.map((c) => { const [a, b] = c.split(',').map(Number); return `<rect x="${cx(a - 1) + 1}" y="${cy(b - 1) + 1}" width="${CW - 2}" height="${CH - 2}" rx="6"/>`; }).join('');
+    const label = (z) => { if (!z.cells.length) return ''; const pts = z.cells.map((c) => c.split(',').map(Number)); const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length - 0.5, my = pts.reduce((s, p) => s + p[1], 0) / pts.length - 0.5; return `<text x="${cx(mx).toFixed(0)}" y="${(cy(my) + 4).toFixed(0)}">${esc(z.name)}</text>`; };
+    const zones = has(d, 'zones') || o.edit ? d.zones.map((z, i) => `<g class="pr-z t-${TONES[i % TONES.length]} ${st.occ && st.zone === z.name && !o.edit ? 'on' : ''} ${o.sel === i ? 'sel' : ''}">${cells(z)}${label(z)}</g>`).join('') : '';
+    const unwatched = [];
+    for (let r = 0; r < ROWS; r++) if (ign[r] || r + 1 <= R.min || r >= R.max) unwatched.push(`<rect x="${X0}" y="${cy(r)}" width="${COLS * CW}" height="${CH}" class="pr-off"/>`);
+    const grid = o.edit ? Array.from({ length: COLS * ROWS }, (_, i) => { const a = i % COLS + 1, b = Math.floor(i / COLS) + 1; return `<rect x="${cx(a - 1) + 1}" y="${cy(b - 1) + 1}" width="${CW - 2}" height="${CH - 2}" rx="6" class="pr-cell" data-action="pr-cell" data-c="${a},${b}"/>`; }).join('') : '';
+    const strips = o.strips ? ign.map((on, r) => `<rect x="${X0}" y="${cy(r) + 1}" width="${COLS * CW}" height="${CH - 2}" rx="6" class="pr-stripbtn ${on ? 'on' : ''}" data-action="pr-band" data-i="${r}"/>`).join('') : '';
+    const px = has(d, 'zones') || o.edit ? st.x : COLS / 2, show = !o.edit && !o.strips && d.online && st.occ;
+    const fan = `<path d="M${cx(2) - 10} ${Y0} L${cx(0)} ${cy(Math.min(ROWS, R.max))} L${cx(COLS)} ${cy(Math.min(ROWS, R.max))} L${cx(2) + 10} ${Y0} Z" class="pr-fan"/>`;
+    return `<svg viewBox="0 0 ${W} ${H}" class="pr-plan" aria-hidden="true">
+      <rect x="${X0}" y="${Y0}" width="${COLS * CW}" height="${ROWS * CH}" class="pr-floor"/>${fan}${unwatched.join('')}${zones}${grid}${strips}
+      <path d="M${X0} ${Y0} H${cx(COLS)} V${cy(ROWS)} H${cx(3) - 4} M${cx(1) + 4} ${cy(ROWS)} H${X0} Z" class="pr-wall"/>
+      <path d="M${cx(1) + 4} ${cy(ROWS)} A${CW * 2 - 8} 22 0 0 1 ${cx(3) - 4} ${cy(ROWS)}" class="pr-door"/>
+      <path d="M${X0} ${cy(2.2)} V${cy(3.8)}" class="pr-win"/>
+      <rect x="${cx(2) - 16}" y="${Y0 - 6}" width="32" height="10" rx="5" class="pr-dev"/>
+      <g class="pr-dot" style="transform:translate(${cx(px).toFixed(1)}px,${cy(st.y).toFixed(1)}px);opacity:${show ? 1 : 0}"><circle r="17" class="pr-halo"/><circle cy="-6" r="5.5" class="pr-core"/><path d="M-8 9 Q-8 -1 0 -1 Q8 -1 8 9 Z" class="pr-core"/></g></svg>`;
   }
   function page(d) {
     const st = d.st;
     let h = '';
     if (!d.online) h += Kit.banner('ban-off', 'danger', 'bolt-crossed', `<b>Offline</b> · No report since ${when(st.lastSeen)}`);
     if (has(d, 'battery') && d.battery <= 20) h += Kit.banner('ban-batt', 'warn', 'battery', `<b>Battery low · ${d.battery} %</b>`);
-    if (has(d, 'mode') && S(d, 'mode') === 'off') h += Kit.banner('ban-mode', 'info', 'round-info', '<b>Radar is off</b> · Only movement (PIR) is seen — a still person looks like an empty room');
-    h += radar(d);
+    if (has(d, 'mode') && S(d, 'mode') === 'off') h += Kit.banner('ban-mode', 'info', 'round-info', '<b>Radar is off</b> · Only movement is seen — a still person looks like an empty room');
+    h += `<div class="pad" data-key="scene"><div class="pr-map ${st.occ && d.online ? 'is-occ' : ''} ${st.move === 'still' ? 'is-still' : ''} ${st.emptyAt ? 'is-leaving' : ''}" role="img" aria-label="${esc(word(d))}">${plan(d)}</div></div>`;
     h += Kit.readout(word(d), tone(d), subText(d), st.autoLight || (has(d, 'relay') && st.relay) ? 'Light on' : '');
     h += Kit.cards([
-      has(d, 'light') && ['Light', `${Math.round(st.lux)} lx · ${st.lux < 30 ? 'dark' : st.lux < 200 ? 'dim' : 'bright'}`, { count: true }],
+      has(d, 'light') && ['Light', st.lux < 30 ? 'Dark' : st.lux < 200 ? 'Dim' : 'Bright'],
       has(d, 'relay') && ['Ceiling light', st.relay ? 'On' : 'Off'],
       has(d, 'climate') && ['Temperature', `${st.t.toFixed(1)} °C`, { count: true }],
       has(d, 'climate') && ['Humidity', `${Math.round(st.h)} %`, { count: true }],
       has(d, 'battery') && ['Battery', `${d.battery} %`, { wide: true, icon: 'battery', count: true }],
     ]);
+    if (has(d, 'zones')) h += Kit.actionRows('rows', [['pr-zones', 'Places in the room', d.zones.length ? `${d.zones.map((z) => z.name).join(', ')} · tap to change` : 'Paint where the sofa or desk is']]);
     if (has(d, 'history')) {
       const t0 = new Date(); t0.setHours(0, 0, 0, 0); const day = 86400000, now = Date.now(), pct = (t) => ((Math.max(t0.getTime(), t) - t0.getTime()) / day) * 100;
       h += `<div class="pad" data-key="strip" style="margin-top:24px"><div class="info-card wide sm-level pr-strip-card"><span>Occupied today · ${Kit.dur(st.today.reduce((s, [a, b]) => s + ((b || now) - Math.max(a, t0.getTime())), 0) / 1000)}</span>
@@ -8852,48 +8902,62 @@ Devices.presence = (() => {
     return h + '<div style="height:28px"></div>';
   }
   function live(d, root) { UI.setNum(root.querySelector('[data-live="sub"]'), subText(d)); }
-  const bindPage = () => {};
 
-  /* ---------- Settings ---------- */
+  /* ---------- Places in the room (zone painter) ---------- */
   function openZones(d, ctx) {
+    let sel = 0;
     const s = UI.sheet({
-      title: 'Zones', sub: 'The sensor says which zone is occupied — e.g. turn on the reading lamp when someone sits on the sofa',
-      render: () => `<div class="list">${d.zones.map((z, i) => `<button class="cell" data-action="pr-zone" data-i="${i}"><span class="cell-main cell-title">${esc(z.name)}</span><span class="cell-value">${z.r[0]}–${z.r[1] > 8 ? '…' : z.r[1]} m</span>${icon('chevron-right', 'chev')}</button>`).join('')}</div><div class="list-footer">The map on the device page shows the zones.</div>`,
+      title: 'Places in the room', sub: 'The sensor doesn’t see furniture. Pick a place, then tap the squares where it is — the sensor will tell when someone is there.',
+      render: () => {
+        const z = d.zones[sel];
+        return `<div class="pad pr-chips">${d.zones.map((x, i) => `<button class="pr-chip t-${TONES[i % TONES.length]} ${i === sel ? 'on' : ''}" data-action="pr-zsel" data-i="${i}"><i></i>${esc(x.name)}</button>`).join('')}${d.zones.length < 6 ? '<button class="pr-chip add" data-action="pr-znew">+ New place</button>' : ''}</div>
+          ${z ? `<div class="pad"><div class="pr-map edit">${plan(d, { edit: true, sel })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Tap squares to add them to <b>${esc(z.name)}</b> — tap again to remove. Top = the wall with the sensor.</div></div>
+          ${UI.group('Name', `<div class="pad pr-names">${NAMES.map((n) => `<button class="va-chip ${z.name === n ? 'on' : ''}" data-action="pr-zname" data-n="${n}">${n}</button>`).join('')}</div>`)}
+          <div class="pad" style="margin-top:16px"><button class="btn btn-danger btn-block" data-action="pr-zdel">Remove ${esc(z.name)}</button></div>` : '<div class="list-footer">No places yet — tap “+ New place”.</div>'}`;
+      },
     });
-    UI.on({ 'pr-zone': ({ i }) => UI.prompt({ title: 'Zone name', label: 'Name', value: d.zones[+i].name, onOk: (v) => { d.zones[+i].name = v; Store.save(); ctx.render(); s.refresh(); } }) });
+    const commit = () => { Store.save(); ctx.render(); s.refresh(); };
+    UI.on({
+      'pr-zsel': ({ i }) => { sel = +i; s.refresh(); },
+      'pr-znew': () => { const used = d.zones.map((z) => z.name); d.zones.push({ name: NAMES.find((n) => !used.includes(n)) || 'Other', cells: [] }); sel = d.zones.length - 1; commit(); },
+      'pr-zname': ({ n }) => { d.zones[sel].name = n; commit(); },
+      'pr-cell': ({ c }) => { const z = d.zones[sel]; if (!z) return; const had = z.cells.includes(c); d.zones.forEach((x) => { x.cells = x.cells.filter((k) => k !== c); }); if (!had) z.cells.push(c); commit(); },
+      'pr-zdel': () => { d.zones.splice(sel, 1); sel = Math.max(0, sel - 1); commit(); },
+    });
   }
   function openIgnore(d, ctx) {
     const s = UI.sheet({
-      title: 'Ignore areas', sub: 'Turn off the distances where a fan or a curtain moves',
-      render: () => `<div class="pr-bands">${S(d, 'ignore').map((on, i) => `<button class="va-chip ${on ? 'on' : ''}" data-action="pr-band" data-i="${i}">${(i * 0.75).toFixed(2).replace(/0$/, '')}–${((i + 1) * 0.75).toFixed(2).replace(/0$/, '')} m</button>`).join('')}</div><div class="list-footer">Blue = ignored. A person standing there won’t be seen either.</div>`,
+      title: 'Parts not to watch', sub: 'Tap a strip of the room where a fan or a curtain moves — the radar will ignore it (a person there won’t be seen either)',
+      render: () => `<div class="pad"><div class="pr-map edit">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Dark strips are not watched. Top = the wall with the sensor.</div></div>`,
     });
     UI.on({ 'pr-band': ({ i }) => { S(d, 'ignore')[+i] = !S(d, 'ignore')[+i]; Store.save(); ctx.render(); s.refresh(); } });
   }
-  const settings = (d) => Kit.settingsHTML(F, GROUPS, d, { foot: { Detection: 'Stored in the sensor.' } });
-  const EV = { in: (e) => `Someone came in${e.z ? ' · ' + e.z : ''}`, out: 'Room empty', zone: (e) => `Moved to the ${e.z}`, relay: (e) => `Light ${e.on ? 'on' : 'off'}`, learned: 'Learned the empty room', offline: 'Stopped answering' };
+  function bindPage(d, ctx) { UI.on({ 'pr-zones': () => openZones(d, ctx) }); }
+  const settings = (d) => Kit.settingsHTML(F, GROUPS, d, { foot: { Detection: 'Stored in the sensor.', 'Zones & areas': 'Shown on the room plan on the device page.' } });
+  const EV = { in: (e) => `Someone came in${e.z ? ' · ' + e.z : ''}`, out: 'Room empty', zone: (e) => `Moved to the ${e.z.toLowerCase()}`, relay: (e) => `Light ${e.on ? 'on' : 'off'}`, learned: 'Learned the empty room', offline: 'Stopped answering' };
   function bindSettings(d, ctx) {
     Kit.bindSettings(F, d, ctx, { learn: () => { d.st.learnUntil = Date.now() + 8000; Store.save(); ctx.render(); UI.toast('Leave the room — learning for a moment'); } });
     UI.on({ 'pr-zones': () => openZones(d, ctx), 'pr-ignore': () => openIgnore(d, ctx), 'rs-history': () => Kit.historySheet(d, EV, 'When the room was occupied') });
   }
-  const about = (d) => [['Room', word(d)], ...(has(d, 'distance') ? [['Distance', `${d.st.dist.toFixed(1)} m`]] : [])];
+  const about = (d) => [['Room', word(d)], ...(has(d, 'zones') && d.st.zone ? [['Place', d.st.zone]] : [])];
 
   function protoPanel(d) {
     const P = d.phys;
     return Kit.protoHead('Presence sensor prototype', '9. Presence_Sensor_Interface.html', PRESETS, d) + `
-      <h3>The room · <span style="font-weight:400">${P.here ? `a person ${P.move}, ${P.dist} m` : 'nobody'}${P.fan ? ' · fan on' : ''}</span></h3>
+      <h3>The room · <span style="font-weight:400">${P.here ? `a person ${({ large: 'walking', small: 'moving a little', still: 'still' })[P.move]}${zoneOf(Object.assign({}, d, { features: d.features.concat('zones') }), P.x, P.y) ? ' at the ' + zoneOf(Object.assign({}, d, { features: d.features.concat('zones') }), P.x, P.y).toLowerCase() : ''}` : 'nobody'}${P.fan ? ' · fan on' : ''}</span></h3>
       <div class="pp-row">${Kit.ppBtn('pp-walk', '🚶 Someone walks in')}${Kit.ppBtn('pp-sofa', '🛋 Sits on the sofa')}${Kit.ppBtn('pp-desk', '💻 Works at the desk')}</div>
       <div class="pp-row">${Kit.ppBtn('pp-door', '🚪 Stands at the door')}${Kit.ppBtn('pp-leave', '👋 Leaves the room')}${Kit.ppBtn('pp-fan', P.fan ? '🌀 Fan off' : '🌀 Fan on (fools the radar)')}</div>
       <div class="pp-row">${Kit.ppBtn('pp-dark', d.st.lux < 30 ? '☀️ Daylight' : '🌙 Evening (dark)', has(d, 'light') || has(d, 'presenceLight'))}${Kit.ppBtn('pp-batt', d.battery <= 20 ? '🔋 New battery' : '🔋 Battery low', has(d, 'battery'))}${Kit.ppBtn('pp-online', d.online ? '📴 Stops answering' : '📶 Answers again')}</div>` + Kit.protoFeatures(F, GROUPS, d);
   }
   function bindProto(d, ctx) {
-    const P = d.phys, go = (o) => Object.assign(P, { here: true }, o);
+    const P = d.phys, go = (k, move) => Object.assign(P, { here: true, x: AT[k][0], y: AT[k][1], move });
     Kit.bindProto(F, PRESETS, d, ctx, {
-      'pp-walk': () => go({ move: 'large', dist: 3.6, ang: 5 }),
-      'pp-sofa': () => go({ move: 'still', dist: 2.2, ang: -38 }),
-      'pp-desk': () => go({ move: 'small', dist: 1.8, ang: 40 }),
-      'pp-door': () => go({ move: 'large', dist: 4.2, ang: 0 }),
+      'pp-walk': () => go('walk', 'large'),
+      'pp-sofa': () => go('sofa', 'still'),
+      'pp-desk': () => go('desk', 'small'),
+      'pp-door': () => go('door', 'large'),
       'pp-leave': () => { P.here = false; return `The sensor waits ${has(d, 'timing') ? S(d, 'timing').leave : 30} s before saying “empty”`; },
-      'pp-fan': () => { P.fan = !P.fan; if (P.fan && !P.here) return 'An empty room with a fan: the radar may think someone is here — Ignore areas or Learn fixes it'; },
+      'pp-fan': () => { P.fan = !P.fan; if (P.fan && !P.here) return 'An empty room with a fan: the radar may think someone is here — “Parts not to watch” or Learn fixes it'; },
       'pp-dark': () => { d.st.lux = d.st.lux < 30 ? 320 : 12; },
       'pp-batt': () => { d.battery = d.battery <= 20 ? 100 : 12; },
       'pp-online': () => { d.online = !d.online; if (!d.online) Kit.logEv(d, 'offline'); else d.st.lastSeen = Date.now(); },
@@ -9011,7 +9075,7 @@ Devices.vibration = (() => {
     if (st.alarmAt) return `${EVW[st.ev.kind]}!`;
     return recent(d) ? EVW[st.ev.kind] : 'Calm';
   }
-  const tone = (d) => (!d.online ? '' : appliance(d) ? (d.st.shaking ? 'on' : 'closed') : d.st.alarmAt ? 'alarm' : recent(d) ? 'open' : 'closed');
+  const tone = (d) => (!d.online ? '' : d.st.alarmAt ? 'alarm' : d.st.shaking || recent(d) ? 'on' : 'closed');
   function subText(d) {
     const st = d.st;
     if (!d.online) return `Last report ${when(st.lastSeen)}`;
@@ -9039,8 +9103,10 @@ Devices.vibration = (() => {
     if (!d.online) h += Kit.banner('ban-off', 'danger', 'bolt-crossed', `<b>Offline</b> · No report since ${when(st.lastSeen)}`);
     if (st.tamper) h += Kit.banner('ban-tamper', 'danger', 'banner-error', '<b>Cover opened</b> · Someone opened the sensor or pulled it off');
     if (has(d, 'battery') && d.battery <= 20) h += Kit.banner('ban-batt', 'warn', 'battery', `<b>Battery low · ${d.battery} %</b>`);
-    const state = !d.online ? 'calm' : st.alarmAt ? 'alarm' : appliance(d) ? (st.shaking ? 'on' : 'calm') : recent(d) ? 'warn' : 'calm';
-    h += Kit.mark(d, 'pulse-fill', state, `${d.name}: ${word(d)}`).replace('class="lk-mark', `class="lk-mark ${st.shaking || recent(d) ? 'vb-shake' : ''}`);
+    // one animation for every use (washer, window, safe…): while it shakes the mark trembles with a blue ring; an alarm is the same, in red
+    const shaking = st.shaking || recent(d);
+    const state = !d.online ? 'calm' : st.alarmAt ? 'alarm' : shaking ? 'on' : 'calm';
+    h += Kit.mark(d, 'pulse-fill', state, `${d.name}: ${word(d)}`).replace('class="lk-mark', `class="lk-mark ${d.online && (shaking || st.alarmAt) ? 'vb-shake' : ''}`);
     h += Kit.readout(word(d), tone(d), subText(d), '');
     if (!appliance(d) && st.alarmAt) h += `<div class="pad sm-acts" data-key="acts"><button class="btn btn-opposite" data-action="vb-ok">${icon('check')}It’s fine</button></div>`;
     h += Kit.cards([
@@ -9484,7 +9550,7 @@ Devices.ir = (() => {
   let curR = null;   // the remote being drawn (for trained / reading marks)
   const mk = (l) => { const r = curR; if (!r || !checking()) return ''; return `${trained(r, l) ? ' tr' : ' untr'}${r._reading === l ? ' reading' : ''}${r._sel === l ? ' sel' : ''}`; };
   const K = (l, o = {}) => `<button class="ir-k ${o.cls || ''}${o.ic && o.text ? ' lab' : ''}${mk(l)}" data-action="${o.act || 'ir-send'}" data-l="${esc(l)}" aria-label="${esc(o.aria || l)}">${o.ic ? icon(o.ic, 'icon', `style="width:${o.s || (o.text ? 24 : 32)}px;height:${o.s || (o.text ? 24 : 32)}px"`) : ''}${o.text ? `<span>${esc(o.text)}</span>` : ''}</button>`;
-  const rocker = (label, up, down, upIc = 'ir-plus', downIc = 'ir-minus') => `<div class="ir-k ir-rk"><button class="up${mk(up)}" data-action="ir-send" data-l="${esc(up)}" aria-label="${esc(up)}">${icon(upIc, 'icon', 'style="width:24px;height:24px"')}</button><span>${esc(label)}</span><button class="dn${mk(down)}" data-action="ir-send" data-l="${esc(down)}" aria-label="${esc(down)}">${icon(downIc, 'icon', 'style="width:24px;height:24px"')}</button></div>`;
+  const rocker = (label, up, down, upIc = 'ir-plus', downIc = 'ir-minus') => `<div class="ir-k ir-rk"><i class="sh up" aria-hidden="true"></i><i class="sh dn" aria-hidden="true"></i><button class="up${mk(up)}" data-action="ir-send" data-l="${esc(up)}" aria-label="${esc(up)}">${icon(upIc, 'icon', 'style="width:24px;height:24px"')}</button><span>${esc(label)}</span><button class="dn${mk(down)}" data-action="ir-send" data-l="${esc(down)}" aria-label="${esc(down)}">${icon(downIc, 'icon', 'style="width:24px;height:24px"')}</button></div>`;
   const pair = (a, b) => `<div class="ir-pair">${a}${b}</div>`;
   const row = (...k) => `<div class="ir-r">${k.join('')}</div>`;
   const tall = (...k) => `<div class="ir-r tall">${k.join('')}</div>`;
@@ -9494,7 +9560,7 @@ Devices.ir = (() => {
   function tvPad(d) {
     // the D-pad: four wedges of one 228 px disc; a pressed wedge sinks into the surface (gradient), OK is white
     const dp = (c, l, ic) => `<button class="${c}${mk(l)}" data-action="ir-send" data-l="${l}" aria-label="${l}"><span>${icon(ic, 'icon', 'style="width:24px;height:24px"')}</span></button>`;
-    return `<div class="ir-dpad">${dp('u', 'Up', 'ir-chev-up')}${dp('d', 'Down', 'ir-chev-down')}${dp('l', 'Left', 'ir-chev-left')}${dp('r', 'Right', 'ir-chev-right')}<button class="ok${mk('OK')}" data-action="ir-send" data-l="OK">OK</button></div>
+    return `<div class="ir-dpad"><i class="sh u" aria-hidden="true"></i><i class="sh d" aria-hidden="true"></i><i class="sh l" aria-hidden="true"></i><i class="sh r" aria-hidden="true"></i>${dp('u', 'Up', 'ir-chev-up')}${dp('d', 'Down', 'ir-chev-down')}${dp('l', 'Left', 'ir-chev-left')}${dp('r', 'Right', 'ir-chev-right')}<button class="ok${mk('OK')}" data-action="ir-send" data-l="OK">OK</button></div>
       <div class="ir-keys">
         ${row(K('Source', { ic: 'ir-source' }), gap, POWER)}
         ${tall(rocker('Volume', 'Volume up', 'Volume down'), pair(K('Mute', { ic: 'ir-mute', s: 24 }), K('Settings', { ic: 'ir-setting', s: 24 })), rocker('Channel', 'Channel up', 'Channel down', 'ir-chev-up', 'ir-chev-down'))}

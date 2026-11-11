@@ -28,14 +28,14 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   const n0 = await ev(() => Store.state.notifications);
   await click('[data-action="pp-wet"]'); await sl(400);
   s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, red: document.querySelector('[data-cl="word"]').classList.contains('alarm'), ban: (document.querySelector('[data-key="ban-leak"]') || {}).textContent || '', wet: document.querySelector('.lk-mark').classList.contains('is-alarm'), n: Store.state.notifications, push: (document.querySelector('.push') || {}).textContent || '' }));
-  ok('Spill water: "Leak!" in red, no duplicate banner, the mark turns red, one push "Water leak · Kitchen sink"', s.w === 'Leak!' && s.red && s.ban === '' && s.wet && s.n === n0 + 1 && /Water leak · Kitchen sink/.test(s.push), JSON.stringify(s).slice(0, 220));
+  ok('Spill water: "Leak!" in red, no duplicate banner, the mark turns red, ONE push "Water leak · Kitchen sink — Main water closed" (the valve’s own push is folded in)', s.w === 'Leak!' && s.red && s.ban === '' && s.wet && s.n === n0 + 1 && /Water leak · Kitchen sink/.test(s.push) && /Main water closed/.test(s.push), JSON.stringify(s).slice(0, 220));
   await pg.goto(root + 'index.html'); await sl(300);
   s = await ev(() => { const t = document.querySelector('.tile[data-id="d-leak"]'); return [t.classList.contains('alert'), getComputedStyle(t).backgroundColor, getComputedStyle(t.querySelector('.tile-icon')).color].join('|'); });
   ok('Home tile: "Leak!" alert card (Figma 5429:45566: white, red icon + status)', /tone-danger \| Leak!$/.test(await tile()) && s === 'true|rgb(255, 255, 255)|rgb(255, 69, 58)', (await tile()) + ' ' + s);
   await pg.goto(root + 'device.html?id=d-leak'); await sl(300);
   await click('[data-action="pp-wet"]'); await sl(300);
-  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, log: Store.device('d-leak').log.slice(0, 2).map((e) => e.k).join(',') }));
-  ok('Wipe it dry: "Dry" again; wet and dry are in the history', s.w === 'Dry' && s.log === 'dry,wet', JSON.stringify(s));
+  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, log: Store.device('d-leak').log.slice(0, 3).map((e) => e.k).join(',') }));
+  ok('Wipe it dry: "Dry" again; wet and dry are in the history', s.w === 'Dry' && /^dry,/.test(s.log) && /wet/.test(s.log), JSON.stringify(s));
 
   // all features: water-disappears mode, test mode, frost, moved
   await setPreset('all');
@@ -71,7 +71,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   await pg.goto(root + 'device-settings.html?id=d-leak'); await sl(300);
   await click('[data-action="lk-feature"][data-k="autoClose"]'); await sl(400);
   s = await ev(() => document.querySelector('.sheet.open, #sheet.open').textContent);
-  ok('Close the water: says there is no valve yet', /No water valve in this home yet/.test(s));
+  ok('Close the water: names the real valve (Main water)', /Main water/.test(s) && !/No water valve in this home yet/.test(s), s.slice(0, 120));
   await ev(() => UI.closeSheet()); await sl(300);
   await click('[data-action="rs-history"]'); await sl(400);
   s = await ev(() => ({ segs: document.querySelectorAll('.lk-strip .bar i').length, rows: [...document.querySelectorAll('.sheet.open .group-card .cell-title, #sheet.open .group-card .cell-title')].map((x) => x.textContent).join(' | ') }));

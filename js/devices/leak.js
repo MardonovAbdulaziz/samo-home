@@ -57,7 +57,7 @@ Devices.leak = (() => {
   const frost = (d) => has(d, 'temperature') && d.online && d.temp < 3;
   // water valves that agreed to close on a leak (valve settings → Automation → Close on leak or gas)
   const valves = () => Store.state.devices.filter((x) => x.type === 'valve' && Devices.valve && Devices.valve.linkable(x, 'leak'));
-  const closeValves = (d, why) => { valves().forEach((v) => Devices.valve.alarmClose(v, why)); d.st.valveClosed = true; logEv(d, 'valve'); };
+  const closeValves = (d, why) => { valves().forEach((v) => Devices.valve.alarmClose(v, why, { quiet: true })); d.st.valveClosed = true; logEv(d, 'valve'); };
 
   function applyDefaults(d) {
     for (const k in F) { const def = F[k].def; if (def !== undefined && d.settings[k] === undefined) d.settings[k] = clone(def); }
@@ -102,9 +102,9 @@ Devices.leak = (() => {
     if (!alarm(d)) return '';
     if (test) { notifyPush(d, `Test alarm · ${W(d)}`, 'Test mode — no valve closed, nobody else alarmed'); return 'Test mode: the alarm path works'; }
     const what = absence(d) ? 'No water' : 'Water leak';
-    notifyPush(d, `${what} · ${W(d)}`, absence(d) ? `${room(d)}: the water is gone` : `${room(d)} — check it now`, 'danger');
-    // a safety scenario (our hub): close the valve
-    if (!absence(d) && has(d, 'autoClose') && S(d, 'autoClose').on && valves().length) closeValves(d, `leak · ${d.name}`);
+    // a safety scenario (our hub): close the valve first, so ONE push says both things
+    const closed = !absence(d) && has(d, 'autoClose') && S(d, 'autoClose').on && valves().length ? (closeValves(d, `leak · ${d.name}`), valves().map((v) => v.name)) : [];
+    notifyPush(d, `${what} · ${W(d)}`, absence(d) ? `${room(d)}: the water is gone` : closed.length ? `${room(d)} — ${closed.join(', ')} closed` : `${room(d)} — check it now`, 'danger');
     return '';
   }
 

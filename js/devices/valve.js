@@ -93,11 +93,11 @@ Devices.valve = (() => {
     return true;
   }
   /** Close by an alarm elsewhere (leak sensor, gas detector). Returns true if it closed something. */
-  function alarmClose(d, why) {
+  function alarmClose(d, why, opts = {}) {
     let did = false; d.ch.forEach((c, i) => { if (c.open && setOpen(d, i, false, why)) did = true; });
     if (!d.ch.some((c) => c.open)) d.st.closedBy = { why, t: Date.now() };
     Kit.logEv(d, 'alarmClose', { why });
-    if (has(d, 'notify') && S(d, 'notify').closedBy) Kit.push(`${d.name} closed`, why, 'warn');
+    if (!opts.quiet && has(d, 'notify') && S(d, 'notify').closedBy) Kit.push(`${d.name} closed`, why, 'warn');   // quiet: the alarm's own push already says it
     return did || true;
   }
   const linkable = (d, what) => d.online && has(d, 'linkAlarms') && S(d, 'linkAlarms')[what] && (what === 'gas' ? kindOf(d) === 'gas' : kindOf(d) !== 'gas');

@@ -1195,6 +1195,7 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .ct-word { font: 700 34px/40px var(--font); letter-spacing: 0.4px; color: var(--label-primary); transition: color var(--dur) var(--ease-out); }
 .ct-word.closed { color: var(--label-primary); }   /* neutral states (Closed, Dry, No motion) are white, not green (user, 2026-11-11) */
 .ct-word.open { color: var(--orange); }
+.ct-word.on { color: var(--primary); }   /* active, not a warning (Open, Watering, Running, Someone here) — the same blue as the mark */
 .ct-count { padding: 40px calc(var(--screen-pad) + 4px) 8px; }
 
 /* Event history: 24-hour strip (orange = open) */
@@ -1506,28 +1507,42 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .aq-bars { gap: 3px; }
 .aq-bars i.zy { background: var(--yellow); } .aq-bars i.z1 { background: var(--orange); } .aq-bars i.z2 { background: var(--red); }
 
-/* ---------- Presence: the room from above. The dot glides when the person walks (transform transition) and breathes
-   when they sit still; it fades out while the room empties. Zones light up in color/blue when occupied. ---------- */
-.pr-map { position: relative; margin-top: 16px; padding: 12px 8px 8px; border-radius: var(--radius-lg, 24px); background: var(--fill-quaternary); }
-.pr-map svg { display: block; width: 100%; height: auto; overflow: visible; }
-.pr-fan { fill: var(--fill-tertiary); }
-.pr-ring { fill: none; stroke: var(--separator); stroke-width: 1; stroke-dasharray: 3 4; }
-.pr-m { fill: var(--label-tertiary); font: 500 10px/1 var(--font); }
-.pr-ign { fill: none; stroke: var(--primary-soft); }
-.pr-zone { fill: transparent; stroke: var(--label-quaternary); stroke-width: 1; transition: fill 400ms var(--ease-out), stroke 400ms var(--ease-out); }
-.pr-zone.on { fill: var(--primary-soft); stroke: var(--primary); }
-.pr-zl { fill: var(--label-secondary); font: 500 11px/1 var(--font); text-anchor: middle; dominant-baseline: middle; }
-.pr-dev { fill: var(--label-secondary); }
+/* ---------- Presence: the room as a plan from above — walls, a door at the bottom, a window on the left, the sensor
+   on the top wall with the part of the room it watches (a soft fan of light). Places the user painted are soft
+   colour patches with their name; the occupied one lights up. The person is a small figure: it glides when they
+   walk (transform transition), breathes when they sit still, fades while the room empties. No metres anywhere. ---------- */
+.pr-map { position: relative; margin-top: 12px; padding: 10px 8px 4px; border-radius: 24px; background: var(--fill-quaternary); }
+.pr-map.edit { margin-top: 4px; }
+.pr-plan { display: block; width: 100%; height: auto; overflow: visible; }
+.pr-floor { fill: rgba(255, 255, 255, .03); }
+.pr-wall { fill: none; stroke: var(--label-tertiary); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.pr-door { fill: none; stroke: var(--label-quaternary); stroke-width: 1.5; stroke-dasharray: 3 4; }
+.pr-win { stroke: var(--primary); stroke-width: 4; stroke-linecap: round; opacity: .55; }
+.pr-dev { fill: var(--label-primary); }
+.pr-fan { fill: var(--primary); opacity: .07; }
+.pr-off { fill: rgba(0, 0, 0, .32); }
+.pr-z rect { fill: var(--zc); fill-opacity: .16; stroke: var(--zc); stroke-opacity: .35; stroke-width: 1; transition: fill-opacity 400ms var(--ease-out), stroke-opacity 400ms var(--ease-out); }
+.pr-z text { fill: var(--label-secondary); font: 590 12px/1 var(--font); text-anchor: middle; transition: fill 400ms var(--ease-out); }
+.pr-z.on rect { fill-opacity: .38; stroke-opacity: .9; } .pr-z.on text { fill: var(--label-primary); }
+.pr-z.sel rect { fill-opacity: .34; stroke-opacity: 1; stroke-width: 2; } .pr-z.sel text { fill: var(--label-primary); }
+.t-green { --zc: var(--green); } .t-orange { --zc: var(--orange); } .t-purple { --zc: var(--purple, #BF5AF2); } .t-teal { --zc: var(--teal, #64D2FF); } .t-pink { --zc: var(--pink, #FF375F); } .t-yellow { --zc: var(--yellow); }
+.pr-cell { fill: transparent; stroke: var(--label-quaternary); stroke-width: 1; stroke-dasharray: 3 3; cursor: pointer; }
+.pr-cell:active { fill: rgba(255, 255, 255, .06); }
 .pr-dot { transition: transform 1100ms cubic-bezier(0.32, 0.72, 0, 1), opacity 600ms var(--ease-out); }
 .pr-core { fill: var(--primary); }
-.pr-halo { fill: var(--primary); opacity: .22; transform-box: fill-box; transform-origin: center; }
+.pr-halo { fill: var(--primary); opacity: .2; transform-box: fill-box; transform-origin: center; }
 .pr-map.is-still .pr-halo { animation: pr-breathe 3200ms ease-in-out infinite; }
 .pr-map.is-leaving .pr-dot { opacity: .35 !important; }
-@keyframes pr-breathe { 0%, 100% { transform: scale(0.8); opacity: .3; } 50% { transform: scale(1.25); opacity: .12; } }
-.pr-only { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); color: var(--label-secondary); transition: color 400ms var(--ease-out); }
-.pr-map.is-occ .pr-only { color: var(--primary); }
-.pr-bands { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 8px var(--screen-pad) 4px; }
-.pr-bands .va-chip { height: 48px; font: var(--body-sm-accent); }
+@keyframes pr-breathe { 0%, 100% { transform: scale(0.8); opacity: .26; } 50% { transform: scale(1.2); opacity: .1; } }
+.pr-stripbtn { fill: transparent; stroke: var(--label-quaternary); stroke-dasharray: 3 3; cursor: pointer; transition: fill 200ms var(--ease-out); }
+.pr-stripbtn.on { fill: rgba(0, 0, 0, .34); stroke: var(--label-tertiary); stroke-dasharray: none; }
+.pr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.pr-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border-radius: 17px; background: var(--fill-tertiary); color: var(--label-secondary); font: var(--body-sm-accent); border: 1.5px solid transparent; }
+.pr-chip i { width: 10px; height: 10px; border-radius: 3px; background: var(--zc); }
+.pr-chip.on { color: var(--label-primary); border-color: var(--zc); }
+.pr-chip.add { color: var(--primary); }
+.pr-names { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 4px; padding-bottom: 4px; }
+.pr-names .va-chip { height: 40px; font: var(--body-sm-accent); }
 .pr-strip-card .ct-strip .bar { background: var(--fill-tertiary); } .pr-strip-card .ct-strip .bar i { background: var(--primary); }
 @media (prefers-reduced-motion: reduce) { .pr-map.is-still .pr-halo { animation: none; } .pr-dot { transition: opacity 200ms; } }
 
@@ -1580,10 +1595,10 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-dpad { position: relative; width: 228px; height: 228px; margin: 0 auto; border-radius: 50%; background: var(--fill-tertiary); overflow: hidden; }
 .ir-dpad button { position: absolute; display: flex; color: var(--label-primary); border-radius: 0; }
 .ir-dpad button > span { display: grid; place-items: center; width: 40px; height: 40px; }
-.ir-dpad .u { left: 0; top: 0; width: 100%; height: 50%; clip-path: polygon(0 0, 100% 0, 50% 100%); justify-content: center; align-items: flex-start; padding-top: 12px; }
-.ir-dpad .d { left: 0; bottom: 0; width: 100%; height: 50%; clip-path: polygon(50% 0, 100% 100%, 0 100%); justify-content: center; align-items: flex-end; padding-bottom: 12px; }
-.ir-dpad .l { left: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(0 0, 100% 50%, 0 100%); justify-content: flex-start; align-items: center; padding-left: 12px; }
-.ir-dpad .r { right: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(100% 0, 100% 100%, 0 50%); justify-content: flex-end; align-items: center; padding-right: 12px; }
+.ir-dpad button.u { left: 0; top: 0; width: 100%; height: 50%; clip-path: polygon(0 0, 100% 0, 50% 100%); justify-content: center; align-items: flex-start; padding-top: 12px; }
+.ir-dpad button.d { left: 0; bottom: 0; width: 100%; height: 50%; clip-path: polygon(50% 0, 100% 100%, 0 100%); justify-content: center; align-items: flex-end; padding-bottom: 12px; }
+.ir-dpad button.l { left: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(0 0, 100% 50%, 0 100%); justify-content: flex-start; align-items: center; padding-left: 12px; }
+.ir-dpad button.r { right: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(100% 0, 100% 100%, 0 50%); justify-content: flex-end; align-items: center; padding-right: 12px; }
 /* the press shade is not cut to the wedge: it is a soft patch on the disc that fades into the surface around it
    (fast in, slow out) — the wedge is only the touch area */
 .ir-dpad button::after, .ir-rk button::after { display: none; }
@@ -1593,15 +1608,15 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-dpad .sh.d { background: radial-gradient(ellipse 58% 46% at 50% 94%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
 .ir-dpad .sh.l { background: radial-gradient(ellipse 46% 58% at 6% 50%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
 .ir-dpad .sh.r { background: radial-gradient(ellipse 46% 58% at 94% 50%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
-.ir-dpad:has(.u:active) .sh.u, .ir-dpad:has(.d:active) .sh.d, .ir-dpad:has(.l:active) .sh.l, .ir-dpad:has(.r:active) .sh.r { opacity: 1; transition-duration: 70ms; }
+.ir-dpad:has(button.u:active) .sh.u, .ir-dpad:has(button.d:active) .sh.d, .ir-dpad:has(button.l:active) .sh.l, .ir-dpad:has(button.r:active) .sh.r { opacity: 1; transition-duration: 70ms; }
 .ir-rk .sh { left: 0; right: 0; height: 70%; }
 .ir-rk .sh.up { top: 0; background: radial-gradient(ellipse 85% 70% at 50% 0%, rgba(0, 0, 0, .32), rgba(0, 0, 0, .12) 50%, rgba(0, 0, 0, 0) 100%); }
 .ir-rk .sh.dn { bottom: 0; background: radial-gradient(ellipse 85% 70% at 50% 100%, rgba(0, 0, 0, .32), rgba(0, 0, 0, .12) 50%, rgba(0, 0, 0, 0) 100%); }
-.ir-rk:has(.up:active) .sh.up, .ir-rk:has(.dn:active) .sh.dn { opacity: 1; transition-duration: 70ms; }
+.ir-rk:has(button.up:active) .sh.up, .ir-rk:has(button.dn:active) .sh.dn { opacity: 1; transition-duration: 70ms; }
 .ir-rk { position: relative; }
 .ir-rk button { position: relative; z-index: 1; }
-.ir-dpad .u:active > span { transform: translateY(2px) scale(0.92); } .ir-dpad .d:active > span { transform: translateY(-2px) scale(0.92); }
-.ir-dpad .l:active > span { transform: translateX(2px) scale(0.92); } .ir-dpad .r:active > span { transform: translateX(-2px) scale(0.92); }
+.ir-dpad button.u:active > span { transform: translateY(2px) scale(0.92); } .ir-dpad button.d:active > span { transform: translateY(-2px) scale(0.92); }
+.ir-dpad button.l:active > span { transform: translateX(2px) scale(0.92); } .ir-dpad button.r:active > span { transform: translateX(-2px) scale(0.92); }
 .ir-dpad .ok { left: 62px; top: 62px; width: 104px; height: 104px; border-radius: 50%; background: var(--label-primary); color: var(--label-opposite); font: 590 15px/20px var(--font); letter-spacing: -0.23px; justify-content: center; align-items: center; z-index: 1; box-shadow: 0 0 0 6px rgba(0, 0, 0, .06); transition: transform 140ms var(--ease-out); }
 .ir-dpad .ok::after { background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, .16) 100%); }
 .ir-dpad .ok:active { transform: scale(0.96); }
@@ -1620,7 +1635,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-rk { padding: 0; gap: 0; justify-content: space-between; overflow: hidden; }
 .ir-rk::after { display: none; }
 .ir-rk button { flex: 1; width: 100%; display: grid; place-items: center; color: var(--label-primary); }
-.ir-rk .up:active .icon { transform: translateY(2px) scale(0.92); } .ir-rk .dn:active .icon { transform: translateY(-2px) scale(0.92); }
+.ir-rk button.up:active .icon { transform: translateY(2px) scale(0.92); } .ir-rk button.dn:active .icon { transform: translateY(-2px) scale(0.92); }
 .ir-rk span { pointer-events: none; font: 590 15px/20px var(--font); }
 .ir-pair { display: grid; grid-template-rows: 1fr 1fr; gap: 4px; }
 .ir-pair .ir-k { height: auto; }
