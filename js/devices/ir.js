@@ -101,7 +101,7 @@ Devices.ir = (() => {
   let curR = null;   // the remote being drawn (for trained / reading marks)
   const mk = (l) => { const r = curR; if (!r || !checking()) return ''; return `${trained(r, l) ? ' tr' : ' untr'}${r._reading === l ? ' reading' : ''}${r._sel === l ? ' sel' : ''}`; };
   const K = (l, o = {}) => `<button class="ir-k ${o.cls || ''}${o.ic && o.text ? ' lab' : ''}${mk(l)}" data-action="${o.act || 'ir-send'}" data-l="${esc(l)}" aria-label="${esc(o.aria || l)}">${o.ic ? icon(o.ic, 'icon', `style="width:${o.s || (o.text ? 24 : 32)}px;height:${o.s || (o.text ? 24 : 32)}px"`) : ''}${o.text ? `<span>${esc(o.text)}</span>` : ''}</button>`;
-  const rocker = (label, up, down, upIc = 'ir-plus', downIc = 'ir-minus') => `<div class="ir-k ir-rk"><button class="up${mk(up)}" data-action="ir-send" data-l="${esc(up)}" aria-label="${esc(up)}">${icon(upIc, 'icon', 'style="width:24px;height:24px"')}</button><span>${esc(label)}</span><button class="dn${mk(down)}" data-action="ir-send" data-l="${esc(down)}" aria-label="${esc(down)}">${icon(downIc, 'icon', 'style="width:24px;height:24px"')}</button></div>`;
+  const rocker = (label, up, down, upIc = 'ir-plus', downIc = 'ir-minus') => `<div class="ir-k ir-rk"><i class="sh up" aria-hidden="true"></i><i class="sh dn" aria-hidden="true"></i><button class="up${mk(up)}" data-action="ir-send" data-l="${esc(up)}" aria-label="${esc(up)}">${icon(upIc, 'icon', 'style="width:24px;height:24px"')}</button><span>${esc(label)}</span><button class="dn${mk(down)}" data-action="ir-send" data-l="${esc(down)}" aria-label="${esc(down)}">${icon(downIc, 'icon', 'style="width:24px;height:24px"')}</button></div>`;
   const pair = (a, b) => `<div class="ir-pair">${a}${b}</div>`;
   const row = (...k) => `<div class="ir-r">${k.join('')}</div>`;
   const tall = (...k) => `<div class="ir-r tall">${k.join('')}</div>`;
@@ -111,7 +111,7 @@ Devices.ir = (() => {
   function tvPad(d) {
     // the D-pad: four wedges of one 228 px disc; a pressed wedge sinks into the surface (gradient), OK is white
     const dp = (c, l, ic) => `<button class="${c}${mk(l)}" data-action="ir-send" data-l="${l}" aria-label="${l}"><span>${icon(ic, 'icon', 'style="width:24px;height:24px"')}</span></button>`;
-    return `<div class="ir-dpad">${dp('u', 'Up', 'ir-chev-up')}${dp('d', 'Down', 'ir-chev-down')}${dp('l', 'Left', 'ir-chev-left')}${dp('r', 'Right', 'ir-chev-right')}<button class="ok${mk('OK')}" data-action="ir-send" data-l="OK">OK</button></div>
+    return `<div class="ir-dpad"><i class="sh u" aria-hidden="true"></i><i class="sh d" aria-hidden="true"></i><i class="sh l" aria-hidden="true"></i><i class="sh r" aria-hidden="true"></i>${dp('u', 'Up', 'ir-chev-up')}${dp('d', 'Down', 'ir-chev-down')}${dp('l', 'Left', 'ir-chev-left')}${dp('r', 'Right', 'ir-chev-right')}<button class="ok${mk('OK')}" data-action="ir-send" data-l="OK">OK</button></div>
       <div class="ir-keys">
         ${row(K('Source', { ic: 'ir-source' }), gap, POWER)}
         ${tall(rocker('Volume', 'Volume up', 'Volume down'), pair(K('Mute', { ic: 'ir-mute', s: 24 }), K('Settings', { ic: 'ir-setting', s: 24 })), rocker('Channel', 'Channel up', 'Channel down', 'ir-chev-up', 'ir-chev-down'))}
