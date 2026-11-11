@@ -111,6 +111,15 @@ Devices.air = (() => {
   const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: 'dev-air', on: false, status: s.text, tone: s.tone, controllable: false, offline: !d.online }]; };
 
   /* ---------- Device page ---------- */
+  /** Dust when the air gets bad: a few slow specks drift around the mark — more of them the worse it is.
+      Positions come from the index (not Math.random), so a re-render keeps every speck where it is. */
+  function dust(l) {
+    if (l < 2) return '';
+    const n = l === 2 ? 9 : l === 3 ? 15 : 22, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    let h = '';
+    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(2 + f(i, 3) * 2.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
+    return `<i class="aq-dust lv${l}" aria-hidden="true">${h}</i>`;
+  }
   const lvTone = (l) => (l >= 4 ? 'z2' : l === 3 ? 'z1' : l === 2 ? 'zy' : '');
   function page(d) {
     const st = d.st, V = d.v, w = worst(d);
@@ -118,7 +127,7 @@ Devices.air = (() => {
     if (!d.online) h += Kit.banner('ban-off', 'danger', 'bolt-crossed', `<b>Offline</b> · No report since ${when(st.lastSeen)}`);
     if (st.beeping) h += Kit.banner('ban-beep', 'warn', 'bell', `<b>The monitor is beeping</b> · CO2 is above ${S(d, 'beep').co2} ppm`);
     if (has(d, 'battery') && d.battery <= 20) h += Kit.banner('ban-batt', 'warn', 'battery', `<b>Battery low · ${d.battery} %</b>`);
-    h += Kit.mark(d, 'dev-air', !d.online ? 'calm' : w.l >= 4 ? 'alarm' : w.l === 3 ? 'warn' : w.l === 2 ? 'mid' : 'calm', `${d.name}: ${word(d)}`);
+    h += Kit.mark(d, 'dev-air', !d.online ? 'calm' : w.l >= 4 ? 'alarm' : w.l === 3 ? 'warn' : w.l === 2 ? 'mid' : 'calm', `${d.name}: ${word(d)}`, d.online ? dust(w.l) : '');
     h += Kit.readout(word(d), tone(d), subText(d), st.fanOn ? 'Fan on' : '');
     const card = (k, label, max) => { const l = lv(k, V[k]); return [`${label} · ${LV[l].toLowerCase()}`, d.online ? fmt(k, V[k]) : '—', { wide: true, count: true, cls: 'sm-level', html: Kit.bar(V[k] / max, lvTone(l), STEPS[k].slice(1, 3).map((x) => x / max)) }]; };
     h += Kit.cards([

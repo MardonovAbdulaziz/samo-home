@@ -36,9 +36,13 @@ const Kit = (() => {
   function push(title, body = '', tone = '') { Store.state.notifications = (Store.state.notifications || 0) + 1; UI.push({ title, body, tone }); }
 
   /* ---------- Device page pieces ---------- */
+  /** The icon inside the sensor mark: Figma “Sensors/*” icons are a disc with the glyph cut out — they fill the 80 px
+      space. Plain glyphs (air, lock, a TV…) would touch the ring at that size, so they sit at 48 px. */
+  const DISC = new Set(['dev-drop', 'dev-smoke', 'dev-flame', 'dev-temperature', 'dev-robot']);
+  const markIcon = (name) => { const s = DISC.has(name) ? 80 : 48; return icon(name, 'icon', `style="width:${s}px;height:${s}px"`); };
   const banner = (key, tone, ic, html, close) => `<div class="pad cw-gap" data-key="${key}"><div class="banner ${tone}">${icon(ic)}<div>${html}</div>${close ? `<button class="ban-x" data-action="${close}" aria-label="Close">${icon('cross')}</button>` : ''}</div></div>`;
   /** The sensor mark (Figma 6631:50597 style): 100 px fills/quaternary ring, 80 px icon. state: calm | on | warn | alarm. */
-  const mark = (d, ic, state, label, extra = '') => `<div class="pad" data-key="scene"><div class="lk-mark ${state === 'alarm' ? 'is-alarm' : state === 'warn' ? 'is-warn' : state === 'mid' ? 'is-mid' : state === 'on' ? 'is-on' : ''} ${!d.online ? 'is-off' : ''}" data-cl="scene" role="img" aria-label="${esc(label)}"><i class="lk-halo"></i><span class="lk-disc">${icon(d.userIcon || ic, 'icon', 'style="width:80px;height:80px"')}</span>${extra}</div></div>`;
+  const mark = (d, ic, state, label, extra = '') => `<div class="pad" data-key="scene"><div class="lk-mark ${state === 'alarm' ? 'is-alarm' : state === 'warn' ? 'is-warn' : state === 'mid' ? 'is-mid' : state === 'on' ? 'is-on' : ''} ${!d.online ? 'is-off' : ''}" data-cl="scene" role="img" aria-label="${esc(label)}"><i class="lk-halo"></i><span class="lk-disc">${markIcon(d.userIcon || ic)}</span>${extra}</div></div>`;
   /** The big word (white = neutral, open = orange, alarm = red, on = blue) with one line under it, and a hint on the right. */
   const readout = (word, tone, sub, hint) => `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone || 'closed'}" data-cl="word" data-swap>${esc(word)}</div>
       <div class="cw-state" data-num data-live="sub">${esc(sub)}</div></div>${hint ? `<span class="cw-hint">${esc(hint)}</span>` : ''}</div>`;
@@ -197,5 +201,5 @@ const Kit = (() => {
   }
   const ppBtn = (act, label, on = true) => (on ? `<button class="pp-btn" data-action="${act}">${label}</button>` : '');
 
-  return { esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, protoHead, protoFeatures, bindProto, ppBtn };
+  return { markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, protoHead, protoFeatures, bindProto, ppBtn };
 })();

@@ -164,7 +164,7 @@ Devices.smoke = (() => {
      ========================================================================== */
   function mark(d) {
     const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', d.st.state === 'pre' || testing(d) ? 'is-warn' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon(d.userIcon || 'dev-smoke', 'icon', 'style="width:80px;height:80px"')}</span></div>`;
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${Kit.markIcon(d.userIcon || 'dev-smoke')}</span></div>`;
   }
   function page(d) {
     const st = d.st;

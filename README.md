@@ -207,10 +207,15 @@ what the paired device has, no banner that repeats the big word, neutral states 
 | 9 | Presence (radar) | `presence` | The room from above: rings every metre, the person as a dot that glides when walking and breathes when still; zones (Sofa / Desk / Door) light up; leaving countdown; occupied-today strip; ignore areas, learn the empty room |
 | 15 | Vibration | `vibration` | “What is it on?” — on a washer / dryer: Running → **Finished**; on a window / safe / door: Calm → Shaken (red only when it should alarm). The mark trembles while it shakes |
 | 13 | Energy meter | `meter` | A half-ring gauge: power now in the middle, filling toward the limit (orange 70 %, red 90 % / trip). Main switch, prepaid balance with Top up, phases, tariffs, solar, protection limits, reclose, leakage, timer, 7-day chart |
-| 19 | IR remote | `ir` | Figma 5433:46868 / 5433:50373: the blaster lists its remotes (empty: “No devices yet” + Add a device); each remote opens as its own page (title = appliance, Edit). TV = the Figma keys (228 px D-pad with a white OK, Source / Power, Volume and Channel rockers, Mute / Settings, Back / numbers / Home). **Old ACs get a universal button-only remote** (Power, Mode, Fan speed, Temperature ±, Swing, Direction, Timer, Sleep, Turbo, Light, Eco) — the AC answers nothing, so no state is shown, only what was sent. Blasters that speak AC themselves keep the 24 ° panel. Learned buttons, brand setup; the blaster light blinks on every code |
+| 19 | IR remote | `ir` | The whole Figma flow: Device list (5433:46901 — tiles with ⋮ Rename / Remove, white “Add a device” at the bottom), empty state (5433:46868), Add device → Select device type → **Choose brand with logos and search** (5433:47261 / 47322) → **Set Up Your Remote** (5433:50022) → **teaching mode** (5433:50122: untrained keys dim, “Reading…”, “This button has already been trained · Retrain · delete”, blue ✓ saves) → error (5433:50104). Each remote is its own page laid out like a real remote (3-column keys, power top-right in red, 156 px rockers): TV (Figma keys, a D-pad cut into four wedges), **old AC = universal button-only** (no state), fan, 7 more kinds, learned buttons. Pressing **sinks the surface**: the pressed D-pad wedge and rocker half darken from the rim (gradient), the icon moves inward |
 
 Icons: from the Figma Icons page where one exists (lock, remote, air, flame, TV, fan …); four come from the Hamroh library until they are drawn on the Icons page — `radar-fill` (presence), `dashboard-3-fill` (meter), `pulse-fill` (vibration), `seedling-fill` (garden valve).
 Check: `tools/checks/wave2.js` (Chrome + Safari) · editions: `python3 tools/bundle.py --edition lock|valve|gas|air|presence|vibration|meter|ir`
+
+## Sensor mark sizes & air dust
+
+- `Kit.markIcon`: Figma “Sensors/*” icons (a disc with the glyph cut out: drop, smoke, flame, temperature, robot) fill 80 px; plain glyphs (air, lock, TV, fan…) sit at 48 px so they never touch the ring
+- Air quality: when the air is Moderate or worse, soft dust specks drift around the mark (9 / 15 / 22 by level; seeded positions so re-renders don't move them; off with reduced motion)
 
 ## Device icons & alert cards
 

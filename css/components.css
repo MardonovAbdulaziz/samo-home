@@ -1554,47 +1554,109 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .em-ph .info-card small { font: var(--body-xs); color: var(--label-tertiary); }
 .em-ph:has(.em-third) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
-/* ---------- IR remote (Figma 5433:50373 “TV - Remote - Default”, 5433:46868 “Remote control”)
-   Keys are fills/tertiary, radius 24, 4 px apart, 76 px rows and a 156 px row for the Volume / Channel rockers;
-   the D-pad is a 228 px circle with a white OK. The blaster light blinks color/red when a code goes out. ---------- */
-.ir-head { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; text-align: center; }
+/* ---------- IR remote (Figma 5433:46868 Remote control · 5433:46901 Device list · 5433:50373 TV remote ·
+   5433:47216 Add device · 5433:47261/47322 Choose brand · 5433:50022 Set up · 5433:50104 Error · 5433:50122 Check)
+   Keys: fills/tertiary, radius 24, 4 px apart, 76 px rows, a 156 px row for rockers; power top-right in color/red.
+   Pressing sinks the surface: a shade grows from the edges (a gradient), the icon moves a hair inward. ---------- */
+.ir-head { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; min-height: 22px; text-align: center; }
+.ir-head.is-reading .cw-state { color: var(--label-primary); font-weight: 600; }
 .ir-led { width: 8px; height: 8px; border-radius: 50%; background: var(--label-quaternary); flex-shrink: 0; transition: background-color 120ms linear, box-shadow 240ms var(--ease-out); }
 .ir-led.on { background: var(--red); box-shadow: 0 0 10px 2px rgba(255, 69, 58, .55); }
 .ir-led.big { width: 18px; height: 18px; }
-.ir-led.pulse { animation: ir-pulse 1200ms ease-in-out infinite; }
-@keyframes ir-pulse { 0%, 100% { background: var(--label-quaternary); } 50% { background: var(--red); box-shadow: 0 0 12px 3px rgba(255, 69, 58, .45); } }
+.ir-led.pulse, .ir-head.is-reading .ir-led { animation: ir-pulse 1200ms ease-in-out infinite; }
+@keyframes ir-pulse { 0%, 100% { background: var(--label-quaternary); box-shadow: none; } 50% { background: var(--red); box-shadow: 0 0 12px 3px rgba(255, 69, 58, .45); } }
 .glass-btn.txt { width: auto; padding: 0 16px; font: 500 17px/22px var(--font); color: var(--label-primary); }
-.ir-remote { padding-top: 32px; }
-.ir-dpad { position: relative; width: 228px; height: 228px; margin: 0 auto; border-radius: 50%; background: var(--fill-tertiary); }
-.ir-dpad button { position: absolute; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; color: var(--label-primary); transition: background-color 120ms var(--ease-out), transform 120ms var(--ease-out); -webkit-tap-highlight-color: transparent; }
-.ir-dpad button:active { background: var(--fill-quaternary); }
-.ir-dpad .u { left: 86px; top: 3px; } .ir-dpad .d { left: 86px; bottom: 3px; } .ir-dpad .l { left: 3px; top: 86px; } .ir-dpad .r { right: 3px; top: 86px; }
-.ir-dpad .ok { left: 62px; top: 62px; width: 104px; height: 104px; background: var(--label-primary); color: var(--label-opposite); font: 590 15px/20px var(--font); letter-spacing: -0.23px; }
-.ir-dpad .ok:active { background: var(--label-primary); transform: scale(0.95); }
-.ir-keys { display: flex; flex-direction: column; gap: 4px; margin-top: 32px; }
+.ir-ok { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; transition: transform 120ms var(--ease-out); }
+.ir-ok:active { transform: scale(0.94); }
+.ir-remote { padding-top: 28px; }
+/* the press: a shade that sinks the surface (::after fades in fast, out slower) */
+.ir-k, .ir-rk button, .ir-dpad button { position: relative; -webkit-tap-highlight-color: transparent; }
+.ir-k::after, .ir-rk button::after, .ir-dpad button::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 240ms var(--ease-out); }
+.ir-k:active::after, .ir-rk button:active::after, .ir-dpad button:active::after { opacity: 1; transition-duration: 70ms; }
+.ir-k::after { background: radial-gradient(120% 110% at 50% 50%, rgba(0, 0, 0, .04) 30%, rgba(0, 0, 0, .30) 100%); }
+.ir-k .icon, .ir-k span, .ir-rk button .icon, .ir-dpad button > span { transition: transform 160ms var(--ease-out); }
+.ir-k:active .icon, .ir-k:active span { transform: scale(0.94) translateY(1px); }
+/* D-pad: one 228 px disc cut into four wedges; the pressed wedge sinks from the rim toward the centre */
+.ir-dpad { position: relative; width: 228px; height: 228px; margin: 0 auto; border-radius: 50%; background: var(--fill-tertiary); overflow: hidden; }
+.ir-dpad button { position: absolute; display: flex; color: var(--label-primary); border-radius: 0; }
+.ir-dpad button > span { display: grid; place-items: center; width: 40px; height: 40px; }
+.ir-dpad .u { left: 0; top: 0; width: 100%; height: 50%; clip-path: polygon(0 0, 100% 0, 50% 100%); justify-content: center; align-items: flex-start; padding-top: 12px; }
+.ir-dpad .d { left: 0; bottom: 0; width: 100%; height: 50%; clip-path: polygon(50% 0, 100% 100%, 0 100%); justify-content: center; align-items: flex-end; padding-bottom: 12px; }
+.ir-dpad .l { left: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(0 0, 100% 50%, 0 100%); justify-content: flex-start; align-items: center; padding-left: 12px; }
+.ir-dpad .r { right: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(100% 0, 100% 100%, 0 50%); justify-content: flex-end; align-items: center; padding-right: 12px; }
+.ir-dpad .u::after { background: radial-gradient(circle at 50% 100%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
+.ir-dpad .d::after { background: radial-gradient(circle at 50% 0, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
+.ir-dpad .l::after { background: radial-gradient(circle at 100% 50%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
+.ir-dpad .r::after { background: radial-gradient(circle at 0 50%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
+.ir-dpad .u:active > span { transform: translateY(2px) scale(0.92); } .ir-dpad .d:active > span { transform: translateY(-2px) scale(0.92); }
+.ir-dpad .l:active > span { transform: translateX(2px) scale(0.92); } .ir-dpad .r:active > span { transform: translateX(-2px) scale(0.92); }
+.ir-dpad .ok { left: 62px; top: 62px; width: 104px; height: 104px; border-radius: 50%; background: var(--label-primary); color: var(--label-opposite); font: 590 15px/20px var(--font); letter-spacing: -0.23px; justify-content: center; align-items: center; z-index: 1; box-shadow: 0 0 0 6px rgba(0, 0, 0, .06); transition: transform 140ms var(--ease-out); }
+.ir-dpad .ok::after { background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, .16) 100%); }
+.ir-dpad .ok:active { transform: scale(0.96); }
+.ir-keys { display: flex; flex-direction: column; gap: 4px; margin-top: 28px; }
 .ir-r { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
 .ir-r > * { height: 76px; min-width: 0; }
 .ir-r.tall > * { height: 156px; }
-.ir-k { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 24px; background: var(--fill-tertiary); color: var(--label-primary); font: 590 15px/20px var(--font); letter-spacing: -0.23px; text-align: center; padding: 4px 6px; transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out); -webkit-tap-highlight-color: transparent; }
-.ir-k:active { transform: scale(0.96); background: var(--fill-quaternary); }
+.ir-r > i { display: block; }
+.ir-k { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 24px; background: var(--fill-tertiary); color: var(--label-primary); font: 590 15px/20px var(--font); letter-spacing: -0.23px; text-align: center; padding: 4px 6px; }
+.ir-k.lab span { font: 510 12px/16px var(--font); color: var(--label-secondary); }
 .ir-k.on { background: var(--fill-secondary, rgba(120, 120, 128, .32)); }
 .ir-k.pw { color: var(--red); }
 .ir-k.flip .icon { transform: scaleY(-1); }
-.ir-rk { padding: 0; justify-content: space-between; overflow: hidden; }
-.ir-rk button { flex: 1; width: 100%; display: grid; place-items: center; color: var(--label-primary); transition: background-color 120ms var(--ease-out); }
-.ir-rk button:active { background: var(--fill-quaternary); }
-.ir-rk span { pointer-events: none; }
-.ir-rk:active { transform: none; background: var(--fill-tertiary); }
+.ir-k.flip:active .icon { transform: scaleY(-1) scale(0.94); }
+/* rockers: + on top, the printed name, − below; the pressed half sinks from its outer edge */
+.ir-rk { padding: 0; gap: 0; justify-content: space-between; overflow: hidden; }
+.ir-rk::after { display: none; }
+.ir-rk button { flex: 1; width: 100%; display: grid; place-items: center; color: var(--label-primary); }
+.ir-rk .up::after { border-radius: 24px 24px 0 0; background: linear-gradient(to bottom, rgba(0, 0, 0, .32), rgba(0, 0, 0, .06)); }
+.ir-rk .dn::after { border-radius: 0 0 24px 24px; background: linear-gradient(to top, rgba(0, 0, 0, .32), rgba(0, 0, 0, .06)); }
+.ir-rk .up:active .icon { transform: translateY(2px) scale(0.92); } .ir-rk .dn:active .icon { transform: translateY(-2px) scale(0.92); }
+.ir-rk span { pointer-events: none; font: 590 15px/20px var(--font); }
 .ir-pair { display: grid; grid-template-rows: 1fr 1fr; gap: 4px; }
 .ir-pair .ir-k { height: auto; }
-.ir-flow { grid-auto-rows: 76px; }
-.ir-nums > * { height: 60px; }
-.ir-nums i { display: block; }
-.ir-learnk { color: var(--primary); }
+.ir-learnk { color: var(--primary); } .ir-learnk span { color: var(--primary) !important; }
 .ir-note { margin: 16px 8px 0; font: var(--body-sm); color: var(--label-tertiary); text-align: center; }
+/* teaching (Figma “Check”): untrained keys are dim; the key being read pulses; a trained key flashes once */
+.ir-remote.checking .untr, .ir-remote.checking .ir-rk:has(.untr) > span { opacity: .32; }
+.ir-remote.checking .untr { transition: opacity 300ms var(--ease-out); }
+.ir-remote.checking .reading { opacity: 1 !important; animation: ir-read 900ms ease-in-out infinite; }
+@keyframes ir-read { 0%, 100% { box-shadow: inset 0 0 0 2px rgba(10, 132, 255, .25); } 50% { box-shadow: inset 0 0 0 2px var(--primary); } }
+.ir-remote.checking .sel { box-shadow: inset 0 0 0 2px var(--primary); }
+.ir-trained { display: flex; align-items: center; gap: 8px; margin-top: 8px; font: var(--body-sm); color: var(--label-secondary); }
+.ir-trained span { flex: 1; }
+.ir-trained .btn-sm { display: inline-flex; align-items: center; gap: 4px; }
+.ir-del { width: 32px; height: 32px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; }
+/* the blaster's page: tiles (Figma Device list) + a white Add a device pinned at the bottom */
+.ir-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.ir-tile { position: relative; display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 8px 0 12px; border-radius: var(--radius-md); background: var(--fill-tertiary); color: var(--label-primary); cursor: pointer; transition: transform 120ms var(--ease-out); }
+.ir-tile:active { transform: scale(0.97); }
+.ir-tile .nm { flex: 1; min-width: 0; font: 510 15px/18px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ir-more { width: 28px; height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 10px; }
+.ir-more i { width: 3.5px; height: 3.5px; border-radius: 50%; background: var(--label-secondary); }
+.ir-addbar { position: sticky; bottom: 0; z-index: 2; padding: 16px var(--screen-pad) 34px; margin-top: 24px; }
+.ir-push { transition: height 0ms; }
+.ir-back-link { display: inline-flex; align-items: center; gap: 2px; margin-left: -6px; height: 32px; padding: 0 8px 0 4px; border-radius: 16px; color: var(--primary); font: var(--body-md-accent); }
 .ir-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 180px var(--screen-pad) 0; }
 .ir-empty h2 { font: var(--h2); letter-spacing: var(--h2-ls); }
 .ir-empty p { margin: 8px 0 32px; font: var(--body-md); color: var(--label-secondary); }
+/* add flow sheets */
+.ir-search { display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-radius: 12px; background: var(--fill-tertiary); color: var(--label-secondary); }
+.ir-search input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--label-primary); font: var(--body-lg); }
+.ir-search input::placeholder { color: var(--label-tertiary); }
+.ir-brands .cell { gap: 12px; }
+.ir-logo { position: relative; flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px; background: #fff; overflow: hidden; }
+.ir-logo img { position: absolute; display: block; max-width: none; }
+.ir-logo.txt { display: grid; place-items: center; color: #333; font: var(--body-sm-accent); }
+.ir-setup { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 var(--screen-pad) 8px; }
+.ir-setup-ic { width: 96px; height: 96px; border-radius: 50%; background: var(--fill-tertiary); display: grid; place-items: center; color: var(--label-primary); }
+.ir-setup h2 { margin-top: 20px; font: var(--h3, 700 20px/24px var(--font)); }
+.ir-setup p { margin-top: 6px; font: var(--body-md); color: var(--label-secondary); }
+.ir-setup ol { list-style: none; counter-reset: s; margin: 24px 0 0; padding: 0; text-align: left; display: flex; flex-direction: column; gap: 16px; }
+.ir-setup li { counter-increment: s; position: relative; padding-left: 32px; display: flex; flex-direction: column; gap: 2px; }
+.ir-setup li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--fill-tertiary); font: var(--body-xs-accent); display: grid; place-items: center; }
+.ir-setup li b { font: var(--body-md-accent); } .ir-setup li span { font: var(--body-sm); color: var(--label-secondary); }
+.ir-err-ic { width: 72px; height: 72px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; margin-top: 24px; }
+.ir-setup.err { padding-bottom: 24px; }
 .ir-ac { display: flex; flex-direction: column; }
 .ir-ac-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 .ir-step { width: 56px; height: 56px; border-radius: 50%; background: var(--fill-tertiary); font: 500 26px/1 var(--font); color: var(--label-primary); transition: transform 120ms var(--ease-out); }
@@ -1606,4 +1668,14 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-ac .segmented button:disabled { opacity: .4; }
 .ir-learn { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 24px var(--screen-pad) 20px; }
 .ir-learn b { font: var(--body-lg-accent); } .ir-learn span { font: var(--body-sm); color: var(--label-secondary); }
-@media (prefers-reduced-motion: reduce) { .ir-led.pulse { animation: none; background: var(--red); } }
+@media (prefers-reduced-motion: reduce) { .ir-led.pulse, .ir-head.is-reading .ir-led, .ir-remote.checking .reading { animation: none; } }
+
+/* ---------- Air quality: dust when the air gets bad — soft specks drifting slowly around the mark (calm, not busy).
+   Moderate: a few; Poor: more; Unhealthy: most. They fade in when the air turns bad. ---------- */
+.aq-dust { position: absolute; inset: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
+.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .55); filter: blur(.4px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
+.aq-dust.lv3 span { background: rgba(236, 214, 186, .62); }
+.aq-dust.lv4 span { background: rgba(240, 205, 180, .7); }
+@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .9; } 80% { opacity: .7; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
+@keyframes aq-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .aq-dust { display: none; } }

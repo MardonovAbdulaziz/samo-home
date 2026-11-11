@@ -176,7 +176,7 @@ Devices.valve = (() => {
     const state = !d.online ? 'calm' : st.fault ? 'alarm' : c.open ? 'on' : 'calm';
     const frac = c.open && c.total ? left(c) * 1000 / c.total : c.open && c.target ? 1 - c.used / c.target : 0;
     h += `<div class="pad" data-key="scene"><button class="lk-mark lo-ctl va-ctl ${state === 'alarm' ? 'is-alarm' : state === 'on' ? 'is-on' : ''} ${!d.online ? 'is-off' : ''}" data-action="va-tap" aria-label="${c.open ? 'Close' : 'Open'} ${esc(c.name)}" ${!d.online || !has(d, 'valve') ? 'disabled' : ''}>
-        <i class="lk-halo"></i><span class="lk-disc">${icon(d.userIcon || ICON[k], 'icon', `style="width:${k === 'garden' ? 56 : 80}px;height:${k === 'garden' ? 56 : 80}px"`)}</span>
+        <i class="lk-halo"></i><span class="lk-disc">${Kit.markIcon(d.userIcon || ICON[k])}</span>
         <svg class="lo-ring va-ring ${frac ? 'is-run' : ''}" viewBox="0 0 124 124" aria-hidden="true"><circle cx="62" cy="62" r="${R}" style="stroke-dasharray:${L.toFixed(1)};stroke-dashoffset:${(L * (1 - frac)).toFixed(1)}" data-live="ring"/></svg></button></div>`;
     h += Kit.readout(word(d), tone(d), subText(d), c.open ? '' : '');
     if (d.online && !st.fault && has(d, 'valve')) h += `<div class="pad lo-hint" data-key="howto"><span>${c.open ? 'Tap to close' : 'Tap to open'}</span></div>`;

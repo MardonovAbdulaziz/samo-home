@@ -150,7 +150,7 @@ Devices.leak = (() => {
       80 px disc with the drop cut out. Dry: label/secondary. Leak: color/red, and one soft ring breathes out. Offline: dimmed. */
   function scene(d) {
     const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon(d.userIcon || 'dev-drop', 'icon', 'style="width:80px;height:80px"')}</span></div>`;
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${Kit.markIcon(d.userIcon || 'dev-drop')}</span></div>`;
   }
 
   function page(d) {

@@ -129,7 +129,7 @@ Devices.lock = (() => {
       // the lock is the button: tap = lock, hold = unlock
       const lockedNow = locked(d) && !moving(d);
       h += `<div class="pad" data-key="scene"><button class="lk-mark lo-ctl ${state === 'alarm' ? 'is-alarm' : state === 'warn' ? 'is-warn' : state === 'on' ? 'is-on is-moving' : ''} ${!d.online ? 'is-off' : ''}" data-action="lo-tap" ${lockedNow ? 'data-hold="lo-unlock"' : ''} aria-label="${lockedNow ? 'Hold to unlock' : 'Lock'}" ${!d.online ? 'disabled' : ''}>
-        <i class="lk-halo"></i><span class="lk-disc">${icon(d.userIcon || 'dev-lock', 'icon', 'style="width:80px;height:80px"')}</span>
+        <i class="lk-halo"></i><span class="lk-disc">${Kit.markIcon(d.userIcon || 'dev-lock')}</span>
         <svg class="lo-ring" viewBox="0 0 124 124" aria-hidden="true"><circle cx="62" cy="62" r="60"/></svg></button></div>`;
     } else h += Kit.mark(d, 'dev-lock', state, `${d.name}: ${word(d)}`);
     h += Kit.readout(word(d), tone(d), subText(d), hint(d));
