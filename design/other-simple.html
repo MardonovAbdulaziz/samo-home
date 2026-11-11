@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Other · simple pictures</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  :root { color-scheme: dark; --ease: cubic-bezier(.45, .05, .25, 1);
+    --body: linear-gradient(180deg, #e9edf2, #c6ced8); --door: linear-gradient(155deg, #ffffff, #eef1f5 50%, #d6dce4); --lit: linear-gradient(180deg, #0b2747 0%, #1560a6 72%, #2a86d6 100%); --dark: #0b1626; --handle: #b9c2cd; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px 32px 80px; background: #0b0b0d; color: var(--label-primary); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; }
+  .lead { color: var(--label-secondary); max-width: 760px; margin: 0 0 32px; font: var(--body-lg); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+  .opt { border-radius: 28px; overflow: hidden; background: radial-gradient(320px 260px at 80% 110%, rgba(60, 180, 255, .32), transparent 70%), linear-gradient(rgba(0, 89, 255, .10), rgba(0, 89, 255, .10)), #000; }
+  .stage { position: relative; height: 230px; display: grid; place-items: center; }
+  .meta { padding: 0 20px 20px; display: flex; align-items: center; gap: 10px; }
+  .meta .n { color: var(--primary); font: 700 15px/20px var(--font); } .meta b { font: 600 17px/22px var(--font); flex: 1; }
+  .word { font: 700 17px/22px var(--font); color: var(--green); } .opt.is-open .word { color: var(--orange); }
+  .btn { height: 32px; padding: 0 14px; border-radius: 16px; border: 0; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); cursor: pointer; }
+  .shadow { position: absolute; left: 50%; bottom: 26px; width: 150px; height: 16px; margin-left: -75px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 0, 0, .45), rgba(0, 0, 0, .22) 50%, rgba(0, 0, 0, .05) 85%, transparent); }
+
+  /* shared pieces */
+  .obj { position: relative; border-radius: 14px; background: var(--body); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8); perspective: 600px; }
+  .in { position: absolute; border-radius: 8px; background: var(--dark); overflow: hidden; }
+  .in::after { content: ''; position: absolute; inset: 0; background: var(--lit); opacity: 0; transition: opacity 600ms var(--ease) 120ms; }
+  .opt.is-open .in::after { opacity: 1; }
+  .door { position: absolute; border-radius: 8px; background: var(--door); box-shadow: inset 0 1px 0 #fff, 0 0 0 .5px rgba(0, 0, 0, .15); transition: transform 760ms var(--ease); }
+  .door::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: rgba(20, 32, 50, .3); opacity: 0; transition: opacity 760ms var(--ease); }
+  .opt.is-open .door::after { opacity: 1; }
+  .h { position: absolute; border-radius: 3px; background: var(--handle); }
+
+  /* 1 fridge — the big door swings open */
+  .fridge { width: 96px; height: 160px; }
+  .fridge .in { inset: 52px 6px 6px; } .fridge .top { position: absolute; left: 6px; right: 6px; top: 6px; height: 42px; border-radius: 8px; background: var(--door); box-shadow: inset 0 1px 0 #fff; }
+  .fridge .top .h { left: 10px; bottom: 8px; width: 4px; height: 18px; }
+  .fridge .door { inset: 52px 6px 6px; transform-origin: 0 50%; } .fridge .door .h { left: 10px; top: 12px; width: 4px; height: 34px; }
+  .opt.is-open .fridge .door { transform: rotateY(-68deg); }
+
+  /* 2 cabinet — one door, hinge on the right */
+  .cab1 { width: 130px; height: 120px; }
+  .cab1 .in, .cab1 .door { inset: 8px; } .cab1 .door { transform-origin: 100% 50%; } .cab1 .door .h { left: 12px; top: 40px; width: 5px; height: 24px; }
+  .opt.is-open .cab1 .door { transform: rotateY(68deg); }
+
+  /* 3 wardrobe — two doors open from the middle */
+  .ward { width: 140px; height: 150px; }
+  .ward .in { inset: 8px; } .ward .door { top: 8px; bottom: 8px; width: 61px; }
+  .ward .dl { left: 8px; transform-origin: 0 50%; } .ward .dr { right: 8px; transform-origin: 100% 50%; }
+  .ward .dl .h { right: 8px; top: 58px; width: 4px; height: 22px; } .ward .dr .h { left: 8px; top: 58px; width: 4px; height: 22px; }
+  .opt.is-open .ward .dl { transform: rotateY(-66deg); } .opt.is-open .ward .dr { transform: rotateY(66deg); }
+
+  /* 4 drawer — slides out towards you */
+  .drw { width: 150px; height: 120px; }
+  .drw .slot { position: absolute; left: 10px; right: 10px; top: 58px; height: 50px; border-radius: 8px; background: var(--dark); overflow: hidden; }
+  .drw .slot::after { content: ''; position: absolute; inset: 0; background: var(--lit); opacity: 0; transition: opacity 600ms var(--ease) 100ms; } .opt.is-open .drw .slot::after { opacity: 1; }
+  .drw .t { position: absolute; left: 10px; right: 10px; top: 10px; height: 40px; border-radius: 8px; background: var(--door); box-shadow: inset 0 1px 0 #fff; }
+  .drw .t .h, .drw .door .h { left: 50%; top: 17px; width: 34px; height: 6px; margin-left: -17px; }
+  .drw .door { left: 10px; right: 10px; top: 58px; height: 50px; } .drw .door .h { top: 22px; }
+  .opt.is-open .drw .door { transform: translateY(26px) scale(1.12); box-shadow: inset 0 1px 0 #fff, 0 12px 14px -8px rgba(0, 0, 0, .5); }
+  .drw .door::after { display: none; }
+
+  /* 5 box — the lid tips up */
+  .box { width: 150px; height: 92px; margin-top: 40px; border-radius: 8px 8px 14px 14px; }
+  .box .in { left: 8px; right: 8px; top: -6px; height: 14px; border-radius: 6px; }
+  .box .lid { position: absolute; left: -6px; right: -6px; top: -16px; height: 18px; border-radius: 6px; background: var(--door); box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(0, 0, 0, .25); transform-origin: 6px 100%; transition: transform 760ms var(--ease); }
+  .opt.is-open .box .lid { transform: rotate(-24deg); }
+  .box .glow { position: absolute; left: 10px; right: 10px; top: -60px; height: 60px; background: radial-gradient(60% 100% at 50% 100%, rgba(62, 150, 235, .45), rgba(62, 150, 235, .12) 60%, transparent); opacity: 0; transition: opacity 600ms var(--ease) 150ms; }
+  .opt.is-open .box .glow { opacity: 1; }
+
+  /* 6 safe — a heavy door with a dial */
+  .safe { width: 130px; height: 130px; border-radius: 16px; background: linear-gradient(180deg, #a9b3bf, #7f8a98); }
+  .safe .in { inset: 10px; } .safe .door { inset: 10px; transform-origin: 0 50%; background: linear-gradient(155deg, #dfe4ea, #b7c0cb); }
+  .safe .dial { position: absolute; left: 50%; top: 50%; width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #fff, #c9d0d9 70%); box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+  .safe .dial::after { content: ''; position: absolute; left: 50%; top: 4px; width: 3px; height: 9px; margin-left: -1.5px; border-radius: 2px; background: #7f8a98; }
+  .safe .door .h { right: 12px; top: 50px; width: 5px; height: 20px; }
+  .opt.is-open .safe .door { transform: rotateY(-70deg); }
+
+  /* 7 mailbox — the flap folds down */
+  .mail { width: 140px; height: 110px; border-radius: 40px 40px 12px 12px; }
+  .mail .in { left: 18px; right: 18px; top: 28px; height: 22px; border-radius: 6px; }
+  .mail .flap { position: absolute; left: 14px; right: 14px; top: 24px; height: 30px; border-radius: 8px; background: var(--door); box-shadow: inset 0 1px 0 #fff, 0 0 0 .5px rgba(0, 0, 0, .15); transform-origin: 50% 100%; transition: transform 700ms var(--ease); }
+  .mail .flap .h { left: 50%; top: 8px; width: 26px; height: 5px; margin-left: -13px; }
+  .opt.is-open .mail .flap { transform: rotateX(-75deg); }
+  .mail .letter { position: absolute; left: 34px; right: 34px; top: 32px; height: 20px; border-radius: 3px; background: #fff; transform: translateY(0); opacity: 0; transition: transform 600ms var(--ease) 200ms, opacity 300ms linear 200ms; }
+  .opt.is-open .mail .letter { opacity: 1; transform: translateY(-14px); }
+
+  /* 8 garage — the door rolls up */
+  .gar { width: 160px; height: 120px; border-radius: 12px 12px 4px 4px; }
+  .gar .in { inset: 22px 12px 0; border-radius: 4px 4px 0 0; }
+  .gar .roll { position: absolute; left: 12px; right: 12px; top: 22px; height: 98px; overflow: hidden; }
+  .gar .slats { position: absolute; inset: 0; background: repeating-linear-gradient(180deg, #f3f5f8 0 14px, #c9d0d9 14px 16px); transition: transform 900ms var(--ease); }
+  .opt.is-open .gar .slats { transform: translateY(-82%); }
+
+  /* 9 washing machine — the round door swings open */
+  .wash { width: 130px; height: 140px; }
+  .wash .panel { position: absolute; left: 10px; right: 10px; top: 10px; height: 16px; border-radius: 5px; background: #d8dee6; }
+  .wash .in { left: 27px; top: 44px; width: 76px; height: 76px; border-radius: 50%; }
+  .wash .door { left: 22px; top: 39px; width: 86px; height: 86px; border-radius: 50%; transform-origin: 0 50%; background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, .95), rgba(214, 222, 232, .95) 60%, #b8c1cc); box-shadow: 0 0 0 5px #e9edf2, 0 1px 3px 5px rgba(0, 0, 0, .15); }
+  .wash .door .glass { position: absolute; inset: 14px; border-radius: 50%; background: rgba(40, 60, 90, .35); }
+  .opt.is-open .wash .door { transform: rotateY(-70deg); }
+
+  /* 10 oven — the door drops down */
+  .oven { width: 150px; height: 130px; }
+  .oven .panel { position: absolute; left: 10px; right: 10px; top: 10px; height: 18px; border-radius: 5px; background: #d8dee6; }
+  .oven .panel::before, .oven .panel::after { content: ''; position: absolute; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #aab3be; } .oven .panel::before { left: 12px; } .oven .panel::after { right: 12px; }
+  .oven .in { left: 10px; right: 10px; top: 36px; bottom: 10px; }
+  .oven .door { left: 10px; right: 10px; top: 36px; bottom: 10px; transform-origin: 50% 100%; }
+  .oven .door .h { left: 20px; right: 20px; top: 8px; height: 5px; } .oven .door .win { position: absolute; left: 18px; right: 18px; top: 22px; bottom: 14px; border-radius: 5px; background: rgba(40, 60, 90, .35); }
+  .opt.is-open .oven .door { transform: rotateX(-72deg); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition-duration: 1ms !important; } }
+</style>
+</head>
+<body>
+<h1>“Other” — simple pictures</h1>
+<p class="lead">Ten everyday things that open, drawn the same simple way: a white body, one obvious motion, and the blue light inside when it is open. Each plays on its own; tap “Open / Close” to try.</p>
+<div class="grid" id="g"></div>
+<script>
+const OPTS = [
+  ['Fridge', '<i class="shadow"></i><div class="obj fridge"><div class="top"><i class="h"></i></div><i class="in"></i><div class="door"><i class="h"></i></div></div>'],
+  ['Cabinet', '<i class="shadow"></i><div class="obj cab1"><i class="in"></i><div class="door"><i class="h"></i></div></div>'],
+  ['Wardrobe', '<i class="shadow"></i><div class="obj ward"><i class="in"></i><div class="door dl"><i class="h"></i></div><div class="door dr"><i class="h"></i></div></div>'],
+  ['Drawer', '<i class="shadow"></i><div class="obj drw"><div class="t"><i class="h"></i></div><i class="slot"></i><div class="door"><i class="h"></i></div></div>'],
+  ['Box', '<i class="shadow"></i><div class="obj box"><i class="glow"></i><i class="in"></i><i class="lid"></i></div>'],
+  ['Safe', '<i class="shadow"></i><div class="obj safe"><i class="in"></i><div class="door"><i class="dial"></i><i class="h"></i></div></div>'],
+  ['Mailbox', '<i class="shadow"></i><div class="obj mail"><i class="in"></i><i class="letter"></i><div class="flap"><i class="h"></i></div></div>'],
+  ['Garage', '<i class="shadow"></i><div class="obj gar"><i class="in"></i><div class="roll"><i class="slats"></i></div></div>'],
+  ['Washing machine', '<i class="shadow"></i><div class="obj wash"><i class="panel"></i><i class="in"></i><div class="door"><i class="glass"></i></div></div>'],
+  ['Oven', '<i class="shadow"></i><div class="obj oven"><i class="panel"></i><i class="in"></i><div class="door"><i class="h"></i><i class="win"></i></div></div>'],
+];
+document.getElementById('g').innerHTML = OPTS.map(([n, html], i) => `<section class="opt"><div class="stage">${html}</div>
+  <div class="meta"><span class="n">${String(i + 1).padStart(2, '0')}</span><b>${n}</b><span class="word">Closed</span><button class="btn">Open</button></div></section>`).join('');
+const set = (el, open) => { el.classList.toggle('is-open', open); el.querySelector('.word').textContent = open ? 'Open' : 'Closed'; el.querySelector('.btn').textContent = open ? 'Close' : 'Open'; };
+document.querySelectorAll('.btn').forEach((b) => b.onclick = () => { const s = b.closest('.opt'); s.dataset.manual = 1; set(s, !s.classList.contains('is-open')); });
+let on = false; setInterval(() => { on = !on; document.querySelectorAll('.opt:not([data-manual])').forEach((s) => set(s, on)); }, 2800);
+</script>
+</body>
+</html>
