@@ -168,12 +168,18 @@ Built from `Device Interface 3/8. Water_Leak_Sensor_Interface.html` (89 sensors)
 
 ## Smoke detector (step 9)
 
-Built from `Device Interface 3/12. Smoke_Detector_Interface.html` (58 detectors). Type `smoke` (`js/devices/smoke.js`). Icon: Hamroh `fire-fill`, exported from Figma.
+Built from `Device Interface 3/12. Smoke_Detector_Interface.html` (58 detectors). Type `smoke` (`js/devices/smoke.js`). Icon: Figma "Sensors/Smoke" (`dev-smoke`, Icons page 3895:50009); heat alarms use "Sensors/Flame" (`dev-flame`).
 
 - Device page: the Figma sensor mark (6631:50419 "Sensors/Smoke": a 100 px fills/quaternary ring around an 80 px disc with the glyph cut out; the leak sensor uses 6631:50597 "Sensors/Drop") — label/secondary "Clear" (white word), color/orange "A little smoke" (pre-alarm), color/red "Smoke! / Heat! / CO!" with a soft ring, a red banner and, while it rings, two white Hamroh "Alternative" buttons: Silence (only if the detector can) + Call 101 in color/red with the phone icon (tel: link; 101 = fire service). Cards: smoke level bar with the pre-alarm / alarm marks, temperature, CO, battery; "Test the alarm" row (once a month → "Test OK — the app received the alarm"). Banners: offline, test OK, cooking pause, taken down, dusty chamber, battery low
 - Behaviour: thresholds follow Sensitivity; Silence lasts 3 min and the siren rings again if the smoke keeps rising; very thick smoke refuses silence; cooking pause ignores smoke; a real alarm always pushes (critical), runs the safety scenario and sounds the other detectors (interconnect)
 - Settings: Detector (Sensitivity, Cooking pause — start now, Siren & light, Heartbeat light), Notifications (owner always; critical, family, pre-alarm, service), Automation (When smoke is detected, Interconnected detectors). Event History: alarms, silence, tests, faults
 - Check: `tools/checks/smoke.js` · edition: `python3 tools/bundle.py --edition smoke` → `dist/samo-home-smoke.html`
+
+## Device icons & alert cards
+
+- Every device icon comes from the Figma **Icons** page (5:60) — `assets/icons/figma/dev-*.svg` (Sensors/Smoke → `dev-smoke`, Sensors/Flame → `dev-flame`, Sensors/Drop → `dev-drop` …)
+- **Change icon** works on every device: lights, relays / plugs and door sensors keep their own pickers; all other types use the shared picker (`openDeviceIconPicker` in `js/devices/registry.js`, saved as `d.userIcon`) — the choice shows in settings, on the home tile and in the leak / smoke page mark
+- **Alert card** on home (Figma 5429:45566): a leak or smoke alarm turns the tile white (background/opposite bg) with a color/red icon and status (`alert: true` from `homeTiles`, `.tile.alert`)
 
 ## Performance on weak phones
 

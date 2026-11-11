@@ -157,6 +157,9 @@ a { color: inherit; text-decoration: none; }
 .tile.on .tile-status { color: var(--tile-on-sublabel); }
 .tile.on .tile-power { background: rgba(120, 120, 128, 0.16); color: var(--tile-on-label); }
 .tile.offline .tile-status { color: var(--red); }
+/* Alert card (Figma 5429:45566, leak / smoke alarm): background/opposite bg, label/oposite name, color/red icon + status */
+.tile.alert { background: var(--bg-opposite); color: var(--label-opposite); }
+.tile.alert .tile-icon, .tile.alert .tile-status, .tile.alert .tile-status > [data-num] { color: var(--red); }
 .tile.add { flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; min-height: 80px; padding: 0 12px; }
 .tile.add .plus { width: 32px; height: 32px; border-radius: var(--radius-pill); background: var(--fill-tertiary); display: flex; align-items: center; justify-content: center; }
 .tile.add span { font: var(--body-md-accent); }

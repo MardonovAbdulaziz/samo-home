@@ -60,7 +60,7 @@
       st.found.forEach((f) => {
         const p = presetOf(f);
         const on = st.added.has(f.key);
-        h += `<div class="list" style="margin:0"><div class="cell has-icon"><span class="cell-icon">${icon(f.type === 'curtain' ? 'dev-curtains' : f.type === 'contact' ? (presetOf(f).ic === 'window' ? 'dev-window' : 'dev-door-02') : f.type === 'light' ? 'dev-bulb' : f.type === 'climate' ? 'dev-temperature' : f.type === 'motion' ? 'dev-motion' : f.type === 'plug' ? 'dev-socket' : f.type === 'leak' ? 'dev-drop' : f.type === 'smoke' ? 'fire-fill' : 'menu-device')}</span>
+        h += `<div class="list" style="margin:0"><div class="cell has-icon"><span class="cell-icon">${icon(f.type === 'curtain' ? 'dev-curtains' : f.type === 'contact' ? (presetOf(f).ic === 'window' ? 'dev-window' : 'dev-door-02') : f.type === 'light' ? 'dev-bulb' : f.type === 'climate' ? 'dev-temperature' : f.type === 'motion' ? 'dev-motion' : f.type === 'plug' ? 'dev-socket' : f.type === 'leak' ? 'dev-drop' : f.type === 'smoke' ? 'dev-smoke' : 'menu-device')}</span>
           <span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(p.name)}</span><span class="cell-sub" style="display:block">${UI.esc(describe(f))}</span></span>
           ${on ? `<button class="btn-circle" data-action="remove" data-k="${f.key}" aria-label="Remove">${icon('cross', 'icon icon-xs')}</button>` : `<button class="btn-sm" data-action="add" data-k="${f.key}">Add</button>`}</div></div>`;
       });

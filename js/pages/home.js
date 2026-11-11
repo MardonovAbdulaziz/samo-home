@@ -4,7 +4,7 @@
   const S = () => Store.state;
 
   function tileHTML(d, t) {
-    const cls = ['tile', t.on ? 'on' : '', t.offline ? 'offline' : ''].join(' ');
+    const cls = ['tile', t.on ? 'on' : '', t.offline ? 'offline' : '', t.alert ? 'alert' : ''].join(' ');   // alert: Figma 5429:45566
     const newTag = d.isNew ? ' <span class="tag-new">NEW</span>' : '';
     return `<div class="${cls}" role="button" tabindex="0" data-key="t-${d.id}-${t.ch}" data-action="open" data-id="${d.id}" data-ch="${t.ch}">
       <span class="tile-icon" style="${t.on ? 'color:' + (t.accent || 'var(--primary)') : ''}">${icon(t.icon, 'icon', 'style="width:28px;height:28px"')}</span>

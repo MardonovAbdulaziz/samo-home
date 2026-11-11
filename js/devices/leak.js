@@ -137,7 +137,8 @@ Devices.leak = (() => {
   }
   function homeTiles(d) {
     const s = tileStatus(d);
-    return [{ ch: 0, name: d.name, icon: 'dev-drop', on: false, status: s.text, tone: s.tone, controllable: false, offline: !d.online }];
+    // alert card on home (Figma 5429:45566): white card, red icon and status — only for a real alarm, not a test
+    return [{ ch: 0, name: d.name, icon: 'dev-drop', on: false, status: s.text, tone: s.tone, alert: d.online && alarm(d) && !testing(d), controllable: false, offline: !d.online }];
   }
 
   /* ==========================================================================
@@ -147,7 +148,7 @@ Devices.leak = (() => {
       80 px disc with the drop cut out. Dry: label/secondary. Leak: color/red, and one soft ring breathes out. Offline: dimmed. */
   function scene(d) {
     const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('sensor-drop', 'icon', 'style="width:80px;height:80px"')}</span></div>`;
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon(d.userIcon || 'dev-drop', 'icon', 'style="width:80px;height:80px"')}</span></div>`;
   }
 
   function page(d) {

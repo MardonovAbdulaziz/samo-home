@@ -155,7 +155,8 @@ Devices.smoke = (() => {
   }
   function homeTiles(d) {
     const s = tileStatus(d);
-    return [{ ch: 0, name: d.name, icon: 'fire-fill', on: false, status: s.text, tone: s.tone, controllable: false, offline: !d.online }];
+    // alert card on home (Figma 5429:45566): white card, red icon and status
+    return [{ ch: 0, name: d.name, icon: 'dev-smoke', on: false, status: s.text, tone: s.tone, alert: d.online && alarm(d), controllable: false, offline: !d.online }];
   }
 
   /* ==========================================================================
@@ -163,13 +164,13 @@ Devices.smoke = (() => {
      ========================================================================== */
   function mark(d) {
     const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', d.st.state === 'pre' || testing(d) ? 'is-warn' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('sensor-smoke', 'icon', 'style="width:80px;height:80px"')}</span></div>`;
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon(d.userIcon || 'dev-smoke', 'icon', 'style="width:80px;height:80px"')}</span></div>`;
   }
   function page(d) {
     const st = d.st;
     let h = '';
     if (!d.online) h += `<div class="pad cw-gap" data-key="ban-off"><div class="banner danger">${icon('bolt-crossed')}<div><b>Offline</b> · No report since ${when(st.lastSeen)}. A silent detector protects nobody — check it.</div></div></div>`;
-    if (d.online && alarm(d)) h += `<div class="pad cw-gap" data-key="ban-alarm"><div class="banner danger">${icon('fire-fill')}<div><b>${esc(word(d).replace('!', ''))} detected</b> · ${esc(room(d))} — leave the room, call 101</div></div></div>`;
+    if (d.online && alarm(d)) h += `<div class="pad cw-gap" data-key="ban-alarm"><div class="banner danger">${icon(d.st.state === 'heat' ? 'dev-flame' : 'dev-smoke')}<div><b>${esc(word(d).replace('!', ''))} detected</b> · ${esc(room(d))} — leave the room, call 101</div></div></div>`;
     if (st.testOkUntil) h += `<div class="pad cw-gap" data-key="ban-test"><div class="banner info">${icon('check')}<div><b>Test OK</b> · The app received the alarm — notifications will arrive</div></div></div>`;
     if (paused(d) && !alarm(d)) h += `<div class="pad cw-gap" data-key="ban-pause"><div class="banner info">${icon('round-info')}<div><b>Cooking pause</b> · Detection comes back by itself</div></div></div>`;
     if (st.tamper) h += `<div class="pad cw-gap" data-key="ban-tamper"><div class="banner danger">${icon('banner-error')}<div><b>Taken down</b> · Put the detector back on its base</div></div></div>`;
@@ -369,7 +370,7 @@ Devices.smoke = (() => {
 
   return {
     label: 'Smoke detector', F, PRESETS, create, applyDefaults,
-    icon: () => 'fire-fill',
+    icon: () => 'dev-smoke',
     describe: (p) => `${p.manufacturer} · smoke detector`,
     historyValue: (d) => (has(d, 'history') ? `Last test ${when(d.st.lastTest)}` : null),
     homeTiles, page, bindPage, live, settings, bindSettings, about, tick,

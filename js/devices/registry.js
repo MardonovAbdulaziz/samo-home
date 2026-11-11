@@ -46,13 +46,38 @@ Devices.sensor = {
   about: () => [],
 };
 
+/* ---------- Device icons (Figma "Icons" page, 5:60) — the user can pick any of them for a device ---------- */
+const DEVICE_ICONS = [
+  ['Sensors', ['dev-drop', 'dev-smoke', 'dev-flame', 'dev-motion', 'dev-temperature']],
+  ['Doors & windows', ['dev-door-02', 'dev-door-open', 'dev-window', 'dev-window-2', 'dev-curtains', 'dev-garage', 'dev-gate', 'dev-barrier', 'dev-barrier-2', 'dev-lock']],
+  ['Lighting', ['dev-bulb', 'dev-lamp', 'dev-lamp-02', 'dev-study-lamp', 'dev-wall-lamp', 'dev-chandelier-01', 'dev-chandelier-02', 'dev-round-led', 'dev-square-led']],
+  ['Climate', ['dev-ac', 'dev-fan', 'dev-air', 'dev-purifier', 'dev-radiator', 'dev-radiator-mini', 'dev-thermostat']],
+  ['Appliances', ['dev-socket', 'dev-socket-2', 'dev-kettle', 'dev-washing', 'dev-fridge', 'dev-dishwasher', 'dev-oven', 'dev-microwave', 'dev-vacuum', 'dev-iron']],
+  ['Network', ['dev-hub', 'dev-router']],
+];
+/** Icon picker for device types that don't manage icons themselves: saves d.userIcon (home tile, settings avatar,
+    and the sensor mark on the device page). The group of the current icon comes first. */
+function openDeviceIconPicker(d, ctx) {
+  const cur = DeviceAPI(d).icon(0);
+  const groups = DEVICE_ICONS.slice().sort((a, b) => (b[1].includes(cur) ? 1 : 0) - (a[1].includes(cur) ? 1 : 0));
+  UI.sheet({
+    title: 'Select an icon',
+    render: () => groups.map(([g, list]) => `<section class="sheet-group"><div class="list-header group-title">${g}</div></section><div class="pad icon-grid">${list.map((n) => `<button data-action="dv-icon-pick" data-n="${n}" aria-pressed="${DeviceAPI(d).icon(0) === n}" aria-label="${n.replace('dev-', '')}">${icon(n, 'icon', 'style="width:32px;height:32px"')}</button>`).join('')}</div>`).join(''),
+    footer: '<button class="btn btn-secondary btn-block" data-action="sheet-close">Done</button>',
+  });
+  UI.on({ 'dv-icon-pick': ({ n }) => { d.userIcon = n; Store.save(); UI.closeSheet(); ctx.render(); } });
+}
+
 /* Fallbacks so pages can call any method safely */
 const DeviceAPI = (d) => {
   const t = Devices[d.type] || Devices.sensor;
+  // types with their own icon picker (light, relay/plug, contact) keep d.icon; all others use the generic d.userIcon
+  // (read on every call: pages keep one DeviceAPI for their whole life while the icon can change)
+  const own = () => (d.userIcon && !t.avatarIcon ? d.userIcon : null);
   return {
     label: t.label,
-    icon: (ch) => (t.icon ? t.icon(d, ch) : 'info'),
-    homeTiles: () => (t.homeTiles ? t.homeTiles(d) : []),
+    icon: (ch) => own() || (t.icon ? t.icon(d, ch) : 'info'),
+    homeTiles: () => { const ts = t.homeTiles ? t.homeTiles(d) : [], o = own(); return o ? ts.map((x) => Object.assign({}, x, { icon: o })) : ts; },
     toggle: (ch) => t.toggle && t.toggle(d, ch),
     page: (ctx) => (t.page ? t.page(d, ctx) : ''),
     bindPage: (ctx) => t.bindPage && t.bindPage(d, ctx),

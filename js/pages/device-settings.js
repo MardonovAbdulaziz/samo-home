@@ -14,7 +14,7 @@
       const av = T.avatarIcon ? T.avatarIcon(d) : api.icon(0);
       // Always rendered; opens/closes smoothly when channels get grouped / ungrouped (no layout jump)
       h += '<div style="height:12px"></div>' + UI.collapse(!!av, `<div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${icon(av || api.icon(0), 'icon', 'style="width:48px;height:48px"')}</div>
-          <button class="pen" data-action="${T.avatarIcon ? 'rs-icon' : 'soon'}" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>`);
+          <button class="pen" data-action="${T.avatarIcon ? 'rs-icon' : 'dv-icon'}" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>`);
       h += `<div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Device Name</span><div class="t-lg">${UI.esc(d.name)}</div></div>
         <div class="list" style="margin-top:24px">
           <button class="cell" data-action="room"><span class="cell-main cell-title">Room</span><span class="cell-value">${UI.esc(roomName)}</span>${icon('chevron-right', 'chev')}</button>
@@ -67,6 +67,7 @@
       onOk: () => { Store.removeDevice(d.id); UI.flash(`“${d.name}” removed`); UI.go('index.html'); },
     }),
     soon: () => UI.toast('Coming soon'),
+    'dv-icon': () => openDeviceIconPicker(d, ctx),
   });
   api.bindSettings(ctx);
   api.bindProto(ctx);

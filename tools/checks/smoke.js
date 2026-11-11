@@ -33,7 +33,8 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, ban: (document.querySelector('[data-key="ban-alarm"]') || {}).textContent || '', hush: !!document.querySelector('[data-action="sm-hush"]'), call: (() => { const c = document.querySelector('a[href="tel:101"]'), h = document.querySelector('[data-action="sm-hush"]'); if (!c || !h) return ''; const cs = getComputedStyle(c), hs = getComputedStyle(h); return [c.textContent.trim(), !!c.querySelector('svg'), cs.backgroundColor, cs.color, hs.backgroundColor, hs.color].join('|'); })(), push: (document.querySelector('.push') || {}).textContent || '', log: Store.device('d-smoke').log.slice(0, 3).map((e) => e.k).join(',') }));
   ok('Real fire: "Smoke!", red banner, push, white Silence + red Call 101 with a phone icon, safety scenario + other detectors', s.w === 'Smoke!' && /Smoke detected · Kitchen/.test(s.ban) && s.hush && s.call === 'Call 101|true|rgb(255, 255, 255)|rgb(255, 69, 58)|rgb(255, 255, 255)|rgb(51, 51, 51)' && /Smoke! · Kitchen smoke/.test(s.push) && s.log === 'linked,scene,smoke', JSON.stringify(s).slice(0, 260));
   await pg.goto(root + 'index.html'); await sl(300);
-  ok('Home tile: "Smoke!" in red', /tone-danger \| Smoke!$/.test(await tile()), await tile());
+  s = await ev(() => { const t = document.querySelector('.tile[data-id="d-smoke"]'), cs = getComputedStyle(t); return [t.classList.contains('alert'), cs.backgroundColor, getComputedStyle(t.querySelector('.tile-name')).color, getComputedStyle(t.querySelector('.tile-icon')).color, !!t.querySelector('svg mask[id^="mask0_3895_50009"]')].join('|'); });
+  ok('Home tile: "Smoke!" alert card (Figma 5429:45566: white, red icon + status, Sensors/Smoke icon)', /tone-danger \| Smoke!$/.test(await tile()) && s === 'true|rgb(255, 255, 255)|rgb(51, 51, 51)|rgb(255, 69, 58)|true', (await tile()) + ' ' + s);
   await pg.goto(root + 'device.html?id=d-smoke'); await sl(300);
   // silence (17 dB/m: allowed), then the smoke rises → rings again
   await click('[data-action="sm-hush"]'); await sl(300);
@@ -98,6 +99,19 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   s = await ev(() => [...document.querySelectorAll('.sheet.open .cell-title, #sheet.open .cell-title')].map((x) => x.textContent).join(' | '));
   ok('Event History: alarms, silence, test …', /Smoke alarm/.test(s) && /Siren silenced/.test(s) && /Test OK/.test(s), s.slice(0, 160));
   await ev(() => UI.closeSheet()); await sl(300);
+
+  // change the icon (generic picker for device types without their own): settings avatar, home tile, page mark
+  await pg.goto(root + 'device-settings.html?id=d-smoke'); await sl(300);
+  await click('.edit-avatar .pen'); await sl(400);
+  s = await ev(() => [...document.querySelectorAll('.sheet.open .group-title, #sheet.open .group-title')].map((x) => x.textContent)[0]);
+  await click('[data-action="dv-icon-pick"][data-n="dev-flame"]'); await sl(400);
+  const fl = 'svg mask[id^="mask0_3895_50012"]';
+  const av = await ev((fl) => !!document.querySelector('.edit-avatar ' + fl), fl);
+  await pg.goto(root + 'index.html'); await sl(300);
+  const ti = await ev((fl) => !!document.querySelector('.tile[data-id="d-smoke"] ' + fl), fl);
+  await pg.goto(root + 'device.html?id=d-smoke'); await sl(300);
+  const mk = await ev((fl) => !!document.querySelector('.lk-mark ' + fl), fl);
+  ok('Change icon: Sensors group first; the flame shows in settings, on the home tile and the page mark', s === 'Sensors' && av && ti && mk, JSON.stringify({ s, av, ti, mk }));
 
   for (const u of ['index.html', 'about-device.html?id=d-smoke', 'add-device.html?via=zigbee']) { await pg.goto(root + u); await sl(400); }
   ok('No console errors', errs.length === 0, errs.join(' | '));
