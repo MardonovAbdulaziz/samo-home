@@ -1452,3 +1452,8 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ip-grid.labeled button { height: auto; flex-direction: column; gap: 6px; padding: 12px 4px 10px; }
 .ip-grid.labeled button span { font: var(--body-xs); color: var(--label-secondary); }
 .ip-grid.labeled button[aria-pressed="true"] span { color: var(--primary); }
+
+/* the sensor mark settles in when an alarm starts (one soft beat, then the ring keeps breathing) */
+.lk-mark.is-alarm .lk-disc { animation: lk-beat 520ms cubic-bezier(0.23, 1, 0.32, 1); }
+@keyframes lk-beat { 0% { transform: scale(0.94); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .lk-mark.is-alarm .lk-disc { animation: none; } }

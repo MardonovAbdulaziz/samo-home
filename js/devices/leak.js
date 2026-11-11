@@ -125,7 +125,7 @@ Devices.leak = (() => {
   const word = (d) => (!d.online ? 'Unknown' : absence(d) ? (d.st.wet ? 'Water' : 'No water') : d.st.wet ? 'Leak!' : 'Dry');
   function subText(d) {
     if (!d.online) return `Last report ${when(d.st.lastSeen)}`;
-    if (alarm(d)) return `${testing(d) ? 'Test · ' : ''}Since ${when(d.st.at)} · ${room(d)}`;
+    if (alarm(d)) return `${testing(d) ? 'Test · ' : ''}Since ${when(d.st.at)} · ${room(d)}${d.st.valveClosed ? ' · water valve closed' : ''}`;
     // dry: when the sensor last answered — a leak sensor that has gone quiet is the real risk
     return `Checked ${agoText(Date.now() - d.st.lastSeen)}`;
   }
@@ -155,7 +155,7 @@ Devices.leak = (() => {
     const st = d.st;
     let h = '';
     if (!d.online) h += `<div class="pad cw-gap" data-key="ban-off"><div class="banner danger">${icon('bolt-crossed')}<div><b>Offline</b> · No report since ${when(st.lastSeen)}. A silent leak sensor gives no warning — check the battery.</div></div></div>`;
-    if (d.online && alarm(d) && !testing(d)) h += `<div class="pad cw-gap" data-key="ban-leak"><div class="banner danger">${icon('dev-drop')}<div><b>${absence(d) ? 'No water' : 'Water detected'}</b> · ${esc(room(d))}${st.valveClosed ? ' · the water valve was closed' : ''}</div></div></div>`;
+    // no "Water detected" banner: the big red "Leak!" right below says the same (user, 2026-11-11)
     if (testing(d)) h += `<div class="pad cw-gap" data-key="ban-test"><div class="banner info">${icon('round-info')}<div><b>Test mode</b> · Wet the sensor — no valve closes, nobody else is alarmed</div></div></div>`;
     if (st.tamper) h += `<div class="pad cw-gap" data-key="ban-tamper"><div class="banner warn">${icon('banner-error')}<div><b>Moved or opened</b> · A sensor away from its spot protects nothing</div></div></div>`;
     if (frost(d)) h += `<div class="pad cw-gap" data-key="ban-frost"><div class="banner warn">${icon('temperature')}<div><b>Frost risk · ${d.temp.toFixed(1)} °C</b> · Pipes may freeze</div></div></div>`;
@@ -164,7 +164,7 @@ Devices.leak = (() => {
     h += `<div class="pad" data-key="scene">${scene(d)}</div>`;
     const tone = !d.online ? '' : alarm(d) ? 'alarm' : 'closed';
     const last = lastLeak(d);
-    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word">${esc(word(d))}</div>
+    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word" data-swap>${esc(word(d))}</div>
         <div class="cw-state" data-num data-live="sub">${esc(subText(d))}</div></div>
         ${has(d, 'history') && !alarm(d) ? `<span class="cw-hint">${last ? `Last leak ${when(last.t)}` : 'No leaks yet'}</span>` : ''}</div>`;
 

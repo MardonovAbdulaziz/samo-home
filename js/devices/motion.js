@@ -236,7 +236,7 @@ Devices.motion = (() => {
 
     h += `<div class="pad" data-key="scene">${scene(d)}</div>`;
     const tone = !d.online || !detectionOn(d) ? '' : st.occ ? 'open' : 'closed';
-    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word">${!d.online ? 'Unknown' : st.occ ? 'Motion' : 'No motion'}</div>
+    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word" data-swap>${!d.online ? 'Unknown' : st.occ ? 'Motion' : 'No motion'}</div>
         <div class="cw-state" data-num data-live="sub">${subText(d)}</div></div>
         ${has(d, 'history') ? `<span class="cw-hint" data-num data-live="times">${timesText(countToday(d))}</span>` : ''}</div>`;
 

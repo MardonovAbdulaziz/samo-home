@@ -182,6 +182,13 @@ Built from `Device Interface 3/12. Smoke_Detector_Interface.html` (58 detectors)
 - **Change icon** works on every device: lights, relays / plugs and door sensors keep their own pickers; all other types use the shared picker (`openDeviceIconPicker` in `js/devices/registry.js`, saved as `d.userIcon`) — the choice shows in settings, on the home tile and in the leak / smoke page mark
 - **Alert card** on home (Figma 5429:45566): a leak or smoke alarm turns the tile white (background/opposite bg) with a color/red icon and status (`alert: true` from `homeTiles`, `.tile.alert`)
 
+## Calm state changes
+
+- `UI.patch` animates keyed blocks (`data-key`) after the first render: a block that appears in a column opens its height from 0 and fades in (340 ms, ease-out), one that goes away fades and closes (240 ms) — the rest of the page slides instead of jumping. In grids (home tiles) a new block fades and scales in. Sheets keep their own height glide (`patch(…, { animate: false })`)
+- `data-swap` on the big state word (Clear → Smoke!, Dry → Leak!, Closed → Open, No motion → Motion): the new word settles in (320 ms)
+- The sensor mark gives one soft beat when an alarm starts; reduced motion turns all of this off
+- No banner repeats what the big word already says (leak "Water detected", smoke "Smoke detected" removed)
+
 ## Performance on weak phones
 
 Measured with Chrome at 6× CPU slowdown: no frame over 33 ms on home, relay, curtain (motor and drag) or the contact pictures.

@@ -28,7 +28,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   const n0 = await ev(() => Store.state.notifications);
   await click('[data-action="pp-wet"]'); await sl(400);
   s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, red: document.querySelector('[data-cl="word"]').classList.contains('alarm'), ban: (document.querySelector('[data-key="ban-leak"]') || {}).textContent || '', wet: document.querySelector('.lk-mark').classList.contains('is-alarm'), n: Store.state.notifications, push: (document.querySelector('.push') || {}).textContent || '' }));
-  ok('Spill water: "Leak!" in red, banner, the mark turns red, one push "Water leak · Kitchen sink"', s.w === 'Leak!' && s.red && /Water detected · Kitchen/.test(s.ban) && s.wet && s.n === n0 + 1 && /Water leak · Kitchen sink/.test(s.push), JSON.stringify(s).slice(0, 220));
+  ok('Spill water: "Leak!" in red, no duplicate banner, the mark turns red, one push "Water leak · Kitchen sink"', s.w === 'Leak!' && s.red && s.ban === '' && s.wet && s.n === n0 + 1 && /Water leak · Kitchen sink/.test(s.push), JSON.stringify(s).slice(0, 220));
   await pg.goto(root + 'index.html'); await sl(300);
   s = await ev(() => { const t = document.querySelector('.tile[data-id="d-leak"]'); return [t.classList.contains('alert'), getComputedStyle(t).backgroundColor, getComputedStyle(t.querySelector('.tile-icon')).color].join('|'); });
   ok('Home tile: "Leak!" alert card (Figma 5429:45566: white, red icon + status)', /tone-danger \| Leak!$/.test(await tile()) && s === 'true|rgb(255, 255, 255)|rgb(255, 69, 58)', (await tile()) + ' ' + s);
@@ -42,7 +42,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   await ev(() => { Store.device('d-leak').settings.alarmMode = 'water_absence'; Store.save(); });
   await pg.goto(root + 'device.html?id=d-leak'); await sl(300);
   s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, ban: !!document.querySelector('[data-key="ban-leak"]') }));
-  ok('"When water disappears" mode: dry = alarm ("No water")', s.w === 'No water' && s.ban, JSON.stringify(s));
+  ok('"When water disappears" mode: dry = alarm ("No water")', s.w === 'No water' && !s.ban, JSON.stringify(s));
   await ev(() => { Store.device('d-leak').settings.alarmMode = 'water_presence'; Store.save(); });
   await pg.goto(root + 'device-settings.html?id=d-leak'); await sl(300);
   s = await ev(() => [...document.querySelectorAll('.list-header')].map((x) => x.textContent).join(','));

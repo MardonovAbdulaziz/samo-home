@@ -256,7 +256,7 @@ Devices.contact = (() => {
     } else {
       h += `<div class="pad" data-key="scene">${scene(d)}</div>`;
       const tone = !d.online ? '' : st.open ? 'open' : 'closed';
-      h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word">${d.online ? stateWord(d) : 'Unknown'}</div>
+      h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word" data-swap>${d.online ? stateWord(d) : 'Unknown'}</div>
           <div class="cw-state" data-num data-live="since">${d.online ? sinceText(d) : `Last: ${stateWord(d).toLowerCase()}`}</div></div>
           ${has(d, 'history') ? `<span class="cw-hint" data-num data-live="times">${timesText(opensToday(d))}</span>` : ''}</div>`;
     }

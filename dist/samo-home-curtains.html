@@ -1629,6 +1629,11 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ip-grid.labeled button span { font: var(--body-xs); color: var(--label-secondary); }
 .ip-grid.labeled button[aria-pressed="true"] span { color: var(--primary); }
 
+/* the sensor mark settles in when an alarm starts (one soft beat, then the ring keeps breathing) */
+.lk-mark.is-alarm .lk-disc { animation: lk-beat 520ms cubic-bezier(0.23, 1, 0.32, 1); }
+@keyframes lk-beat { 0% { transform: scale(0.94); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .lk-mark.is-alarm .lk-disc { animation: none; } }
+
 </style>
 </head>
 <body>
@@ -1779,14 +1784,68 @@ const UI = (() => {
         if ((numVal.get(cur) ?? cur.textContent) !== n.textContent) cur.textContent = n.textContent;
         return;
       }
+      const swap = cur.hasAttribute('data-swap') && cur.textContent !== n.textContent;
       morphChildren(cur, n);
+      if (swap && calm()) swapIn(cur);
     });
     while (from.childNodes.length > next.length) from.removeChild(from.lastChild);
   }
-  function patch(target, html) {
+  /* ---------- Calm layout changes ----------
+     A banner, a button row or a card that appears or goes away must not make the page jump: in a stacked column the
+     new block opens its height from 0 and fades in (the rest slides down with it); a block that goes away fades
+     and closes its height (the rest slides up). In grids / rows (home tiles) a new block only fades and scales in.
+     Only keyed blocks ([data-key]) and only after the first render. A word that changes ([data-swap], e.g. Dry → Leak!)
+     settles in softly. Reduced motion: none of this. */
+  const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+  const calm = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stacked = (p) => { const cs = getComputedStyle(p); return cs.display === 'block' || cs.display === 'flow-root' || (/flex/.test(cs.display) && /column/.test(cs.flexDirection)); };
+  function swapIn(el) {
+    el.animate([{ opacity: 0.2, transform: 'translateY(6px)', filter: 'blur(2px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 320, easing: EASE_OUT });
+  }
+  function openIn(el) {
+    if (!stacked(el.parentElement)) { el.animate([{ opacity: 0, transform: 'scale(0.96)' }, { opacity: 1, transform: 'none' }], { duration: 280, easing: EASE_OUT }); return; }
+    const cs = getComputedStyle(el), h = el.offsetHeight;
+    el.style.overflow = 'hidden';
+    const a = el.animate([
+      { height: '0px', marginTop: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 },
+      { height: h + 'px', marginTop: cs.marginTop, marginBottom: cs.marginBottom, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 },
+    ], { duration: 340, easing: EASE_OUT });
+    a.onfinish = a.oncancel = () => { el.style.overflow = ''; };
+  }
+  function closeOut(el, parent, before) {
+    if (!parent.isConnected || !stacked(parent) || (before && before.parentNode !== parent)) return;
+    el.classList.add('ui-ghost'); el.removeAttribute('data-key'); el.setAttribute('aria-hidden', 'true'); el.inert = true;
+    el.querySelectorAll('[data-key],[data-live],[data-action],[id]').forEach((x) => { x.removeAttribute('data-key'); x.removeAttribute('data-live'); x.removeAttribute('data-action'); x.removeAttribute('id'); });
+    parent.insertBefore(el, before);
+    const cs = getComputedStyle(el), h = el.offsetHeight;
+    el.style.overflow = 'hidden'; el.style.pointerEvents = 'none';
+    const a = el.animate([
+      { height: h + 'px', marginTop: cs.marginTop, marginBottom: cs.marginBottom, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 },
+      { height: '0px', marginTop: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 },
+    ], { duration: 240, easing: EASE_OUT, fill: 'forwards' });
+    a.onfinish = () => el.remove();
+  }
+  function patch(target, html, opts = {}) {
+    target.querySelectorAll('.ui-ghost').forEach((g) => g.remove());   // an exit still running: finish it now (keeps the morph indexes right)
+    const anim = opts.animate !== false && calm() && target.isConnected;
+    const before = new Map();
+    if (anim) target.querySelectorAll('[data-key]').forEach((el) => before.set(el.getAttribute('data-key'), { el, parent: el.parentElement, next: el.nextElementSibling, prev: el.previousElementSibling }));
     const tpl = document.createElement('template');
     tpl.innerHTML = html;
     morphChildren(target, tpl.content);
+    if (!anim || !before.size) return;                                   // first render: no animation
+    target.querySelectorAll('[data-key]').forEach((el) => {
+      if (before.has(el.getAttribute('data-key'))) return;
+      for (let p = el.parentElement; p && p !== target; p = p.parentElement) if (p.hasAttribute('data-key') && !before.has(p.getAttribute('data-key'))) return;   // its new parent animates
+      openIn(el);
+    });
+    before.forEach(({ el, parent, next, prev }) => {
+      if (el.isConnected) return;
+      if (parent.closest && !parent.isConnected) return;
+      const ref = next && next.isConnected && next.parentNode === parent ? next : prev && prev.isConnected && prev.parentNode === parent ? prev.nextSibling : null;
+      if (ref === null && !(prev && prev.isConnected)) return;          // can't tell where it was
+      closeOut(el, parent, ref);
+    });
   }
   /* ---------- Rolling numbers (iOS numericText) ----------
      Any element with [data-num]: when its text changes (patch, live update, textContent = …), only the
@@ -2002,7 +2061,7 @@ const UI = (() => {
       <div class="sheet-body">${c.render ? c.render() : ''}</div>${footerHTML(c) ? `<div class="sheet-footer">${footerHTML(c)}</div>` : ''}`;
     const wasOpen = sheetEl.classList.contains('open');
     const h0 = wasOpen ? sheetEl.getBoundingClientRect().height : 0;
-    patch(sheetEl, sheetHTML);
+    patch(sheetEl, sheetHTML, { animate: false });   // the sheet glides its own height (below)
     // Content changed height (tab switch, timer → ring, toggle opening a row): glide instead of jumping
     if (wasOpen && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const h1 = sheetEl.getBoundingClientRect().height;
@@ -4625,7 +4684,7 @@ Devices.contact = (() => {
     } else {
       h += `<div class="pad" data-key="scene">${scene(d)}</div>`;
       const tone = !d.online ? '' : st.open ? 'open' : 'closed';
-      h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word">${d.online ? stateWord(d) : 'Unknown'}</div>
+      h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word" data-swap>${d.online ? stateWord(d) : 'Unknown'}</div>
           <div class="cw-state" data-num data-live="since">${d.online ? sinceText(d) : `Last: ${stateWord(d).toLowerCase()}`}</div></div>
           ${has(d, 'history') ? `<span class="cw-hint" data-num data-live="times">${timesText(opensToday(d))}</span>` : ''}</div>`;
     }
@@ -6239,7 +6298,7 @@ Devices.motion = (() => {
 
     h += `<div class="pad" data-key="scene">${scene(d)}</div>`;
     const tone = !d.online || !detectionOn(d) ? '' : st.occ ? 'open' : 'closed';
-    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word">${!d.online ? 'Unknown' : st.occ ? 'Motion' : 'No motion'}</div>
+    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word" data-swap>${!d.online ? 'Unknown' : st.occ ? 'Motion' : 'No motion'}</div>
         <div class="cw-state" data-num data-live="sub">${subText(d)}</div></div>
         ${has(d, 'history') ? `<span class="cw-hint" data-num data-live="times">${timesText(countToday(d))}</span>` : ''}</div>`;
 
@@ -6601,7 +6660,7 @@ Devices.leak = (() => {
   const word = (d) => (!d.online ? 'Unknown' : absence(d) ? (d.st.wet ? 'Water' : 'No water') : d.st.wet ? 'Leak!' : 'Dry');
   function subText(d) {
     if (!d.online) return `Last report ${when(d.st.lastSeen)}`;
-    if (alarm(d)) return `${testing(d) ? 'Test · ' : ''}Since ${when(d.st.at)} · ${room(d)}`;
+    if (alarm(d)) return `${testing(d) ? 'Test · ' : ''}Since ${when(d.st.at)} · ${room(d)}${d.st.valveClosed ? ' · water valve closed' : ''}`;
     // dry: when the sensor last answered — a leak sensor that has gone quiet is the real risk
     return `Checked ${agoText(Date.now() - d.st.lastSeen)}`;
   }
@@ -6631,7 +6690,7 @@ Devices.leak = (() => {
     const st = d.st;
     let h = '';
     if (!d.online) h += `<div class="pad cw-gap" data-key="ban-off"><div class="banner danger">${icon('bolt-crossed')}<div><b>Offline</b> · No report since ${when(st.lastSeen)}. A silent leak sensor gives no warning — check the battery.</div></div></div>`;
-    if (d.online && alarm(d) && !testing(d)) h += `<div class="pad cw-gap" data-key="ban-leak"><div class="banner danger">${icon('dev-drop')}<div><b>${absence(d) ? 'No water' : 'Water detected'}</b> · ${esc(room(d))}${st.valveClosed ? ' · the water valve was closed' : ''}</div></div></div>`;
+    // no "Water detected" banner: the big red "Leak!" right below says the same (user, 2026-11-11)
     if (testing(d)) h += `<div class="pad cw-gap" data-key="ban-test"><div class="banner info">${icon('round-info')}<div><b>Test mode</b> · Wet the sensor — no valve closes, nobody else is alarmed</div></div></div>`;
     if (st.tamper) h += `<div class="pad cw-gap" data-key="ban-tamper"><div class="banner warn">${icon('banner-error')}<div><b>Moved or opened</b> · A sensor away from its spot protects nothing</div></div></div>`;
     if (frost(d)) h += `<div class="pad cw-gap" data-key="ban-frost"><div class="banner warn">${icon('temperature')}<div><b>Frost risk · ${d.temp.toFixed(1)} °C</b> · Pipes may freeze</div></div></div>`;
@@ -6640,7 +6699,7 @@ Devices.leak = (() => {
     h += `<div class="pad" data-key="scene">${scene(d)}</div>`;
     const tone = !d.online ? '' : alarm(d) ? 'alarm' : 'closed';
     const last = lastLeak(d);
-    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word">${esc(word(d))}</div>
+    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word" data-swap>${esc(word(d))}</div>
         <div class="cw-state" data-num data-live="sub">${esc(subText(d))}</div></div>
         ${has(d, 'history') && !alarm(d) ? `<span class="cw-hint">${last ? `Last leak ${when(last.t)}` : 'No leaks yet'}</span>` : ''}</div>`;
 
@@ -7009,7 +7068,7 @@ Devices.smoke = (() => {
     const st = d.st;
     let h = '';
     if (!d.online) h += `<div class="pad cw-gap" data-key="ban-off"><div class="banner danger">${icon('bolt-crossed')}<div><b>Offline</b> · No report since ${when(st.lastSeen)}. A silent detector protects nobody — check it.</div></div></div>`;
-    if (d.online && alarm(d)) h += `<div class="pad cw-gap" data-key="ban-alarm"><div class="banner danger">${icon(d.st.state === 'heat' ? 'dev-flame' : 'dev-smoke')}<div><b>${esc(word(d).replace('!', ''))} detected</b> · ${esc(room(d))} — leave the room, call 101</div></div></div>`;
+    // no "Smoke detected" banner: the big red word, the room line and Call 101 below say it all (user, 2026-11-11)
     if (st.testOkUntil) h += `<div class="pad cw-gap" data-key="ban-test"><div class="banner info">${icon('check')}<div><b>Test OK</b> · The app received the alarm — notifications will arrive</div><button class="ban-x" data-action="sm-test-ok" aria-label="Close">${icon('cross')}</button></div></div>`;
     if (paused(d) && !alarm(d)) h += `<div class="pad cw-gap" data-key="ban-pause"><div class="banner info">${icon('round-info')}<div><b>Cooking pause</b> · Detection comes back by itself</div></div></div>`;
     if (st.tamper) h += `<div class="pad cw-gap" data-key="ban-tamper"><div class="banner danger">${icon('banner-error')}<div><b>Taken down</b> · Put the detector back on its base</div></div></div>`;
@@ -7018,7 +7077,7 @@ Devices.smoke = (() => {
 
     h += `<div class="pad" data-key="scene">${mark(d)}</div>`;
     const tone = !d.online ? '' : alarm(d) ? 'alarm' : st.state === 'pre' || testing(d) ? 'open' : 'closed';
-    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word">${esc(word(d))}</div>
+    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word" data-swap>${esc(word(d))}</div>
         <div class="cw-state" data-num data-live="sub">${esc(subText(d))}</div></div>
         ${has(d, 'test') && !alarm(d) ? `<span class="cw-hint">Last test ${when(st.lastTest)}</span>` : ''}</div>`;
     // while it rings: silence (if the detector can) and call the fire service (a phone link our app adds)

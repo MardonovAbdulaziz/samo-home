@@ -170,7 +170,7 @@ Devices.smoke = (() => {
     const st = d.st;
     let h = '';
     if (!d.online) h += `<div class="pad cw-gap" data-key="ban-off"><div class="banner danger">${icon('bolt-crossed')}<div><b>Offline</b> · No report since ${when(st.lastSeen)}. A silent detector protects nobody — check it.</div></div></div>`;
-    if (d.online && alarm(d)) h += `<div class="pad cw-gap" data-key="ban-alarm"><div class="banner danger">${icon(d.st.state === 'heat' ? 'dev-flame' : 'dev-smoke')}<div><b>${esc(word(d).replace('!', ''))} detected</b> · ${esc(room(d))} — leave the room, call 101</div></div></div>`;
+    // no "Smoke detected" banner: the big red word, the room line and Call 101 below say it all (user, 2026-11-11)
     if (st.testOkUntil) h += `<div class="pad cw-gap" data-key="ban-test"><div class="banner info">${icon('check')}<div><b>Test OK</b> · The app received the alarm — notifications will arrive</div><button class="ban-x" data-action="sm-test-ok" aria-label="Close">${icon('cross')}</button></div></div>`;
     if (paused(d) && !alarm(d)) h += `<div class="pad cw-gap" data-key="ban-pause"><div class="banner info">${icon('round-info')}<div><b>Cooking pause</b> · Detection comes back by itself</div></div></div>`;
     if (st.tamper) h += `<div class="pad cw-gap" data-key="ban-tamper"><div class="banner danger">${icon('banner-error')}<div><b>Taken down</b> · Put the detector back on its base</div></div></div>`;
@@ -179,7 +179,7 @@ Devices.smoke = (() => {
 
     h += `<div class="pad" data-key="scene">${mark(d)}</div>`;
     const tone = !d.online ? '' : alarm(d) ? 'alarm' : st.state === 'pre' || testing(d) ? 'open' : 'closed';
-    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word">${esc(word(d))}</div>
+    h += `<div class="cw-readout ct-readout" data-key="readout"><div><div class="ct-word ${tone}" data-cl="word" data-swap>${esc(word(d))}</div>
         <div class="cw-state" data-num data-live="sub">${esc(subText(d))}</div></div>
         ${has(d, 'test') && !alarm(d) ? `<span class="cw-hint">Last test ${when(st.lastTest)}</span>` : ''}</div>`;
     // while it rings: silence (if the detector can) and call the fire service (a phone link our app adds)

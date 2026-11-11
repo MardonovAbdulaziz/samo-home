@@ -73,14 +73,68 @@ const UI = (() => {
         if ((numVal.get(cur) ?? cur.textContent) !== n.textContent) cur.textContent = n.textContent;
         return;
       }
+      const swap = cur.hasAttribute('data-swap') && cur.textContent !== n.textContent;
       morphChildren(cur, n);
+      if (swap && calm()) swapIn(cur);
     });
     while (from.childNodes.length > next.length) from.removeChild(from.lastChild);
   }
-  function patch(target, html) {
+  /* ---------- Calm layout changes ----------
+     A banner, a button row or a card that appears or goes away must not make the page jump: in a stacked column the
+     new block opens its height from 0 and fades in (the rest slides down with it); a block that goes away fades
+     and closes its height (the rest slides up). In grids / rows (home tiles) a new block only fades and scales in.
+     Only keyed blocks ([data-key]) and only after the first render. A word that changes ([data-swap], e.g. Dry → Leak!)
+     settles in softly. Reduced motion: none of this. */
+  const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+  const calm = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stacked = (p) => { const cs = getComputedStyle(p); return cs.display === 'block' || cs.display === 'flow-root' || (/flex/.test(cs.display) && /column/.test(cs.flexDirection)); };
+  function swapIn(el) {
+    el.animate([{ opacity: 0.2, transform: 'translateY(6px)', filter: 'blur(2px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 320, easing: EASE_OUT });
+  }
+  function openIn(el) {
+    if (!stacked(el.parentElement)) { el.animate([{ opacity: 0, transform: 'scale(0.96)' }, { opacity: 1, transform: 'none' }], { duration: 280, easing: EASE_OUT }); return; }
+    const cs = getComputedStyle(el), h = el.offsetHeight;
+    el.style.overflow = 'hidden';
+    const a = el.animate([
+      { height: '0px', marginTop: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 },
+      { height: h + 'px', marginTop: cs.marginTop, marginBottom: cs.marginBottom, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 },
+    ], { duration: 340, easing: EASE_OUT });
+    a.onfinish = a.oncancel = () => { el.style.overflow = ''; };
+  }
+  function closeOut(el, parent, before) {
+    if (!parent.isConnected || !stacked(parent) || (before && before.parentNode !== parent)) return;
+    el.classList.add('ui-ghost'); el.removeAttribute('data-key'); el.setAttribute('aria-hidden', 'true'); el.inert = true;
+    el.querySelectorAll('[data-key],[data-live],[data-action],[id]').forEach((x) => { x.removeAttribute('data-key'); x.removeAttribute('data-live'); x.removeAttribute('data-action'); x.removeAttribute('id'); });
+    parent.insertBefore(el, before);
+    const cs = getComputedStyle(el), h = el.offsetHeight;
+    el.style.overflow = 'hidden'; el.style.pointerEvents = 'none';
+    const a = el.animate([
+      { height: h + 'px', marginTop: cs.marginTop, marginBottom: cs.marginBottom, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 },
+      { height: '0px', marginTop: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 },
+    ], { duration: 240, easing: EASE_OUT, fill: 'forwards' });
+    a.onfinish = () => el.remove();
+  }
+  function patch(target, html, opts = {}) {
+    target.querySelectorAll('.ui-ghost').forEach((g) => g.remove());   // an exit still running: finish it now (keeps the morph indexes right)
+    const anim = opts.animate !== false && calm() && target.isConnected;
+    const before = new Map();
+    if (anim) target.querySelectorAll('[data-key]').forEach((el) => before.set(el.getAttribute('data-key'), { el, parent: el.parentElement, next: el.nextElementSibling, prev: el.previousElementSibling }));
     const tpl = document.createElement('template');
     tpl.innerHTML = html;
     morphChildren(target, tpl.content);
+    if (!anim || !before.size) return;                                   // first render: no animation
+    target.querySelectorAll('[data-key]').forEach((el) => {
+      if (before.has(el.getAttribute('data-key'))) return;
+      for (let p = el.parentElement; p && p !== target; p = p.parentElement) if (p.hasAttribute('data-key') && !before.has(p.getAttribute('data-key'))) return;   // its new parent animates
+      openIn(el);
+    });
+    before.forEach(({ el, parent, next, prev }) => {
+      if (el.isConnected) return;
+      if (parent.closest && !parent.isConnected) return;
+      const ref = next && next.isConnected && next.parentNode === parent ? next : prev && prev.isConnected && prev.parentNode === parent ? prev.nextSibling : null;
+      if (ref === null && !(prev && prev.isConnected)) return;          // can't tell where it was
+      closeOut(el, parent, ref);
+    });
   }
   /* ---------- Rolling numbers (iOS numericText) ----------
      Any element with [data-num]: when its text changes (patch, live update, textContent = …), only the
@@ -296,7 +350,7 @@ const UI = (() => {
       <div class="sheet-body">${c.render ? c.render() : ''}</div>${footerHTML(c) ? `<div class="sheet-footer">${footerHTML(c)}</div>` : ''}`;
     const wasOpen = sheetEl.classList.contains('open');
     const h0 = wasOpen ? sheetEl.getBoundingClientRect().height : 0;
-    patch(sheetEl, sheetHTML);
+    patch(sheetEl, sheetHTML, { animate: false });   // the sheet glides its own height (below)
     // Content changed height (tab switch, timer → ring, toggle opening a row): glide instead of jumping
     if (wasOpen && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const h1 = sheetEl.getBoundingClientRect().height;
