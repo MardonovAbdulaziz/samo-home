@@ -22,7 +22,8 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   ok('Home tile: "Dry"', /\| Dry$/.test(await tile()), await tile());
 
   await pg.goto(root + 'device.html?id=d-leak'); await sl(400);
-  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, sub: document.querySelector('[data-live="sub"]').textContent, hint: (document.querySelector('.cw-hint') || {}).textContent }));
+  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, sub: document.querySelector('[data-live="sub"]').textContent, hint: (document.querySelector('.cw-hint') || {}).textContent, color: getComputedStyle(document.querySelector('[data-cl="word"]')).color }));
+  ok('Page: "Dry" in white (neutral)', s.color === 'rgb(255, 255, 255)' && 0 === 0);
   ok('Page: "Dry", "Checked 3 min ago", "Last leak …"', s.w === 'Dry' && s.sub === 'Checked 3 min ago' && /^Last leak /.test(s.hint), JSON.stringify(s));
   const n0 = await ev(() => Store.state.notifications);
   await click('[data-action="pp-wet"]'); await sl(400);

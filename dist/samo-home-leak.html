@@ -1367,7 +1367,7 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 /* readout under the picture: state word in its colour + "Since 08:13" / "For 5 min" */
 .ct-readout { padding-top: 20px; }
 .ct-word { font: 700 34px/40px var(--font); letter-spacing: 0.4px; color: var(--label-primary); transition: color var(--dur) var(--ease-out); }
-.ct-word.closed { color: var(--green); }
+.ct-word.closed { color: var(--label-primary); }   /* neutral states (Closed, Dry, No motion) are white, not green (user, 2026-11-11) */
 .ct-word.open { color: var(--orange); }
 .ct-count { padding: 40px calc(var(--screen-pad) + 4px) 8px; }
 

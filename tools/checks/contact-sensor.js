@@ -22,7 +22,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   /* ---------- Device page: open → push, word, scene, rolling duration ---------- */
   await pg.goto(root + 'device.html?id=d-contact'); await sl(500);
   let s = await ev(() => ({ word: document.querySelector('.ct-word').textContent, cls: document.querySelector('.ct-card').className, since: document.querySelector('[data-live="since"]').textContent }));
-  ok('Closed: green word, closed picture', s.word === 'Closed' && !/is-open/.test(s.cls), JSON.stringify(s));
+  ok('Closed: neutral (white) word, closed picture', s.word === 'Closed' && !/is-open/.test(s.cls), JSON.stringify(s));
   await click('[data-action="pp-move"][data-o="1"]'); await sl(300);
   s = await ev(() => ({ word: document.querySelector('.ct-word').textContent, tone: document.querySelector('.ct-word').className, cls: document.querySelector('.ct-card').className, push: (document.querySelector('.push.show') || {}).textContent || '' }));
   ok('Open: orange "Open", door swings, push "Front door opened"', s.word === 'Open' && /open/.test(s.tone) && /is-open/.test(s.cls) && /Front door opened/.test(s.push), JSON.stringify(s));
