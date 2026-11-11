@@ -2,8 +2,8 @@
    Water leak sensor — device interface
    Source: "Device Interface 3 / 8. Water_Leak_Sensor_Interface.html" (features from zigbee2mqtt, 89 leak sensors)
    Rule: show a value or setting only if the paired sensor has it.
-   Look: the same picture card + readout as the contact and motion sensors. Users are ordinary people, so the picture
-   is literal: the sensor on the floor; on a leak, drops fall and a puddle spreads around it.
+   Look: the same readout as the contact and motion sensors; instead of a picture, one minimal mark (a drop in a
+   circle) that turns red on a leak.
 
    The sensor reports "wet" at once and "dry" when the floor is dry again (d.st); the real floor (d.phys) lives in the
    prototype panel. Our server sends the messages, keeps the history and runs "close the water" (a scenario).
@@ -143,23 +143,11 @@ Devices.leak = (() => {
   /* ==========================================================================
      Device page
      ========================================================================== */
-  /** The picture: the sensor on the floor. Leak: drops fall, a puddle spreads around it, rings move out; its LED
-      blinks red. Dry: calm. Water in the app's blues; red only for the LED (the word says the rest). */
+  /** No illustration (user, 2026-11-11): one minimal mark — a water drop in a circle. Dry: quiet grey. Leak: red, and one
+      soft ring breathes out slowly. Offline: dimmed. */
   function scene(d) {
-    const cls = ['ct-card', 'lk-card', d.st.wet ? 'is-wet' : '', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : '', d.st.tamper ? 'is-tamper' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}">
-      <svg class="lk-svg" viewBox="30 14 180 160" aria-hidden="true">
-        <defs><radialGradient id="lk-pud" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5fb2ff" stop-opacity=".85"/><stop offset=".6" stop-color="#2a86d6" stop-opacity=".6"/><stop offset=".9" stop-color="#1560a6" stop-opacity=".25"/><stop offset="1" stop-color="#1560a6" stop-opacity="0"/></radialGradient>
-          <linearGradient id="lk-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e9edf2"/><stop offset="1" stop-color="#c3cbd5"/></linearGradient>
-          <radialGradient id="lk-shadow"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset=".5" stop-color="#000" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>
-        <ellipse class="lk-floor" cx="120" cy="150" rx="110" ry="26"/>
-        <g class="lk-water"><ellipse class="lk-puddle" cx="120" cy="150" rx="92" ry="22" fill="url(#lk-pud)"/>
-          <ellipse class="lk-ring" cx="120" cy="150" rx="60" ry="14"/><ellipse class="lk-ring r2" cx="120" cy="150" rx="60" ry="14"/></g>
-        <g class="lk-drops"><path class="lk-drop d1" d="M108 40 c 0 0 -6 9 -6 13 a 6 6 0 0 0 12 0 c 0 -4 -6 -13 -6 -13 z"/><path class="lk-drop d2" d="M134 30 c 0 0 -5 8 -5 11 a 5 5 0 0 0 10 0 c 0 -3 -5 -11 -5 -11 z"/></g>
-        <ellipse cx="120" cy="152" rx="44" ry="9" fill="url(#lk-shadow)"/>
-        <g class="lk-sensor"><path d="M84 132 Q84 120 96 120 H144 Q156 120 156 132 V142 Q156 152 144 152 H96 Q84 152 84 142 Z" fill="url(#lk-body)"/>
-          <ellipse cx="120" cy="124" rx="30" ry="3" fill="rgba(255,255,255,.7)"/><circle class="lk-led" cx="120" cy="136" r="3"/></g>
-      </svg></div>`;
+    const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('dev-drop', 'icon', 'style="width:44px;height:44px"')}</span></div>`;
   }
 
   function page(d) {

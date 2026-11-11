@@ -304,7 +304,7 @@ a { color: inherit; text-decoration: none; }
 .chips-row::-webkit-scrollbar { display: none; }
 .quick-chip {
   display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 12px;
-  border-radius: var(--radius-pill); background: var(--fill-tertiary); box-shadow: var(--glass-highlight);
+  border-radius: var(--radius-pill); background: var(--fill-tertiary);   /* Figma home: flat, no inner shadow */
   white-space: nowrap; flex-shrink: 0; text-align: left;
 }
 .quick-chip b { display: block; font: var(--body-sm-accent); }
@@ -318,7 +318,7 @@ a { color: inherit; text-decoration: none; }
 .tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 var(--screen-pad); }
 .tile {
   position: relative; min-width: 0; min-height: 98px; border-radius: var(--radius-lg); padding: 14px 12px 12px;
-  background: var(--fill-tertiary); box-shadow: var(--glass-highlight);
+  background: var(--fill-tertiary);   /* Figma "Device card": flat, no inner shadow */
   display: flex; flex-direction: column; justify-content: flex-end; text-align: left;
   transition: background var(--dur), transform var(--dur-fast);
 }
@@ -354,7 +354,7 @@ a { color: inherit; text-decoration: none; }
 .btn-glass { background: var(--fill-tertiary); color: var(--label-primary); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
 .btn-block { width: 100%; }
 .btn-sm { height: 32px; padding: 0 12px; border-radius: var(--radius-pill); font: var(--body-sm-accent); background: var(--fill-tertiary); }
-.btn-pill { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); font: var(--body-md-accent); background: var(--fill-tertiary); box-shadow: var(--glass-highlight); display: inline-flex; align-items: center; gap: 6px; }
+.btn-pill { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); font: var(--body-md-accent); background: var(--fill-tertiary); display: inline-flex; align-items: center; gap: 6px; }
 .btn-circle { width: 28px; height: 28px; border-radius: var(--radius-pill); background: var(--fill-tertiary); display: inline-flex; align-items: center; justify-content: center; }
 
 .footer-cta { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px var(--screen-pad) 42px; z-index: 25; background: linear-gradient(transparent, var(--bg-base-android) 30%); }
@@ -560,8 +560,8 @@ button.cell:active, a.cell:active { background: var(--fill-quaternary); }
 
 /* ---------- Tab bar (Figma: AI + My Home / Scenarios / More) ---------- */
 .tabbar { position: absolute; left: 16px; right: 16px; bottom: 34px; height: 60px; display: flex; gap: 10px; z-index: 25; }
-.tabbar .ai { width: 60px; height: 60px; border-radius: 30px; background: var(--glass-fill); box-shadow: var(--glass-highlight); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; }
-.tabbar .tabs { flex: 1; display: flex; padding: 4px; border-radius: 30px; background: var(--glass-fill); box-shadow: var(--glass-highlight); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.tabbar .ai { width: 60px; height: 60px; border-radius: 30px; background: var(--glass-fill); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; }
+.tabbar .tabs { flex: 1; display: flex; padding: 4px; border-radius: 30px; background: var(--glass-fill); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
 .tabbar .tab { flex: 1; border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: 500 10px/12px var(--font); color: var(--label-secondary); }
 .tabbar .tab.on { background: var(--static-white); color: var(--primary); }
 
@@ -1584,30 +1584,19 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pl-bar b { font: var(--body-xs); color: var(--label-secondary); font-variant-numeric: tabular-nums; }
 .pl-bar span { font: var(--body-xs); color: var(--label-tertiary); }
 
-/* Water leak sensor picture (shares .ct-card / .ct-readout). The sensor on the floor; wet: drops fall, a puddle
-   spreads (scale), rings move out, the LED blinks red. Only transform / opacity animate; calm when dry. */
-.lk-svg { width: 270px; height: 240px; overflow: visible; }   /* viewBox cropped to the sensor: ~1.5× bigger */
-.lk-floor { fill: rgba(255, 255, 255, .04); }
-.lk-puddle, .lk-ring, .lk-drop, .lk-sensor { transform-box: fill-box; transform-origin: center; }
-.lk-puddle { opacity: 0; transform: scale(.15); transition: transform 1000ms cubic-bezier(.32, .72, 0, 1), opacity 500ms var(--ease-out); }
-.lk-card.is-wet .lk-puddle { opacity: 1; transform: scale(1); }
-.lk-ring { fill: none; stroke: #9cd0ff; stroke-width: 1.2; opacity: 0; }
-.lk-card.is-wet .lk-ring { animation: lk-ring 2400ms cubic-bezier(.32, .72, 0, 1) infinite; }
-.lk-card.is-wet .lk-ring.r2 { animation-delay: 1200ms; }
-@keyframes lk-ring { 0% { opacity: .7; transform: scale(.45); } 100% { opacity: 0; transform: scale(1.5); } }
-.lk-drop { fill: #7cc0ff; opacity: 0; }
-.lk-card.is-wet .lk-drop { animation: lk-drop 1600ms cubic-bezier(.55, 0, .9, .5) infinite; }
-.lk-card.is-wet .lk-drop.d2 { animation-delay: 800ms; }
-@keyframes lk-drop { 0% { opacity: 0; transform: translateY(-8px); } 15% { opacity: .95; } 85% { opacity: .95; } 100% { opacity: 0; transform: translateY(96px) scale(.8); } }
-.lk-sensor { transition: transform 420ms var(--ease-out); }
-.lk-led { fill: rgba(0, 0, 0, .15); }
-.lk-card.is-alarm .lk-led { animation: lk-led 1000ms steps(1) infinite; }
-@keyframes lk-led { 0% { fill: #ff453a; } 50% { fill: rgba(0, 0, 0, .15); } }
-.lk-card.is-tamper .lk-sensor { transform: translate(-8px, -16px) rotate(-8deg); }
-.lk-card.is-off .lk-svg { opacity: .45; }
+/* Water leak sensor — no illustration: one minimal mark (a drop in a circle). Dry: grey; leak: red with one soft ring
+   breathing out (opacity / transform only). */
+.lk-mark { position: relative; height: 200px; display: grid; place-items: center; margin-top: 24px; }
+.lk-disc { position: relative; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center; background: var(--fill-tertiary); color: var(--label-secondary);
+  transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out); }
+.lk-halo { position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; margin: -56px 0 0 -56px; border-radius: 50%; border: 1.5px solid var(--red); opacity: 0; }
+.lk-mark.is-alarm .lk-disc { background: var(--red-soft); color: var(--red); }
+.lk-mark.is-alarm .lk-halo { animation: lk-halo 2600ms cubic-bezier(.32, .72, 0, 1) infinite; }
+@keyframes lk-halo { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }
+.lk-mark.is-off { opacity: .45; }
 .ct-word.alarm { color: var(--red); }
 .lk-strip .bar { background: var(--green-soft); } .lk-strip .bar i { background: var(--red); }
-@media (prefers-reduced-motion: reduce) { .lk-card .lk-ring, .lk-card .lk-drop, .lk-card .lk-led { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .lk-mark .lk-halo { animation: none !important; } }
 
 </style>
 </head>
@@ -6440,8 +6429,8 @@ Devices.motion = (() => {
    Water leak sensor — device interface
    Source: "Device Interface 3 / 8. Water_Leak_Sensor_Interface.html" (features from zigbee2mqtt, 89 leak sensors)
    Rule: show a value or setting only if the paired sensor has it.
-   Look: the same picture card + readout as the contact and motion sensors. Users are ordinary people, so the picture
-   is literal: the sensor on the floor; on a leak, drops fall and a puddle spreads around it.
+   Look: the same readout as the contact and motion sensors; instead of a picture, one minimal mark (a drop in a
+   circle) that turns red on a leak.
 
    The sensor reports "wet" at once and "dry" when the floor is dry again (d.st); the real floor (d.phys) lives in the
    prototype panel. Our server sends the messages, keeps the history and runs "close the water" (a scenario).
@@ -6581,23 +6570,11 @@ Devices.leak = (() => {
   /* ==========================================================================
      Device page
      ========================================================================== */
-  /** The picture: the sensor on the floor. Leak: drops fall, a puddle spreads around it, rings move out; its LED
-      blinks red. Dry: calm. Water in the app's blues; red only for the LED (the word says the rest). */
+  /** No illustration (user, 2026-11-11): one minimal mark — a water drop in a circle. Dry: quiet grey. Leak: red, and one
+      soft ring breathes out slowly. Offline: dimmed. */
   function scene(d) {
-    const cls = ['ct-card', 'lk-card', d.st.wet ? 'is-wet' : '', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : '', d.st.tamper ? 'is-tamper' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}">
-      <svg class="lk-svg" viewBox="30 14 180 160" aria-hidden="true">
-        <defs><radialGradient id="lk-pud" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5fb2ff" stop-opacity=".85"/><stop offset=".6" stop-color="#2a86d6" stop-opacity=".6"/><stop offset=".9" stop-color="#1560a6" stop-opacity=".25"/><stop offset="1" stop-color="#1560a6" stop-opacity="0"/></radialGradient>
-          <linearGradient id="lk-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e9edf2"/><stop offset="1" stop-color="#c3cbd5"/></linearGradient>
-          <radialGradient id="lk-shadow"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset=".5" stop-color="#000" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>
-        <ellipse class="lk-floor" cx="120" cy="150" rx="110" ry="26"/>
-        <g class="lk-water"><ellipse class="lk-puddle" cx="120" cy="150" rx="92" ry="22" fill="url(#lk-pud)"/>
-          <ellipse class="lk-ring" cx="120" cy="150" rx="60" ry="14"/><ellipse class="lk-ring r2" cx="120" cy="150" rx="60" ry="14"/></g>
-        <g class="lk-drops"><path class="lk-drop d1" d="M108 40 c 0 0 -6 9 -6 13 a 6 6 0 0 0 12 0 c 0 -4 -6 -13 -6 -13 z"/><path class="lk-drop d2" d="M134 30 c 0 0 -5 8 -5 11 a 5 5 0 0 0 10 0 c 0 -3 -5 -11 -5 -11 z"/></g>
-        <ellipse cx="120" cy="152" rx="44" ry="9" fill="url(#lk-shadow)"/>
-        <g class="lk-sensor"><path d="M84 132 Q84 120 96 120 H144 Q156 120 156 132 V142 Q156 152 144 152 H96 Q84 152 84 142 Z" fill="url(#lk-body)"/>
-          <ellipse cx="120" cy="124" rx="30" ry="3" fill="rgba(255,255,255,.7)"/><circle class="lk-led" cx="120" cy="136" r="3"/></g>
-      </svg></div>`;
+    const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('dev-drop', 'icon', 'style="width:44px;height:44px"')}</span></div>`;
   }
 
   function page(d) {

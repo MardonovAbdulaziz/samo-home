@@ -109,6 +109,8 @@ Built from `Device Interface 3/3. Contact_Sensor_Interface.html`, in the look of
 
 Contact sensor “Other” (fridge, cabinet, safe, box…) is a simple cabinet: a white body and one door hinged on the left that swings out from right to left, with the blue lit inside of the door / window pictures; the sensor sits on the frame at the free edge and its magnet on the door, like on the door and window (design lab: `design/other-simple.html`, option 2).
 
+Home page (Figma 6165:77673): device cards, the quick chips, the tab bar and the Edit pill are flat — no inner shadow. The inner highlight stays on device-page controls where Figma has it (the big switch, glass buttons).
+
 ## Light (step 4)
 
 Built from `Device Interface 3/1. Light_Interface.html`; the Figma light sketches (6560:50289, older style) redone in the current Samo-home style. Same rule: show a control only if the light has that feature.
@@ -157,7 +159,7 @@ Built from `Device Interface 3/5. Smart_Plug_Interface.html` (328 plugs, double 
 
 Built from `Device Interface 3/8. Water_Leak_Sensor_Interface.html` (89 sensors). Type `leak` (`js/devices/leak.js`); it replaces the old placeholder "Water Leak Sensor" (`d-leak`, also in saved data).
 
-- Device page: the sensor on the floor — wet: drops fall, a puddle spreads, rings move out, the LED blinks red. "Dry · Checked 3 min ago · Last leak Nov 5" or, in red, "Leak! · Since 9:52 · Kitchen" with a red banner (spec: the page turns red). Banners: offline (a silent leak sensor is the real risk — the home tile goes red too), test mode, moved / opened, frost below 3 °C, battery low. Cards: temperature, battery
+- Device page: no illustration — one minimal mark (a water drop in a circle): grey when dry, red with one soft ring breathing out on a leak. "Dry · Checked 3 min ago · Last leak Nov 5" or, in red, "Leak! · Since 9:52 · Kitchen" with a red banner (spec: the page turns red). Banners: offline (a silent leak sensor is the real risk — the home tile goes red too), test mode, moved / opened, frost below 3 °C, battery low. Cards: temperature, battery
 - Settings: Sensor (Sound on leak — tone and volume, or on/off only on Third Reality; Alarm on water appears / disappears; Test mode), Notifications (everyone, critical, family or a neighbour with a key, frost, battery / moved), Automation: Close the water on a leak (a scenario with a valve device — none paired yet, so it says so). Event History: today strip (red = wet) + events
 - Prototype names: relays end in " r", plugs in " s" (user, to tell them apart in the prototype; saved devices are renamed once)
 - Check: `tools/checks/leak.js` · edition: `python3 tools/bundle.py --edition leak` → `dist/samo-home-leak.html`

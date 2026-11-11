@@ -26,8 +26,8 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   ok('Page: "Dry", "Checked 3 min ago", "Last leak …"', s.w === 'Dry' && s.sub === 'Checked 3 min ago' && /^Last leak /.test(s.hint), JSON.stringify(s));
   const n0 = await ev(() => Store.state.notifications);
   await click('[data-action="pp-wet"]'); await sl(400);
-  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, red: document.querySelector('[data-cl="word"]').classList.contains('alarm'), ban: (document.querySelector('[data-key="ban-leak"]') || {}).textContent || '', wet: document.querySelector('.lk-card').classList.contains('is-wet'), n: Store.state.notifications, push: (document.querySelector('.push') || {}).textContent || '' }));
-  ok('Spill water: "Leak!" in red, banner, the puddle shows, one push "Water leak · Kitchen sink"', s.w === 'Leak!' && s.red && /Water detected · Kitchen/.test(s.ban) && s.wet && s.n === n0 + 1 && /Water leak · Kitchen sink/.test(s.push), JSON.stringify(s).slice(0, 220));
+  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, red: document.querySelector('[data-cl="word"]').classList.contains('alarm'), ban: (document.querySelector('[data-key="ban-leak"]') || {}).textContent || '', wet: document.querySelector('.lk-mark').classList.contains('is-alarm'), n: Store.state.notifications, push: (document.querySelector('.push') || {}).textContent || '' }));
+  ok('Spill water: "Leak!" in red, banner, the mark turns red, one push "Water leak · Kitchen sink"', s.w === 'Leak!' && s.red && /Water detected · Kitchen/.test(s.ban) && s.wet && s.n === n0 + 1 && /Water leak · Kitchen sink/.test(s.push), JSON.stringify(s).slice(0, 220));
   await pg.goto(root + 'index.html'); await sl(300);
   ok('Home tile: "Leak!" in red', /tone-danger \| Leak!$/.test(await tile()), await tile());
   await pg.goto(root + 'device.html?id=d-leak'); await sl(300);
