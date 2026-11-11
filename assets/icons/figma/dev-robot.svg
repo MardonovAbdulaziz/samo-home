@@ -1,0 +1,19 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="techincs/robot" clip-path="url(#clip0_0_616)">
+<mask id="mask0_0_616" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+<path id="Subtract" d="M16 0C24.8365 0 32 7.16341 32 16C32 24.8366 24.8366 32 16 32C7.16341 32 0 24.8366 0 16C1.78677e-05 7.16342 7.16342 1.78672e-05 16 0ZM16 27.9544C15.4823 27.9544 15.0626 28.3742 15.0625 28.8919C15.0625 29.4097 15.4822 29.8294 16 29.8294C16.5176 29.8291 16.9375 29.4095 16.9375 28.8919C16.9374 28.3744 16.5175 27.9547 16 27.9544ZM12 13.3333C11.2636 13.3333 10.6667 13.9303 10.6667 14.6667V16C10.6667 16.7364 11.2636 17.3333 12 17.3333H20C20.7364 17.3333 21.3333 16.7364 21.3333 16V14.6667C21.3333 13.9303 20.7364 13.3333 20 13.3333H12ZM16 3.22526C8.95585 3.22528 3.22528 8.95585 3.22526 16C3.22526 16.5178 3.64499 16.9375 4.16276 16.9375C4.68044 16.9374 5.10026 16.5177 5.10026 16C5.10028 9.98976 9.98976 5.10028 16 5.10026C22.0103 5.10026 26.8997 9.98975 26.8997 16C26.8997 16.5177 27.3196 16.9374 27.8372 16.9375C28.355 16.9375 28.7747 16.5178 28.7747 16C28.7747 8.95584 23.0442 3.22526 16 3.22526Z" fill="url(#paint0_linear_0_616)"/>
+</mask>
+<g mask="url(#mask0_0_616)">
+<rect id="color" x="-1.45455" y="-1.45455" width="34.9091" height="34.9091" fill="white" fill-opacity="0.64"/>
+</g>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_616" x1="3" y1="32.0034" x2="17.4973" y2="11.8305" gradientUnits="userSpaceOnUse">
+<stop stop-opacity="0.72"/>
+<stop offset="1"/>
+</linearGradient>
+<clipPath id="clip0_0_616">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -361,7 +361,6 @@ Devices.contact = (() => {
         }
         return '';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
     const STEPS = { breakFn: [1, 15], openTooLong: [1, 240] };
     UI.on({
@@ -402,9 +401,9 @@ Devices.contact = (() => {
   function openIconPicker(d, ctx) {
     UI.sheet({
       title: 'Select an icon', sub: 'Only a picture — the sensor works the same everywhere',
-      render: () => `<section class="sheet-group"><div class="list-header group-title">${esc(displayOf(d).name)}</div></section>
-        <div class="pad icon-grid labeled">${displayOf(d).icons.map(([n, l]) => `<button data-action="ci-pick" data-k="${n}" aria-pressed="${iconOf(d) === n}">${icon(n, 'icon', 'style="width:28px;height:28px"')}<span>${esc(l)}</span></button>`).join('')}</div>`,
-      footer: '<button class="btn btn-secondary btn-block" data-action="sheet-close">Done</button>',
+      render: () => `<div class="ip-list"><section class="ip-group"><div class="ip-title">${esc(displayOf(d).name)}</div>
+        <div class="ip-grid labeled">${displayOf(d).icons.map(([n, l]) => `<button data-action="ci-pick" data-k="${n}" aria-pressed="${iconOf(d) === n}">${icon(n, 'icon', 'style="width:32px;height:32px"')}<span>${esc(l)}</span></button>`).join('')}</div></section></div>`,
+      footer: ICON_DONE,
     });
     UI.on({
       'ci-pick': ({ k }) => {
@@ -441,7 +440,6 @@ Devices.contact = (() => {
         return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself keeps no history.</div>';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
   }
 

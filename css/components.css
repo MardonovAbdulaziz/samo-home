@@ -364,9 +364,6 @@ button.cell:active, a.cell:active { background: var(--fill-quaternary); }
 .input-box .trail { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--label-secondary); display: flex; }
 
 /* Icon picker grid */
-.icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.icon-grid button { aspect-ratio: 1; border-radius: var(--radius-md); background: var(--fill-quaternary); display: flex; align-items: center; justify-content: center; color: var(--label-secondary); border: 2px solid transparent; }
-.icon-grid button[aria-pressed="true"] { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 
 /* Sheet card options (Add a device: Zigbee / Wi-Fi) */
 .option-card { width: 100%; display: flex; align-items: center; gap: 16px; padding: 14px 16px; border-radius: var(--radius-md); background: var(--bg-elevation-2); text-align: left; }
@@ -1048,9 +1045,6 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .all-action { height: 56px; border-radius: 16px; }
 .all-action.turn-on .icon, .all-action.turn-off .icon { color: var(--label-primary); }
 /* Select an icon (Figma 6130:72061): plain icons, selected = blue outline */
-.icon-grid { gap: 12px; }
-.icon-grid button { background: transparent; border-radius: 16px; }
-.icon-grid button[aria-pressed="true"] { background: var(--primary-soft); }
 /* Light colours (Figma 6142:73804): 36 px dots, 16 px gap, inner white selection ring */
 .swatches.sw-card { gap: 16px; padding: 20px 0; }
 .swatch { position: relative; border: 0; box-shadow: inset 1.2px 1.2px 2.4px rgba(255,255,255,.24); }
@@ -1211,9 +1205,6 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .ct-strip .axis { display: flex; justify-content: space-between; margin-top: 6px; font: var(--body-xs); color: var(--label-tertiary); }
 
 /* Icon grid with names (Name & icon) */
-.icon-grid.labeled button { aspect-ratio: auto; flex-direction: column; gap: 6px; padding: 12px 4px 10px; }
-.icon-grid.labeled button span { font: var(--body-xs); color: var(--label-secondary); }
-.icon-grid.labeled button[aria-pressed="true"] span { color: var(--primary); }
 
 /* Simulated push notification */
 .push { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 90; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 22px;
@@ -1441,8 +1432,23 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* Hamroh button, Type=Alternative, L 56 (static: no glass): background/opposite bg + label/oposite; "Call 101" in color/red */
 .btn-opposite { background: var(--bg-opposite); color: var(--label-opposite); padding: 0 16px; }
 .btn-opposite.is-red { color: var(--red); }
-.sm-level { gap: 6px; }
+.info-card.sm-level { gap: 6px; padding-right: 16px; }   /* no icon in this card: the bar fills the width, 16 px on both sides */
 .sm-bar { position: relative; height: 8px; margin-top: 6px; border-radius: 4px; background: var(--fill-tertiary); overflow: hidden; }
 .sm-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--label-secondary); transition: width 600ms var(--ease-out); }
 .sm-bar.z1 i { background: var(--orange); } .sm-bar.z2 i { background: var(--red); }
 .sm-bar b { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: rgba(255, 255, 255, .35); }
+
+/* "Select an icon" sheet (Figma 5303:19456): content 20/12 px, each group 16 px top / 24 px bottom, title 12 px above
+   a 4-column grid with 16 px gaps; icon cards 64 px, radius 20, the 32 px icon in label/secondary; the chosen card in
+   non-opaque blue with a 2 px color/blue border. */
+.ip-list { padding: 20px 0 12px; }
+.ip-group { padding: 16px var(--screen-pad) 24px; }
+.ip-title { margin-bottom: 12px; font: var(--body-md-accent); letter-spacing: var(--body-md-ls); color: var(--label-secondary); }
+.ip-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.ip-grid button { height: 64px; border-radius: 20px; border: 2px solid transparent; display: flex; align-items: center; justify-content: center; color: var(--label-secondary);
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out); }
+.ip-grid button:active { background: var(--fill-quaternary); }
+.ip-grid button[aria-pressed="true"] { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+.ip-grid.labeled button { height: auto; flex-direction: column; gap: 6px; padding: 12px 4px 10px; }
+.ip-grid.labeled button span { font: var(--body-xs); color: var(--label-secondary); }
+.ip-grid.labeled button[aria-pressed="true"] span { color: var(--primary); }

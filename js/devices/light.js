@@ -471,7 +471,6 @@ Devices.light = (() => {
         }
         return '';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
       onMount: (el) => { const r = el.querySelector('#blRange'); if (r) { r.oninput = () => { get(d, k).br = +r.value; UI.setNum(el.querySelector('#blVal'), r.value + '%'); Store.save(); }; r.onchange = () => ctx.render(); } },
     });
     UI.on({
@@ -487,8 +486,8 @@ Devices.light = (() => {
   }
   function openIconPicker(d, ctx) {
     UI.sheet({
-      title: 'Select an icon', render: () => `<section class="sheet-group"><div class="list-header group-title">Lighting</div></section><div class="pad icon-grid">${ICONS.map((n) => `<button data-action="li-pick" data-n="${n}" aria-pressed="${d.icon === n}" aria-label="${n.replace('dev-', '')}">${icon(n, 'icon', 'style="width:32px;height:32px"')}</button>`).join('')}</div>`,
-      footer: '<button class="btn btn-secondary btn-block" data-action="sheet-close">Done</button>',
+      title: 'Select an icon', render: () => iconPickerHTML([['Lighting', ICONS]], d.icon, 'li-pick'),
+      footer: ICON_DONE,
     });
     UI.on({ 'li-pick': ({ n }) => { d.icon = n; Store.save(); UI.closeSheet(); ctx.render(); } });
   }

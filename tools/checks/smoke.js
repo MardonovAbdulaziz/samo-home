@@ -31,6 +31,9 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   // real fire
   await click('[data-action="pp-fire"]'); await sl(300);
   s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, ban: (document.querySelector('[data-key="ban-alarm"]') || {}).textContent || '', hush: !!document.querySelector('[data-action="sm-hush"]'), call: (() => { const c = document.querySelector('a[href="tel:101"]'), h = document.querySelector('[data-action="sm-hush"]'); if (!c || !h) return ''; const cs = getComputedStyle(c), hs = getComputedStyle(h); return [c.textContent.trim(), !!c.querySelector('svg'), cs.backgroundColor, cs.color, hs.backgroundColor, hs.color].join('|'); })(), push: (document.querySelector('.push') || {}).textContent || '', log: Store.device('d-smoke').log.slice(0, 3).map((e) => e.k).join(',') }));
+  s = await ev(() => { const c = document.querySelector('.sm-level').getBoundingClientRect(), b = document.querySelector('.sm-bar').getBoundingClientRect(); return [Math.round(b.left - c.left), Math.round(c.right - b.right)].join(','); });
+  ok('Smoke level bar fills the card: 16 px on both sides', s === '16,16', s);
+  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, ban: (document.querySelector('[data-key="ban-alarm"]') || {}).textContent || '', hush: !!document.querySelector('[data-action="sm-hush"]'), call: (() => { const c = document.querySelector('a[href="tel:101"]'), h = document.querySelector('[data-action="sm-hush"]'); if (!c || !h) return ''; const cs = getComputedStyle(c), hs = getComputedStyle(h); return [c.textContent.trim(), !!c.querySelector('svg'), cs.backgroundColor, cs.color, hs.backgroundColor, hs.color].join('|'); })(), push: (document.querySelector('.push') || {}).textContent || '', log: Store.device('d-smoke').log.slice(0, 3).map((e) => e.k).join(',') }));
   ok('Real fire: "Smoke!", red banner, push, white Silence + red Call 101 with a phone icon, safety scenario + other detectors', s.w === 'Smoke!' && /Smoke detected · Kitchen/.test(s.ban) && s.hush && s.call === 'Call 101|true|rgb(255, 255, 255)|rgb(255, 69, 58)|rgb(255, 255, 255)|rgb(51, 51, 51)' && /Smoke! · Kitchen smoke/.test(s.push) && s.log === 'linked,scene,smoke', JSON.stringify(s).slice(0, 260));
   await pg.goto(root + 'index.html'); await sl(300);
   s = await ev(() => { const t = document.querySelector('.tile[data-id="d-smoke"]'), cs = getComputedStyle(t); return [t.classList.contains('alert'), cs.backgroundColor, getComputedStyle(t.querySelector('.tile-name')).color, getComputedStyle(t.querySelector('.tile-icon')).color, !!t.querySelector('svg mask[id^="mask0_3895_50009"]')].join('|'); });
@@ -70,6 +73,8 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   s = await ev(() => [...document.querySelectorAll('.list-header')].map((x) => x.textContent).join(','));
   ok('Heiman settings: Detector, Notifications, Automation', s === 'Detector,Notifications,Automation', s);
   await click('[data-action="sm-feature"][data-k="pause"]'); await sl(400);
+  s = await ev(() => ({ x: !!document.querySelector('.sheet.open .sheet-x, #sheet.open .sheet-x'), done: [...document.querySelectorAll('.sheet.open .sheet-footer button, #sheet.open .sheet-footer button')].map((b) => b.textContent.trim()).join(',') }));
+  ok('Sheets with a close × have no extra Done button', s.x && s.done === '', JSON.stringify(s));
   await click('[data-action="sm-pause-go"]'); await sl(300); await ev(() => UI.closeSheet()); await sl(300);
   await air({ level: 6.5 }); await pg.goto(root + 'device.html?id=d-smoke'); await sl(300);
   s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, ban: !!document.querySelector('[data-key="ban-pause"]') }));
@@ -109,7 +114,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   // change the icon (generic picker for device types without their own): settings avatar, home tile, page mark
   await pg.goto(root + 'device-settings.html?id=d-smoke'); await sl(300);
   await click('.edit-avatar .pen'); await sl(400);
-  s = await ev(() => [...document.querySelectorAll('.sheet.open .group-title, #sheet.open .group-title')].map((x) => x.textContent)[0]);
+  s = await ev(() => [...document.querySelectorAll('.sheet.open .ip-title, #sheet.open .ip-title')].map((x) => x.textContent).join(','));
   await click('[data-action="dv-icon-pick"][data-n="dev-flame"]'); await sl(400);
   const fl = 'svg mask[id^="mask0_3895_50012"]';
   const av = await ev((fl) => !!document.querySelector('.edit-avatar ' + fl), fl);
@@ -117,7 +122,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   const ti = await ev((fl) => !!document.querySelector('.tile[data-id="d-smoke"] ' + fl), fl);
   await pg.goto(root + 'device.html?id=d-smoke'); await sl(300);
   const mk = await ev((fl) => !!document.querySelector('.lk-mark ' + fl), fl);
-  ok('Change icon: Sensors group first; the flame shows in settings, on the home tile and the page mark', s === 'Sensors' && av && ti && mk, JSON.stringify({ s, av, ti, mk }));
+  ok('Change icon (Figma 5303:19456 groups, fixed order): the flame shows in settings, on the home tile and the page mark', s === 'Hubs and Network,Lighting,Sockets and Switches,Climate and Air,Windows and Doors,Security,Home Appliances,Multimedia,Sensors' && av && ti && mk, JSON.stringify({ s, av, ti, mk }));
 
   for (const u of ['index.html', 'about-device.html?id=d-smoke', 'add-device.html?via=zigbee']) { await pg.goto(root + u); await sl(400); }
   ok('No console errors', errs.length === 0, errs.join(' | '));

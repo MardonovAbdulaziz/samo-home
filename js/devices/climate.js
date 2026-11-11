@@ -330,7 +330,6 @@ Devices.climate = (() => {
         const top = tog ? `<div class="list"><button class="cell" data-action="th-tog"><span class="cell-main cell-title">${esc(tog.label)}</span><span class="switch" role="switch" aria-checked="${!!v[tog.id]}"></span></button></div>` : '';
         return top + (tog ? UI.collapse(!!v[tog.id], body) : body) + (f.foot ? `<div class="list-footer">${esc(f.foot)}</div>` : '');
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
     const commit = () => { Store.save(); ctx.render(); s.refresh(); };
     UI.on({
@@ -386,7 +385,6 @@ Devices.climate = (() => {
           + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">No alarms or alerts today</span></div>')
           + '<div class="list-footer">The sensor only sends its current value. Our server keeps every report and draws this chart.</div>';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
     UI.on({ 'th-ser': ({ ch }) => { cur = keys[+ch]; s.refresh(); } });
   }

@@ -939,7 +939,6 @@ Devices.curtain = (() => {
         const warn = k === 'reverse' && has(d, 'calibration') ? '<div class="list-footer">Changing it deletes the learned ends: calibrate again afterwards.</div>' : '';
         return `<div class="list"><button class="cell" data-action="cf-toggle"><span class="cell-main cell-title">${esc(f.label || f.name)}</span><span class="switch" role="switch" aria-checked="${!!v}"></span></button></div>${warn}`;
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
     UI.on({
       'cf-opt': ({ v }) => { d.settings[k] = v; commit(); },
@@ -961,7 +960,6 @@ Devices.curtain = (() => {
             <div class="dir-test">${[['open', openGlyph(d), 'Open'], ['stop', 'stop', 'Stop'], ['close', closeGlyph(d), 'Close']].map(([c, g, t]) => `<button class="btn btn-secondary" data-action="dir-cmd" data-c="${c}" ${d.online ? '' : 'disabled'}>${glyph(g, 'cg sm')}<span>${t}</span></button>`).join('')}</div></div>`)}
         ${UI.group('Direction', opt(false, 'Normal', `“Open” ${word[0]} the ${noun(d)}`) + opt(true, 'Reversed', `For a motor installed the other way round — use it if “Open” ${word[1]} the ${noun(d)}`))}
         ${has(d, 'calibration') ? '<div class="list-footer">Changing the direction deletes the learned ends: calibrate again afterwards.</div>' : ''}`,
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
     UI.on({
       'dir-cmd': ({ c }) => { cmd(d, i, c); Store.save(); ctx.render(); },

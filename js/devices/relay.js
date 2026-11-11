@@ -597,7 +597,6 @@ function makeSwitch(K) {
         }
         return h;
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
       onMount: (el) => {
         const r = el.querySelector('#brRange');
         if (r) r.oninput = () => { get(d, k, c).br = +r.value; UI.setNum(el.querySelector('#brVal'), r.value + '%'); Store.save(); };
@@ -686,7 +685,6 @@ function makeSwitch(K) {
         return UI.group('Last 7 days, kWh', `<div class="group-pad">${bars}</div>`) + UI.group('', `<div class="cell"><span class="cell-main cell-title">This week</span><span class="cell-value">${week.toFixed(2)} kWh</span></div><div class="cell"><span class="cell-main cell-title">Total on the plug</span><span class="cell-value">${d.energy.toFixed(2)} kWh</span></div>`)
           + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">No safety events</span></div>');
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
   }
   function displayRow(d) {
@@ -728,9 +726,8 @@ function makeSwitch(K) {
   function openIconPicker(dr, back) {
     UI.sheet({
       title: 'Select an icon', onClose: null,
-      render: () => `<section class="sheet-group"><div class="list-header group-title">${displayOf(dr.display)[4]}</div></section><div class="pad icon-grid">${iconSet(dr.display).map((n) => `<button data-action="ip-pick" data-n="${n}" aria-pressed="${dr.icon === n}" aria-label="${n.replace('dev-', '')}">${icon(n, 'icon', 'style="width:32px;height:32px"')}</button>`).join('')}</div>
-`,
-      footer: '<button class="btn btn-secondary btn-block" data-action="ip-back">Done</button>',
+      render: () => iconPickerHTML([[displayOf(dr.display)[4], iconSet(dr.display)]], dr.icon, 'ip-pick'),
+      footer: '<button class="btn btn-glass btn-block" data-action="ip-back">Done</button>',
     });
     UI.on({ 'ip-pick': ({ n }) => { dr.icon = n; back(); }, 'ip-back': () => back() });
   }

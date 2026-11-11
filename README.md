@@ -178,6 +178,7 @@ Built from `Device Interface 3/12. Smoke_Detector_Interface.html` (58 detectors)
 ## Device icons & alert cards
 
 - Every device icon comes from the Figma **Icons** page (5:60) — `assets/icons/figma/dev-*.svg` (Sensors/Smoke → `dev-smoke`, Sensors/Flame → `dev-flame`, Sensors/Drop → `dev-drop` …)
+- **Select an icon** sheet follows Figma 5303:19456 (`iconPickerHTML` + `.ip-*`): Hubs and Network, Lighting, Sockets and Switches, Climate and Air, Windows and Doors, Security, Home Appliances, Multimedia, Sensors — fixed order, 64 px cards, chosen card non-opaque blue with a color/blue border, glass Done
 - **Change icon** works on every device: lights, relays / plugs and door sensors keep their own pickers; all other types use the shared picker (`openDeviceIconPicker` in `js/devices/registry.js`, saved as `d.userIcon`) — the choice shows in settings, on the home tile and in the leak / smoke page mark
 - **Alert card** on home (Figma 5429:45566): a leak or smoke alarm turns the tile white (background/opposite bg) with a color/red icon and status (`alert: true` from `homeTiles`, `.tile.alert`)
 

@@ -46,25 +46,28 @@ Devices.sensor = {
   about: () => [],
 };
 
-/* ---------- Device icons (Figma "Icons" page, 5:60) — the user can pick any of them for a device ---------- */
+/* ---------- Device icons — the "Select an icon" sheet, Figma 5303:19456 (icons from the Icons page, 5:60) ---------- */
 const DEVICE_ICONS = [
-  ['Sensors', ['dev-drop', 'dev-smoke', 'dev-flame', 'dev-motion', 'dev-temperature']],
-  ['Doors & windows', ['dev-door-02', 'dev-door-open', 'dev-window', 'dev-window-2', 'dev-curtains', 'dev-garage', 'dev-gate', 'dev-barrier', 'dev-barrier-2', 'dev-lock']],
-  ['Lighting', ['dev-bulb', 'dev-lamp', 'dev-lamp-02', 'dev-study-lamp', 'dev-wall-lamp', 'dev-chandelier-01', 'dev-chandelier-02', 'dev-round-led', 'dev-square-led']],
-  ['Climate', ['dev-ac', 'dev-fan', 'dev-air', 'dev-purifier', 'dev-radiator', 'dev-radiator-mini', 'dev-thermostat']],
-  ['Appliances', ['dev-socket', 'dev-socket-2', 'dev-kettle', 'dev-washing', 'dev-fridge', 'dev-dishwasher', 'dev-oven', 'dev-microwave', 'dev-vacuum', 'dev-iron']],
-  ['Network', ['dev-hub', 'dev-router']],
+  ['Hubs and Network', ['dev-hub', 'dev-router', 'dev-hub-2', 'dev-airdrop']],
+  ['Lighting', ['dev-bulb', 'dev-round-led', 'dev-square-led', 'dev-chandelier-01', 'dev-chandelier-02', 'dev-lamp-02', 'dev-wall-lamp', 'dev-lamp', 'dev-study-lamp']],
+  ['Sockets and Switches', ['dev-socket']],
+  ['Climate and Air', ['dev-ac', 'dev-fan', 'dev-thermostat', 'dev-radiator', 'dev-radiator-mini', 'dev-purifier', 'dev-air']],
+  ['Windows and Doors', ['dev-door-open', 'dev-door-02', 'dev-window-2', 'dev-curtains', 'dev-gate', 'dev-garage', 'dev-garage-2', 'dev-barrier-2', 'dev-barrier']],
+  ['Security', ['dev-lock-pin', 'dev-lock', 'dev-cctv']],
+  ['Home Appliances', ['dev-fridge', 'dev-washing-2', 'dev-microwave', 'dev-oven', 'dev-dishwasher', 'dev-kettle', 'dev-blender', 'dev-vacuum', 'dev-robot', 'dev-iron']],
+  ['Multimedia', ['dev-tv-1', 'dev-tv-2', 'dev-projector', 'dev-remote', 'dev-speaker', 'dev-gamepad', 'dev-speaker-2']],
+  ['Sensors', ['dev-drop', 'dev-flame', 'dev-smoke', 'dev-temperature', 'dev-motion']],
 ];
+/** The icon groups of a picker sheet (Figma 5303:19456): group title in label/secondary, 4 icon cards of 64 px,
+    the chosen one in non-opaque blue with a color/blue border. Groups keep their order — nothing jumps when you pick. */
+function iconPickerHTML(groups, cur, action) {
+  return `<div class="ip-list">${groups.map(([g, list]) => `<section class="ip-group"><div class="ip-title">${UI.esc(g)}</div><div class="ip-grid">${list.map((n) => `<button data-action="${action}" data-n="${n}" aria-pressed="${cur === n}" aria-label="${n.replace('dev-', '')}">${icon(n, 'icon', 'style="width:32px;height:32px"')}</button>`).join('')}</div></section>`).join('')}</div>`;
+}
+const ICON_DONE = '<button class="btn btn-glass btn-block" data-action="sheet-close">Done</button>';   // Figma: fills/tertiary
 /** Icon picker for device types that don't manage icons themselves: saves d.userIcon (home tile, settings avatar,
-    and the sensor mark on the device page). The group of the current icon comes first. */
+    and the sensor mark on the device page). */
 function openDeviceIconPicker(d, ctx) {
-  const cur = DeviceAPI(d).icon(0);
-  const groups = DEVICE_ICONS.slice().sort((a, b) => (b[1].includes(cur) ? 1 : 0) - (a[1].includes(cur) ? 1 : 0));
-  UI.sheet({
-    title: 'Select an icon',
-    render: () => groups.map(([g, list]) => `<section class="sheet-group"><div class="list-header group-title">${g}</div></section><div class="pad icon-grid">${list.map((n) => `<button data-action="dv-icon-pick" data-n="${n}" aria-pressed="${DeviceAPI(d).icon(0) === n}" aria-label="${n.replace('dev-', '')}">${icon(n, 'icon', 'style="width:32px;height:32px"')}</button>`).join('')}</div>`).join(''),
-    footer: '<button class="btn btn-secondary btn-block" data-action="sheet-close">Done</button>',
-  });
+  UI.sheet({ title: 'Select an icon', render: () => iconPickerHTML(DEVICE_ICONS, DeviceAPI(d).icon(0), 'dv-icon-pick'), footer: ICON_DONE });
   UI.on({ 'dv-icon-pick': ({ n }) => { d.userIcon = n; Store.save(); UI.closeSheet(); ctx.render(); } });
 }
 

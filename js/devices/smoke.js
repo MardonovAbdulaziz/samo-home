@@ -278,7 +278,6 @@ Devices.smoke = (() => {
         }
         return '';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
     const commit = () => { Store.save(); ctx.render(); s.refresh(); };
     UI.on({
@@ -304,7 +303,6 @@ Devices.smoke = (() => {
         const rows = d.log.slice(0, 24).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.k === 'scene' ? 'Safety scenario: ' + e.text : EV[e.k] || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
         return UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">The detector keeps no history.</div>';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
   }
   function bindSettings(d, ctx) {

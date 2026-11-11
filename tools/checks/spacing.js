@@ -22,7 +22,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   });
   // the gap measurer: blocks = visible boxes that are direct children of a container (collapse wrappers flattened)
   const measure = () => ev(() => {
-    const BLOCK = '.list, .sheet-group, .group-card, .pad, .info-grid, .preset-grid, .ring-timer, .th-chart, .segmented, .banner, .tw, .stack, .channel-grid, .ch-picker, .field, .edit-avatar, .btn-block, .icon-grid';
+    const BLOCK = '.list, .sheet-group, .group-card, .pad, .info-grid, .preset-grid, .ring-timer, .th-chart, .segmented, .banner, .tw, .stack, .channel-grid, .ch-picker, .field, .edit-avatar, .btn-block, .ip-group';
     const vis = (e) => { const r = e.getBoundingClientRect(); return r.height > 1 && getComputedStyle(e).visibility !== 'hidden' && !e.closest('[aria-hidden="true"]'); };
     const flat = (parent) => [...parent.children].flatMap((c) => (c.classList.contains('collapse') || c.classList.contains('collapse-inner') ? flat(c) : [c]));
     const issues = [];

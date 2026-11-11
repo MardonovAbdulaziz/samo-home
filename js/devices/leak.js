@@ -197,7 +197,7 @@ Devices.leak = (() => {
     const sen = [];
     if (has(d, 'buzzer')) sen.push(row('buzzer', F.buzzer.name, summary(d, 'buzzer')));
     if (has(d, 'alarmMode')) sen.push(row('alarmMode', F.alarmMode.name, summary(d, 'alarmMode')));
-    if (has(d, 'testMode')) sen.push(`<button class="cell" data-action="lk-test"><span class="cell-main"><span class="cell-title" style="display:block">Test mode</span><span class="cell-sub" style="display:block">${testing(d) ? 'On — ends by itself in 10 min' : 'Check the alarm without closing the water'}</span></span><span class="cell-value">${testing(d) ? 'Stop' : 'Start'}</span></button>`);
+    if (has(d, 'testMode')) sen.push(`<button class="cell" data-action="lk-test"><span class="cell-main"><span class="cell-title" style="display:block">Test mode</span><span class="cell-sub" style="display:block">${testing(d) ? 'On — ends by itself in 10 min · tap to stop' : 'Check the alarm without closing the water'}</span></span>${icon('chevron-right', 'chev')}</button>`);
     if (sen.length) h += `<div class="list-header">Sensor</div><div class="list">${sen.join('')}</div>`;
     if (has(d, 'notify')) {
       const n = S(d, 'notify');
@@ -228,7 +228,6 @@ Devices.leak = (() => {
         }
         return '';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
     const commit = () => { Store.save(); ctx.render(); s.refresh(); };
     UI.on({
@@ -260,7 +259,6 @@ Devices.leak = (() => {
         return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself keeps no history.</div>';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
   }
 

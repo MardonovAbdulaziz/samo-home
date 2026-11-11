@@ -47,6 +47,8 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   await pg.goto(root + 'device-settings.html?id=d-leak'); await sl(300);
   s = await ev(() => [...document.querySelectorAll('.list-header')].map((x) => x.textContent).join(','));
   ok('All-features settings: Sensor, Notifications, Automation', s === 'Sensor,Notifications,Automation', s);
+  s = await ev(() => { const r = document.querySelector('[data-action="lk-test"]'); return { chev: !!r.querySelector('.chev'), val: !!r.querySelector('.cell-value') }; });
+  ok('Test mode row: a chevron, no Start / Stop word', s.chev && !s.val, JSON.stringify(s));
   await click('[data-action="lk-test"]'); await sl(200);
   const n1 = await ev(() => Store.state.notifications);
   await pg.goto(root + 'device.html?id=d-leak'); await sl(300);

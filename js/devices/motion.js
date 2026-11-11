@@ -331,7 +331,6 @@ Devices.motion = (() => {
         }
         return '';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
     const commit = () => { Store.save(); ctx.render(); s.refresh(); };
     UI.on({
@@ -364,7 +363,6 @@ Devices.motion = (() => {
         return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself only knows “motion” or “no motion” right now.</div>';
       },
-      footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>',
     });
   }
 
