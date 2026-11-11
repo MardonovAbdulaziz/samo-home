@@ -1551,7 +1551,10 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* ---------- Vibration: the mark trembles while the thing shakes (a few px, never more) ---------- */
 .lk-mark.vb-shake .lk-disc { animation: vb-shake 260ms linear infinite; }
 @keyframes vb-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-1.5px) rotate(-1deg); } 75% { transform: translateX(1.5px) rotate(1deg); } }
-@media (prefers-reduced-motion: reduce) { .lk-mark.vb-shake .lk-disc { animation: none; } }
+/* shaking (not an alarm): the icon is white and the ring that fades out is grey — the disc's own colour, not blue */
+.lk-mark.is-shake .lk-disc { color: var(--label-primary); }
+.lk-mark.is-shake .lk-halo { border-color: var(--label-quaternary); animation: lk-halo 2600ms cubic-bezier(.32, .72, 0, 1) infinite; }
+@media (prefers-reduced-motion: reduce) { .lk-mark.vb-shake .lk-disc, .lk-mark.is-shake .lk-halo { animation: none; } }
 
 /* ---------- Energy meter: a half-ring gauge — power now in the middle, the ring fills toward the limit
    (label/secondary → color/orange from 70 % → color/red from 90 % or when it trips). ---------- */
