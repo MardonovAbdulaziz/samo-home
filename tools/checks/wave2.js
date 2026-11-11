@@ -98,8 +98,8 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   s = await ev(() => { const b = document.querySelector('.ir-addbar').getBoundingClientRect(), sc = document.querySelector('.screen').getBoundingClientRect(); return Math.round(sc.bottom - b.bottom); });
   ok("IR: “Add a device” sits at the bottom of the screen (above the home indicator)", s >= 0 && s <= 48, String(s));
   await go('device.html?id=d-ir&r=0');
-  s = await ev(() => ({ title: document.querySelector('.toolbar .title').textContent, edit: !!document.querySelector('[data-action="ir-edit"]'), wedges: document.querySelectorAll('.ir-dpad .u,.ir-dpad .d,.ir-dpad .l,.ir-dpad .r').length, clip: getComputedStyle(document.querySelector('.ir-dpad .u')).clipPath !== 'none', rows: document.querySelectorAll('.ir-keys .ir-r').length }));
-  ok('IR: TV — title, Edit, D-pad cut into four wedges, three key rows', s.title === 'TV' && s.edit && s.wedges === 4 && s.clip && s.rows === 3, JSON.stringify(s));
+  s = await ev(() => ({ title: document.querySelector('.toolbar .title').textContent, edit: !!document.querySelector('[data-action="ir-edit"]'), wedges: document.querySelectorAll('.ir-dpad button.u,.ir-dpad button.d,.ir-dpad button.l,.ir-dpad button.r').length, clip: getComputedStyle(document.querySelector('.ir-dpad button.u')).clipPath !== 'none', shades: document.querySelectorAll('.ir-dpad .sh').length, rows: document.querySelectorAll('.ir-keys .ir-r').length }));
+  ok('IR: TV — title, Edit, D-pad cut into four wedges with four soft press shades, three key rows', s.title === 'TV' && s.edit && s.wedges === 4 && s.clip && s.shades === 4 && s.rows === 3, JSON.stringify(s));
   await click('[data-action="ir-send"][data-l="OK"]'); await sl(200);
   ok('IR: OK → “Sent “OK” · …”, the light blinks', /Sent “OK”/.test(await sub()) && await ev(() => document.querySelector('.ir-led').classList.contains('on')), await sub());
   await go('device.html?id=d-ir&r=1');
