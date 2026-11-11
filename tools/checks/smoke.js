@@ -58,6 +58,12 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   await pg.goto(root + 'device.html?id=d-smoke'); await sl(300);
   const t = await ev(() => ({ ban: (document.querySelector('[data-key="ban-test"]') || {}).textContent || '', hint: document.querySelector('.cw-hint').textContent }));
   ok('Test: "Testing…", then "Test OK — the app received the alarm", last test today', s === 'Testing…' && /Test OK/.test(t.ban) && /Last test \d+:\d\d/.test(t.hint), JSON.stringify({ s, ...t }));
+  await click('[data-action="sm-test-ok"]'); await sl(200);
+  const x = await ev(() => !document.querySelector('[data-key="ban-test"]'));
+  await ev(() => { const d = Store.device('d-smoke'); d.st.testUntil = Date.now() - 1; Devices.smoke.tick(d); Store.save(); });
+  await pg.goto(root + 'device.html?id=d-smoke'); await sl(5600);
+  const auto = await ev(() => !document.querySelector('[data-key="ban-test"]'));
+  ok('Test OK banner closes: × right away, or by itself after 5 s', x && auto, JSON.stringify({ x, auto }));
 
   // cooking pause: burnt toast does nothing
   await pg.goto(root + 'device-settings.html?id=d-smoke'); await sl(300);

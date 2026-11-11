@@ -118,7 +118,7 @@ Devices.smoke = (() => {
     let changed = false; const now = Date.now(), P = d.phys;
     // the air clears slowly once the source is gone
     if (P.fading && P.level > 0.3) { P.level = Math.max(0.3, P.level * 0.86); if (P.temp > 22) P.temp = Math.max(22, P.temp - 2.5); changed = true; }
-    if (d.st.testUntil && now >= d.st.testUntil) { d.st.testUntil = 0; d.st.testOkUntil = now + 60000; d.st.lastTest = now; logEv(d, 'test'); changed = true; }
+    if (d.st.testUntil && now >= d.st.testUntil) { d.st.testUntil = 0; d.st.testOkUntil = now + 5000; /* shows briefly, then hides by itself (or tap ×) */ d.st.lastTest = now; logEv(d, 'test'); changed = true; }
     if (d.st.testOkUntil && now >= d.st.testOkUntil) { d.st.testOkUntil = 0; changed = true; }
     if (d.st.pauseUntil && now >= d.st.pauseUntil) { d.st.pauseUntil = 0; logEv(d, 'pauseEnd'); changed = true; }
     if (evaluate(d)) changed = true;
@@ -171,7 +171,7 @@ Devices.smoke = (() => {
     let h = '';
     if (!d.online) h += `<div class="pad cw-gap" data-key="ban-off"><div class="banner danger">${icon('bolt-crossed')}<div><b>Offline</b> · No report since ${when(st.lastSeen)}. A silent detector protects nobody — check it.</div></div></div>`;
     if (d.online && alarm(d)) h += `<div class="pad cw-gap" data-key="ban-alarm"><div class="banner danger">${icon(d.st.state === 'heat' ? 'dev-flame' : 'dev-smoke')}<div><b>${esc(word(d).replace('!', ''))} detected</b> · ${esc(room(d))} — leave the room, call 101</div></div></div>`;
-    if (st.testOkUntil) h += `<div class="pad cw-gap" data-key="ban-test"><div class="banner info">${icon('check')}<div><b>Test OK</b> · The app received the alarm — notifications will arrive</div></div></div>`;
+    if (st.testOkUntil) h += `<div class="pad cw-gap" data-key="ban-test"><div class="banner info">${icon('check')}<div><b>Test OK</b> · The app received the alarm — notifications will arrive</div><button class="ban-x" data-action="sm-test-ok" aria-label="Close">${icon('cross')}</button></div></div>`;
     if (paused(d) && !alarm(d)) h += `<div class="pad cw-gap" data-key="ban-pause"><div class="banner info">${icon('round-info')}<div><b>Cooking pause</b> · Detection comes back by itself</div></div></div>`;
     if (st.tamper) h += `<div class="pad cw-gap" data-key="ban-tamper"><div class="banner danger">${icon('banner-error')}<div><b>Taken down</b> · Put the detector back on its base</div></div></div>`;
     if (st.fault) h += `<div class="pad cw-gap" data-key="ban-fault"><div class="banner warn">${icon('banner-error')}<div><b>${st.fault === 'dust' ? 'Dusty chamber' : 'Fault'}</b> · Clean or replace the detector</div></div></div>`;
@@ -211,6 +211,7 @@ Devices.smoke = (() => {
         if (d.st.level >= 18) return UI.toast('Too much smoke — the detector will not silence');
         d.st.hushUntil = Date.now() + 180000; logEv(d, 'hush'); Store.save(); ctx.render(); UI.toast('Siren silenced for 3 min — it rings again if the smoke rises');
       },
+      'sm-test-ok': () => { d.st.testOkUntil = 0; Store.save(); ctx.render(); },
       'sm-test': () => {
         if (!d.online || alarm(d) || testing(d)) return;
         d.st.testUntil = Date.now() + 4000; d.blinkAt = Date.now(); Store.save(); ctx.render();
