@@ -23,6 +23,7 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Motion sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-motion |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 | Design lab · contact “Other” open / closed (5 ideas) | https://mardonovabdulaziz.github.io/samo-home/design/other-open.html |
+| Design lab · 10 pictures of “contact” | https://mardonovabdulaziz.github.io/samo-home/design/contact-ideas.html |
 
 The site updates by itself 1–2 minutes after each push to `main` (GitHub Pages).
 

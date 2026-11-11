@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact pictures</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  :root { color-scheme: dark; --ease: cubic-bezier(.45, .05, .25, 1); --ok: #34c759; --open: #ff9f0a; --flow: #7cc0ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px 32px 80px; background: #0b0b0d; color: var(--label-primary); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; }
+  .lead { color: var(--label-secondary); max-width: 780px; margin: 0 0 32px; font: var(--body-lg); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .opt { border-radius: 28px; overflow: hidden; background: radial-gradient(360px 300px at 80% 110%, rgba(60, 180, 255, .32), transparent 70%), linear-gradient(rgba(0, 89, 255, .10), rgba(0, 89, 255, .10)), #000; }
+  .stage { height: 220px; display: grid; place-items: center; }
+  .stage svg { width: 270px; height: 180px; overflow: visible; }
+  .meta { padding: 0 20px 20px; }
+  .meta b { font: 600 17px/22px var(--font); } .meta .n { color: var(--primary); font: 700 15px/20px var(--font); margin-right: 8px; }
+  .meta p { margin: 6px 0 12px; color: var(--label-secondary); font: var(--body-md); min-height: 54px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .btn { height: 34px; padding: 0 16px; border-radius: 17px; border: 0; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); cursor: pointer; }
+  .word { font: 700 22px/28px var(--font); color: var(--green); min-width: 90px; }
+  .opt.is-open .word { color: var(--orange); }
+  .tag { margin-left: auto; font: var(--body-sm); color: var(--green); border: 1px solid var(--green); border-radius: 20px; padding: 1px 8px; }
+
+  /* shared */
+  svg * { transform-box: view-box; }
+  .mv { transition: transform 760ms var(--ease), opacity 500ms var(--ease); }
+  .on-closed { transition: opacity 400ms var(--ease); }
+  .opt.is-open .on-closed { opacity: 0; }
+  .on-open { opacity: 0; transition: opacity 400ms var(--ease) 300ms; }
+  .opt.is-open .on-open { opacity: 1; }
+  .flow { stroke: var(--flow); stroke-dasharray: 2 9; stroke-linecap: round; animation: flow 1.2s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -22; } }
+  .dash { stroke-dasharray: 3 5; animation: flow 1.6s linear infinite; }
+  .lbl { font: 600 11px var(--font); fill: var(--label-secondary); }
+
+  /* 1 sensor + magnet */ .opt.is-open .c1-m { transform: translateX(58px); }
+  /* 2 reed switch */ .c2-l { transform-origin: 46px 90px; } .c2-r { transform-origin: 194px 90px; }
+  .opt.is-open .c2-l, .opt.is-open .c2-r { transform: rotate(-5deg); } .opt.is-open .c2-mag { transform: translateY(34px); opacity: .35; }
+  /* 3 circuit */ .c3-sw { transform-origin: 102px 46px; } .opt.is-open .c3-sw { transform: rotate(-34deg); }
+  /* 4 plug */ .opt.is-open .c4-plug { transform: translateX(-48px); }
+  /* 5 puzzle */ .opt.is-open .c5-r { transform: translate(36px, -10px) rotate(8deg); }
+  /* 6 chain */ .opt.is-open .c6-r { transform: translate(44px, 8px) rotate(10deg); }
+  /* 7 horseshoe */ .opt.is-open .c7-bar { transform: translateY(-40px); }
+  /* 8 zipper */ .c8-l { transform-origin: 120px 150px; } .c8-r { transform-origin: 120px 150px; }
+  .opt.is-open .c8-l { transform: rotate(-13deg); } .opt.is-open .c8-r { transform: rotate(13deg); }
+  /* 9 capsule */ .opt.is-open .c9-l { transform: translateX(-20px); } .opt.is-open .c9-r { transform: translateX(20px); }
+  /* 10 latch */ .c10-arm { transform-origin: 176px 76px; } .opt.is-open .c10-arm { transform: rotate(32deg); }   /* clockwise: the hook end (left of the pivot) lifts up */
+
+  @media (prefers-reduced-motion: reduce) { * { transition-duration: 1ms !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<h1>Contact sensor — 10 pictures of “contact”</h1>
+<p class="lead">Every idea shows the one thing a contact sensor knows: two parts touch (closed) or come apart (open). Each plays on its own every few seconds; tap “Open / Close” to try it. App colours: white plastic, grey metal, green when in contact, light blue for current and light.</p>
+<div class="grid" id="g"></div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <linearGradient id="pl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#eef1f5"/><stop offset="1" stop-color="#cfd6de"/></linearGradient>
+  <linearGradient id="mt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef1f5"/><stop offset=".5" stop-color="#b8c1cc"/><stop offset="1" stop-color="#8d97a4"/></linearGradient>
+  <linearGradient id="mth" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9aa4b1"/><stop offset=".5" stop-color="#eef1f5"/><stop offset="1" stop-color="#9aa4b1"/></linearGradient>
+  <radialGradient id="glow"><stop offset="0" stop-color="#7cc0ff" stop-opacity=".55"/><stop offset=".4" stop-color="#7cc0ff" stop-opacity=".22"/><stop offset=".75" stop-color="#7cc0ff" stop-opacity=".06"/><stop offset="1" stop-color="#7cc0ff" stop-opacity="0"/></radialGradient>
+  <radialGradient id="okglow"><stop offset="0" stop-color="#34c759" stop-opacity=".7"/><stop offset=".5" stop-color="#34c759" stop-opacity=".2"/><stop offset="1" stop-color="#34c759" stop-opacity="0"/></radialGradient>
+</defs></svg>
+<script>
+const OPTS = [
+  { name: 'Sensor and magnet', idea: 'The real thing, made simple: the magnet touches the sensor (a green seam); open, it slides away and the gap is measured.', svg: `
+    <rect x="62" y="40" width="46" height="96" rx="12" fill="url(#pl)"/><circle cx="85" cy="56" r="3" fill="#9aa4b1"/>
+    <rect class="on-closed" x="106" y="62" width="4" height="52" rx="2" fill="var(--ok)"/>
+    <g class="mv c1-m"><rect x="110" y="58" width="28" height="60" rx="8" fill="url(#pl)"/></g>
+    <g class="on-open"><line x1="110" y1="148" x2="166" y2="148" stroke="var(--open)" stroke-width="1.5" class="dash"/><line x1="110" y1="142" x2="110" y2="154" stroke="var(--open)" stroke-width="1.5"/><line x1="166" y1="142" x2="166" y2="154" stroke="var(--open)" stroke-width="1.5"/><text x="138" y="170" text-anchor="middle" class="lbl">gap</text></g>` },
+  { name: 'Reed switch', idea: 'What is inside every contact sensor: two metal reeds in a glass tube. The magnet near → the reeds touch; magnet away → they spring apart.', pick: true, svg: `
+    <line x1="10" y1="90" x2="46" y2="90" stroke="url(#mt)" stroke-width="3"/><line x1="194" y1="90" x2="230" y2="90" stroke="url(#mt)" stroke-width="3"/>
+    <rect x="42" y="70" width="156" height="40" rx="20" fill="rgba(170,205,255,.10)" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/>
+    <rect x="52" y="74" width="136" height="4" rx="2" fill="rgba(255,255,255,.18)"/>
+    <rect class="mv c2-l" x="46" y="88" width="80" height="4" rx="2" fill="url(#mth)"/><rect class="mv c2-r" x="114" y="88" width="80" height="4" rx="2" fill="url(#mth)"/>
+    <circle class="on-closed" cx="120" cy="90" r="9" fill="url(#okglow)"/>
+    <g class="mv c2-mag"><rect x="88" y="124" width="32" height="16" rx="4" fill="#ff8a80"/><rect x="120" y="124" width="32" height="16" rx="4" fill="#7cc0ff"/></g>` },
+  { name: 'Circuit', idea: 'Closed contact closes the circuit: current flows and the little lamp lights. Open, the switch lifts and the lamp goes dark.', svg: `
+    <path d="M102 46 H44 V136 H196 V46 H142" fill="none" stroke="url(#mt)" stroke-width="3" stroke-linejoin="round"/>
+    <path class="on-closed flow" d="M142 46 H196 V136 H44 V46 H102" fill="none" stroke-width="3"/>
+    <circle cx="102" cy="46" r="4.5" fill="#dfe4ea"/><circle cx="142" cy="46" r="4.5" fill="#dfe4ea"/>
+    <line class="mv c3-sw" x1="102" y1="46" x2="144" y2="46" stroke="#eef1f5" stroke-width="4" stroke-linecap="round"/>
+    <circle class="on-closed" cx="120" cy="136" r="34" fill="url(#glow)"/><circle cx="120" cy="136" r="13" fill="#2b3442" stroke="url(#mt)" stroke-width="2"/><circle class="on-closed" cx="120" cy="136" r="10" fill="#cfe6ff"/>` },
+  { name: 'Plug and socket', idea: 'In the socket = in contact (green light). Pulled out, the pins show and the light goes out.', svg: `
+    <g class="mv c4-plug"><path d="M10 90 C 40 90, 60 84, 96 84" fill="none" stroke="#c7ced8" stroke-width="6" stroke-linecap="round"/>
+      <rect x="150" y="76" width="22" height="6" rx="2" fill="url(#mt)"/><rect x="150" y="98" width="22" height="6" rx="2" fill="url(#mt)"/>
+      <rect x="94" y="62" width="58" height="56" rx="12" fill="url(#pl)"/></g>
+    <rect x="170" y="36" width="24" height="108" rx="7" fill="url(#pl)"/><rect x="194" y="30" width="6" height="120" rx="3" fill="rgba(255,255,255,.12)"/>
+    <circle class="on-closed" cx="182" cy="50" r="3.5" fill="var(--ok)"/>` },
+  { name: 'Puzzle pieces', idea: 'Two pieces that fit only one way — locked together when closed, one lifts away when open.', svg: `
+    <path d="M60 52 H120 V72 A 12 12 0 1 1 120 96 V128 H60 Z" fill="url(#pl)"/>
+    <g class="mv c5-r"><path d="M120 52 H180 V128 H120 V96 A 12 12 0 1 0 120 72 Z" fill="#dfe6ee" stroke="rgba(30,40,55,.15)"/></g>
+    <path class="on-closed" d="M120 52 V72 M120 96 V128" stroke="var(--ok)" stroke-width="2"/>` },
+  { name: 'Chain links', idea: 'Two links hooked through each other: closed, they hold; open, one link slips free.', svg: `
+    <rect x="46" y="68" width="96" height="44" rx="22" fill="none" stroke="url(#mt)" stroke-width="10"/>
+    <g class="mv c6-r"><rect x="106" y="68" width="96" height="44" rx="22" fill="none" stroke="url(#mt)" stroke-width="10"/></g>
+    <path class="on-closed" d="M120 68 H136" stroke="url(#mt)" stroke-width="10"/>` },
+  { name: 'Magnet and keeper', idea: 'A horseshoe magnet holds its metal keeper (in contact). Open, the keeper lifts away and the field shows across the gap.', svg: `
+    <path d="M84 58 V104 A 36 36 0 0 0 156 104 V58" fill="none" stroke="url(#mth)" stroke-width="22"/>
+    <rect x="73" y="54" width="22" height="16" rx="3" fill="#ff8a80"/><rect x="145" y="54" width="22" height="16" rx="3" fill="#7cc0ff"/>
+    <g class="on-open"><path class="dash" d="M84 52 C 92 30, 148 30, 156 52" fill="none" stroke="var(--flow)" stroke-width="1.5"/><path class="dash" d="M84 52 C 96 40, 144 40, 156 52" fill="none" stroke="var(--flow)" stroke-width="1.5"/></g>
+    <g class="mv c7-bar"><rect x="66" y="40" width="108" height="14" rx="4" fill="url(#mt)"/></g>` },
+  { name: 'Zipper', idea: 'The teeth meet and lock all the way up when closed; open, the two sides spread apart from the top.', svg: `
+    <g class="mv c8-l"><rect x="94" y="22" width="18" height="128" rx="3" fill="#2f3a4a"/>${Array.from({ length: 8 }, (_, k) => `<rect x="108" y="${26 + k * 15}" width="12" height="7" rx="2" fill="url(#mt)"/>`).join('')}</g>
+    <g class="mv c8-r"><rect x="128" y="22" width="18" height="128" rx="3" fill="#2f3a4a"/>${Array.from({ length: 8 }, (_, k) => `<rect x="120" y="${33 + k * 15}" width="12" height="7" rx="2" fill="url(#mt)"/>`).join('')}</g>
+    <rect x="106" y="138" width="28" height="26" rx="7" fill="url(#pl)"/><rect x="116" y="160" width="8" height="14" rx="3" fill="#cfd6de"/>` },
+  { name: 'Capsule', idea: 'Two halves of one capsule: joined with a green seam when closed, pulled apart when open.', svg: `
+    <circle class="on-closed" cx="120" cy="90" r="40" fill="url(#okglow)"/>
+    <g class="mv c9-l"><path d="M120 62 H84 A 28 28 0 0 0 84 118 H120 Z" fill="url(#pl)"/></g>
+    <g class="mv c9-r"><path d="M120 62 H156 A 28 28 0 0 1 156 118 H120 Z" fill="#dfe6ee"/></g>
+    <rect class="on-closed" x="118.5" y="62" width="3" height="56" rx="1.5" fill="var(--ok)"/>` },
+  { name: 'Latch', idea: 'A hook drops over a pin to hold it shut; open, the hook lifts off the pin.', svg: `
+    <rect x="62" y="56" width="26" height="76" rx="7" fill="url(#pl)"/><circle cx="98" cy="92" r="7" fill="url(#mt)"/><rect x="86" y="89" width="12" height="6" fill="url(#mt)"/>
+    <rect x="166" y="56" width="26" height="76" rx="7" fill="url(#pl)"/>
+    <g class="mv c10-arm"><path d="M176 76 H100 Q 86 76 86 90 Q 86 104 100 104" fill="none" stroke="url(#mth)" stroke-width="8" stroke-linecap="round"/></g>
+    <circle cx="176" cy="76" r="5" fill="#9aa4b1"/>
+    <circle class="on-closed" cx="98" cy="92" r="16" fill="url(#okglow)"/>` },
+];
+document.getElementById('g').innerHTML = OPTS.map((o, i) => `<section class="opt"><div class="stage"><svg viewBox="0 0 240 180" aria-hidden="true">${o.svg}</svg></div>
+  <div class="meta"><div class="row"><span class="n">${String(i + 1).padStart(2, '0')}</span><b>${o.name}</b>${o.pick ? '<span class="tag">My pick</span>' : ''}</div><p>${o.idea}</p>
+  <div class="row"><span class="word">Closed</span><button class="btn">Open</button></div></div></section>`).join('');
+const set = (el, open) => { el.classList.toggle('is-open', open); el.querySelector('.word').textContent = open ? 'Open' : 'Closed'; el.querySelector('.btn').textContent = open ? 'Close' : 'Open'; };
+document.querySelectorAll('.btn').forEach((b) => b.onclick = () => { const s = b.closest('.opt'); s.dataset.manual = 1; set(s, !s.classList.contains('is-open')); });
+let on = false; setInterval(() => { on = !on; document.querySelectorAll('.opt:not([data-manual])').forEach((s) => set(s, on)); }, 2800);
+</script>
+</body>
+</html>
