@@ -21,6 +21,9 @@
       const panel = document.getElementById('protoPanel');
       if (panel) UI.patch(panel, api.protoPanel(ctx));
       if (Devices[d.type].afterRender) Devices[d.type].afterRender(d, UI.screen);
+      // background variant 10 ("context glow"): the page's light follows the device — on: its accent, alert: orange / red
+      const t = api.homeTiles()[0] || {};
+      UI.phone.style.setProperty('--ctx', t.offline ? '#5b6573' : t.tone === 'danger' ? '#ff453a' : t.tone === 'warn' ? '#ff9f0a' : t.on ? (t.accent && !t.accent.startsWith('var') ? t.accent : t.accent === 'var(--yellow)' ? '#ffd60a' : '#3cb4ff') : '#3cb4ff');
     },
   };
   api.bindPage(ctx);

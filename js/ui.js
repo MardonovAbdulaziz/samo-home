@@ -198,6 +198,7 @@ const UI = (() => {
     document.body.innerHTML = '';
     phone = document.createElement('div');
     phone.className = 'phone ' + (opts.variant || 'ambient');
+    { const bg = param('bg'); if (bg) document.documentElement.dataset.bg = bg; }   // design lab: ?bg=N tries a background variant (design/backgrounds.html)
     phone.innerHTML = `${statusBar()}<main class="screen" id="screen"></main>
       <div class="home-indicator"></div>
       <div class="popover-backdrop" id="popBg"></div>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Background variants</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px 32px 80px; background: #0b0b0d; color: var(--label-primary); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; }
+  .lead { color: var(--label-secondary); max-width: 820px; margin: 0 0 36px; font: var(--body-lg); }
+  section { margin: 0 0 44px; }
+  .head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .n { color: var(--primary); font: 700 15px/20px var(--font); min-width: 26px; }
+  .name { font: 700 22px/28px var(--font); }
+  .tag { font: var(--body-sm); color: var(--green); border: 1px solid var(--green); border-radius: 20px; padding: 1px 8px; }
+  .idea { color: var(--label-secondary); margin: 0 0 14px 38px; max-width: 780px; font: var(--body-md); }
+  .row { display: flex; gap: 18px; padding-left: 38px; overflow-x: auto; }
+  .ph { flex: none; width: 206px; height: 446px; border-radius: 26px; overflow: hidden; box-shadow: 0 0 0 6px #1a1a1d; background: #000; }
+  .ph iframe { width: 375px; height: 812px; border: 0; transform: scale(.55); transform-origin: 0 0; display: block; }
+  .cap { font: var(--body-sm); color: var(--label-tertiary); margin: 8px 0 0 4px; }
+  @media (max-width: 700px) { body { padding: 24px 16px 60px; } .row, .idea { padding-left: 0; margin-left: 0; } }
+</style>
+</head>
+<body>
+<h1>Backgrounds — 10 variants</h1>
+<p class="lead">Each row is the real app with one background: the home page and a device page (the living room lamp). No blur filters — every glow is a soft gradient, so Safari draws it the same. The first row is today's background, for comparison.</p>
+<div id="out"></div>
+<script>
+const V = [
+  ['0', 'Today', 'The current ambient: blue and mint lights made with a large blur filter.'],
+  ['1', 'Graphite', 'Neutral and calm: near-black with only a breath of blue at the top. Content and colours of the devices stand out most.'],
+  ['2', 'Spotlight', 'One soft blue light from above, falling on the title and the main control — the rest stays dark.'],
+  ['3', 'Deep ocean', 'Navy at the top fading into a sea-green glow at the bottom. Close to today, but cleaner.'],
+  ['4', 'Mesh glass', 'Four soft colour spots in the corners (blue, violet, mint). Lively and modern, like iOS wallpapers.'],
+  ['5', 'Aurora', 'Light bands of green and violet across the top, like northern lights; dark below.'],
+  ['6', 'Dusk', 'Evening sky: deep indigo into violet, with a gentle rose glow low down.'],
+  ['7', 'Night sky', 'A few faint stars and moonlight in the corner — quiet, homely, good for a night-time app.'],
+  ['8', 'Blueprint', 'A very faint grid with a blue glow from below — a “smart home” technical feel.'],
+  ['9', 'Living ambient', 'Two soft lights drift very slowly (only transform moves). The screen feels alive without distracting.'],
+  ['10', 'Context glow', 'The device page’s light follows the device: blue at rest, the lamp’s warm light when it is on, orange when a door is open, red on an alarm. Home stays blue.'],
+];
+const pick = '4';
+document.getElementById('out').innerHTML = V.map(([n, name, idea]) => {
+  const q = n === '0' ? '' : `bg=${n}`;
+  const frames = [[`../index.html${q ? '?' + q : ''}`, 'Home'], [`../device.html?id=d-light${q ? '&' + q : ''}`, 'Device page']];
+  if (n === '10') frames.push([`../device.html?id=d-light&${q}`, 'Device page · lamp on', 'on']);
+  return `<section><div class="head"><span class="n">${n === '0' ? '—' : n.padStart(2, '0')}</span><span class="name">${name}</span>${n === pick ? '<span class="tag">My pick</span>' : ''}</div><p class="idea">${idea}</p>
+    <div class="row">${frames.map(([src, cap, on]) => `<div><div class="ph"><iframe loading="lazy" src="${src}" ${on ? 'data-on="1"' : ''} title="${name} · ${cap}"></iframe></div><div class="cap">${cap}</div></div>`).join('')}</div></section>`;
+}).join('');
+// row 10, third phone: turn the lamp on inside that page so the glow shows the lamp's light
+document.querySelectorAll('iframe[data-on]').forEach((f) => f.addEventListener('load', () => {
+  try { const doc = f.contentDocument, b = doc.querySelector('[data-action="lt-toggle"]'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); } catch (e) { /* another origin: leave it */ }
+}, { once: true }));
+</script>
+</body>
+</html>

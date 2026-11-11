@@ -25,6 +25,7 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Design lab · contact “Other” open / closed (5 ideas) | https://mardonovabdulaziz.github.io/samo-home/design/other-open.html |
 | Design lab · 10 pictures of “contact” | https://mardonovabdulaziz.github.io/samo-home/design/contact-ideas.html |
 | Design lab · “Other” simple pictures (10 everyday things) | https://mardonovabdulaziz.github.io/samo-home/design/other-simple.html |
+| Design lab · backgrounds (10 variants, live app) | https://mardonovabdulaziz.github.io/samo-home/design/backgrounds.html |
 
 The site updates by itself 1–2 minutes after each push to `main` (GitHub Pages).
 
