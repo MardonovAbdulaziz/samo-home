@@ -1590,12 +1590,13 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .lk-disc { position: relative; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center; background: var(--fill-tertiary); color: var(--label-secondary);
   transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out); }
 .lk-halo { position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; margin: -56px 0 0 -56px; border-radius: 50%; border: 1.5px solid var(--red); opacity: 0; }
-/* blue look (default): the big icon itself in the brand colours of the design system — no disc. Dry = color/blue,
-   leak = color/red, as the old placeholder's 64 px hero icon was (user, 2026-11-11) */
-.lk-mark.is-blue .lk-disc { background: none; color: var(--primary); }
-.lk-mark.is-blue .lk-disc .icon { width: 96px !important; height: 96px !important; }
-.lk-mark.is-blue.is-alarm .lk-disc { background: none; color: var(--red); }
-.lk-mark.is-blue .lk-halo { width: 120px; height: 120px; margin: -60px 0 0 -60px; }
+/* big-icon look (default): the drop icon itself, no disc, in system colours — color/gray when dry (or color/blue in the
+   blue look), color/red with a soft ring on a leak (user, 2026-11-11) */
+.lk-mark.is-big .lk-disc { background: none; color: var(--gray); }
+.lk-mark.is-big.is-blue .lk-disc { color: var(--blue); }
+.lk-mark.is-big .lk-disc .icon { width: 96px !important; height: 96px !important; }
+.lk-mark.is-big.is-alarm .lk-disc { background: none; color: var(--red); }
+.lk-mark.is-big .lk-halo { width: 120px; height: 120px; margin: -60px 0 0 -60px; }
 .lk-mark.is-alarm .lk-disc { background: var(--red-soft); color: var(--red); }
 .lk-mark.is-alarm .lk-halo { animation: lk-halo 2600ms cubic-bezier(.32, .72, 0, 1) infinite; }
 @keyframes lk-halo { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }
@@ -6579,8 +6580,9 @@ Devices.leak = (() => {
   /** No illustration (user, 2026-11-11): one minimal mark — a water drop in a circle. Dry: quiet grey. Leak: red, and one
       soft ring breathes out slowly. Offline: dimmed. */
   function scene(d) {
-    // two looks to compare (prototype panel): blue = calm blue when dry (default), grey = neutral when dry
-    const cls = ['lk-mark', (d.sim && d.sim.mark) === 'grey' ? '' : 'is-blue', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
+    // looks to compare (prototype panel): gray = the big icon in color/gray when dry (default), blue = color/blue, disc = a grey disc
+    const look = (d.sim && d.sim.mark) || 'gray';
+    const cls = ['lk-mark', look === 'disc' ? '' : 'is-big', look === 'blue' ? 'is-blue' : '', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
     return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('dev-drop', 'icon', 'style="width:44px;height:44px"')}</span></div>`;
   }
 
@@ -6735,7 +6737,7 @@ Devices.leak = (() => {
       <div class="pp-row"><button class="pp-btn" data-action="pp-wet">${d.phys.wet ? '🧽 Wipe it dry' : '💧 Spill water'}</button>
         ${has(d, 'temperature') ? `<button class="pp-btn" data-action="pp-cold">${d.temp < 3 ? '🌤 Normal 18 °C' : '❄️ Winter 1 °C'}</button>` : ''}</div>
       <h3>Look (to compare)</h3>
-      <div class="pp-seg">${[['blue', 'Blue mark'], ['grey', 'Grey mark']].map(([k, l]) => `<button class="${((d.sim && d.sim.mark) || 'blue') === k ? 'on' : ''}" data-action="pp-mark" data-v="${k}">${l}</button>`).join('')}</div>
+      <div class="pp-seg">${[['gray', 'Gray icon'], ['blue', 'Blue icon'], ['disc', 'Disc']].map(([k, l]) => `<button class="${((d.sim && d.sim.mark) || 'gray') === k ? 'on' : ''}" data-action="pp-mark" data-v="${k}">${l}</button>`).join('')}</div>
       <h3>The sensor</h3>
       <div class="pp-row">${has(d, 'tamper') ? `<button class="pp-btn" data-action="pp-tamper">${d.st.tamper ? '📍 Put it back' : '✋ Pick it up'}</button>` : ''}
         ${has(d, 'battery') ? `<button class="pp-btn" data-action="pp-batt">🔋 ${battLow(d) ? 'New battery' : 'Battery low'}</button>` : ''}
