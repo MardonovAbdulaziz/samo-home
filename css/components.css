@@ -1682,10 +1682,11 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 
 /* ---------- Air quality: dust when the air gets bad — soft specks drifting slowly around the mark (calm, not busy).
    Moderate: a few; Poor: more; Unhealthy: most. They fade in when the air turns bad. ---------- */
-.aq-dust { position: absolute; inset: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
-.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .55); filter: blur(.4px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
-.aq-dust.lv3 span { background: rgba(236, 214, 186, .62); }
-.aq-dust.lv4 span { background: rgba(240, 205, 180, .7); }
-@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .9; } 80% { opacity: .7; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
+.aq-dust { position: absolute; inset: 0; z-index: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
+.lk-mark:has(.aq-dust) .lk-disc { z-index: 1; }   /* the dust drifts behind the icon */
+.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .38); filter: blur(.3px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
+.aq-dust.lv3 span { background: rgba(236, 214, 186, .42); }
+.aq-dust.lv4 span { background: rgba(240, 205, 180, .48); }
+@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .75; } 80% { opacity: .55; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
 @keyframes aq-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .aq-dust { display: none; } }

@@ -115,9 +115,9 @@ Devices.air = (() => {
       Positions come from the index (not Math.random), so a re-render keeps every speck where it is. */
   function dust(l) {
     if (l < 2) return '';
-    const n = l === 2 ? 9 : l === 3 ? 15 : 22, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    const n = l === 2 ? 14 : l === 3 ? 22 : 32, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
     let h = '';
-    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(2 + f(i, 3) * 2.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
+    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(1.2 + f(i, 3) * 1.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
     return `<i class="aq-dust lv${l}" aria-hidden="true">${h}</i>`;
   }
   const lvTone = (l) => (l >= 4 ? 'z2' : l === 3 ? 'z1' : l === 2 ? 'zy' : '');

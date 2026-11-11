@@ -1858,11 +1858,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 
 /* ---------- Air quality: dust when the air gets bad — soft specks drifting slowly around the mark (calm, not busy).
    Moderate: a few; Poor: more; Unhealthy: most. They fade in when the air turns bad. ---------- */
-.aq-dust { position: absolute; inset: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
-.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .55); filter: blur(.4px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
-.aq-dust.lv3 span { background: rgba(236, 214, 186, .62); }
-.aq-dust.lv4 span { background: rgba(240, 205, 180, .7); }
-@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .9; } 80% { opacity: .7; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
+.aq-dust { position: absolute; inset: 0; z-index: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
+.lk-mark:has(.aq-dust) .lk-disc { z-index: 1; }   /* the dust drifts behind the icon */
+.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .38); filter: blur(.3px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
+.aq-dust.lv3 span { background: rgba(236, 214, 186, .42); }
+.aq-dust.lv4 span { background: rgba(240, 205, 180, .48); }
+@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .75; } 80% { opacity: .55; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
 @keyframes aq-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .aq-dust { display: none; } }
 
@@ -8614,9 +8615,9 @@ Devices.air = (() => {
       Positions come from the index (not Math.random), so a re-render keeps every speck where it is. */
   function dust(l) {
     if (l < 2) return '';
-    const n = l === 2 ? 9 : l === 3 ? 15 : 22, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    const n = l === 2 ? 14 : l === 3 ? 22 : 32, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
     let h = '';
-    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(2 + f(i, 3) * 2.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
+    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(1.2 + f(i, 3) * 1.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
     return `<i class="aq-dust lv${l}" aria-hidden="true">${h}</i>`;
   }
   const lvTone = (l) => (l >= 4 ? 'z2' : l === 3 ? 'z1' : l === 2 ? 'zy' : '');

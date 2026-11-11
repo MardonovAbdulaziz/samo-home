@@ -1747,7 +1747,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-remote { padding-top: 28px; }
 /* the press: a shade that sinks the surface (::after fades in fast, out slower) */
 .ir-k, .ir-rk button, .ir-dpad button { position: relative; -webkit-tap-highlight-color: transparent; }
-.ir-k::after, .ir-rk button::after, .ir-dpad button::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 240ms var(--ease-out); }
+.ir-k::after, .ir-rk button::after, .ir-dpad button::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 360ms var(--ease-out); }
 .ir-k:active::after, .ir-rk button:active::after, .ir-dpad button:active::after { opacity: 1; transition-duration: 70ms; }
 .ir-k::after { background: radial-gradient(120% 110% at 50% 50%, rgba(0, 0, 0, .04) 30%, rgba(0, 0, 0, .30) 100%); }
 .ir-k .icon, .ir-k span, .ir-rk button .icon, .ir-dpad button > span { transition: transform 160ms var(--ease-out); }
@@ -1760,10 +1760,22 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-dpad .d { left: 0; bottom: 0; width: 100%; height: 50%; clip-path: polygon(50% 0, 100% 100%, 0 100%); justify-content: center; align-items: flex-end; padding-bottom: 12px; }
 .ir-dpad .l { left: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(0 0, 100% 50%, 0 100%); justify-content: flex-start; align-items: center; padding-left: 12px; }
 .ir-dpad .r { right: 0; top: 0; width: 50%; height: 100%; clip-path: polygon(100% 0, 100% 100%, 0 50%); justify-content: flex-end; align-items: center; padding-right: 12px; }
-.ir-dpad .u::after { background: radial-gradient(circle at 50% 100%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
-.ir-dpad .d::after { background: radial-gradient(circle at 50% 0, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
-.ir-dpad .l::after { background: radial-gradient(circle at 100% 50%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
-.ir-dpad .r::after { background: radial-gradient(circle at 0 50%, rgba(0, 0, 0, .08) 52px, rgba(0, 0, 0, .20) 80px, rgba(0, 0, 0, .34) 114px); }
+/* the press shade is not cut to the wedge: it is a soft patch on the disc that fades into the surface around it
+   (fast in, slow out) — the wedge is only the touch area */
+.ir-dpad button::after, .ir-rk button::after { display: none; }
+.ir-dpad .sh, .ir-rk .sh { position: absolute; pointer-events: none; opacity: 0; transition: opacity 360ms var(--ease-out); }
+.ir-dpad .sh { inset: 0; border-radius: 50%; }
+.ir-dpad .sh.u { background: radial-gradient(ellipse 58% 46% at 50% 6%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
+.ir-dpad .sh.d { background: radial-gradient(ellipse 58% 46% at 50% 94%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
+.ir-dpad .sh.l { background: radial-gradient(ellipse 46% 58% at 6% 50%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
+.ir-dpad .sh.r { background: radial-gradient(ellipse 46% 58% at 94% 50%, rgba(0, 0, 0, .34), rgba(0, 0, 0, .16) 45%, rgba(0, 0, 0, 0) 100%); }
+.ir-dpad:has(.u:active) .sh.u, .ir-dpad:has(.d:active) .sh.d, .ir-dpad:has(.l:active) .sh.l, .ir-dpad:has(.r:active) .sh.r { opacity: 1; transition-duration: 70ms; }
+.ir-rk .sh { left: 0; right: 0; height: 70%; }
+.ir-rk .sh.up { top: 0; background: radial-gradient(ellipse 85% 70% at 50% 0%, rgba(0, 0, 0, .32), rgba(0, 0, 0, .12) 50%, rgba(0, 0, 0, 0) 100%); }
+.ir-rk .sh.dn { bottom: 0; background: radial-gradient(ellipse 85% 70% at 50% 100%, rgba(0, 0, 0, .32), rgba(0, 0, 0, .12) 50%, rgba(0, 0, 0, 0) 100%); }
+.ir-rk:has(.up:active) .sh.up, .ir-rk:has(.dn:active) .sh.dn { opacity: 1; transition-duration: 70ms; }
+.ir-rk { position: relative; }
+.ir-rk button { position: relative; z-index: 1; }
 .ir-dpad .u:active > span { transform: translateY(2px) scale(0.92); } .ir-dpad .d:active > span { transform: translateY(-2px) scale(0.92); }
 .ir-dpad .l:active > span { transform: translateX(2px) scale(0.92); } .ir-dpad .r:active > span { transform: translateX(-2px) scale(0.92); }
 .ir-dpad .ok { left: 62px; top: 62px; width: 104px; height: 104px; border-radius: 50%; background: var(--label-primary); color: var(--label-opposite); font: 590 15px/20px var(--font); letter-spacing: -0.23px; justify-content: center; align-items: center; z-index: 1; box-shadow: 0 0 0 6px rgba(0, 0, 0, .06); transition: transform 140ms var(--ease-out); }
@@ -1784,8 +1796,6 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-rk { padding: 0; gap: 0; justify-content: space-between; overflow: hidden; }
 .ir-rk::after { display: none; }
 .ir-rk button { flex: 1; width: 100%; display: grid; place-items: center; color: var(--label-primary); }
-.ir-rk .up::after { border-radius: 24px 24px 0 0; background: linear-gradient(to bottom, rgba(0, 0, 0, .32), rgba(0, 0, 0, .06)); }
-.ir-rk .dn::after { border-radius: 0 0 24px 24px; background: linear-gradient(to top, rgba(0, 0, 0, .32), rgba(0, 0, 0, .06)); }
 .ir-rk .up:active .icon { transform: translateY(2px) scale(0.92); } .ir-rk .dn:active .icon { transform: translateY(-2px) scale(0.92); }
 .ir-rk span { pointer-events: none; font: 590 15px/20px var(--font); }
 .ir-pair { display: grid; grid-template-rows: 1fr 1fr; gap: 4px; }
@@ -1848,11 +1858,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 
 /* ---------- Air quality: dust when the air gets bad — soft specks drifting slowly around the mark (calm, not busy).
    Moderate: a few; Poor: more; Unhealthy: most. They fade in when the air turns bad. ---------- */
-.aq-dust { position: absolute; inset: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
-.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .55); filter: blur(.4px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
-.aq-dust.lv3 span { background: rgba(236, 214, 186, .62); }
-.aq-dust.lv4 span { background: rgba(240, 205, 180, .7); }
-@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .9; } 80% { opacity: .7; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
+.aq-dust { position: absolute; inset: 0; z-index: 0; pointer-events: none; animation: aq-in 1600ms var(--ease-out) both; }
+.lk-mark:has(.aq-dust) .lk-disc { z-index: 1; }   /* the dust drifts behind the icon */
+.aq-dust span { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: rgba(232, 222, 204, .38); filter: blur(.3px); opacity: 0; animation: aq-drift var(--t) ease-in-out var(--dl) infinite; }
+.aq-dust.lv3 span { background: rgba(236, 214, 186, .42); }
+.aq-dust.lv4 span { background: rgba(240, 205, 180, .48); }
+@keyframes aq-drift { 0% { transform: translate(0, 10px); opacity: 0; } 20% { opacity: .75; } 80% { opacity: .55; } 100% { transform: translate(var(--dx), -26px); opacity: 0; } }
 @keyframes aq-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .aq-dust { display: none; } }
 
@@ -8610,9 +8621,9 @@ Devices.air = (() => {
       Positions come from the index (not Math.random), so a re-render keeps every speck where it is. */
   function dust(l) {
     if (l < 2) return '';
-    const n = l === 2 ? 9 : l === 3 ? 15 : 22, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    const n = l === 2 ? 14 : l === 3 ? 22 : 32, f = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
     let h = '';
-    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(2 + f(i, 3) * 2.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
+    for (let i = 0; i < n; i++) h += `<span style="--x:${(8 + f(i, 1) * 84).toFixed(1)}%;--y:${(10 + f(i, 2) * 80).toFixed(1)}%;--s:${(1.2 + f(i, 3) * 1.6).toFixed(1)}px;--t:${(7 + f(i, 4) * 6).toFixed(1)}s;--dl:-${(f(i, 5) * 12).toFixed(1)}s;--dx:${(f(i, 6) * 28 - 14).toFixed(0)}px"></span>`;
     return `<i class="aq-dust lv${l}" aria-hidden="true">${h}</i>`;
   }
   const lvTone = (l) => (l >= 4 ? 'z2' : l === 3 ? 'z1' : l === 2 ? 'zy' : '');
@@ -9478,7 +9489,7 @@ Devices.ir = (() => {
   let curR = null;   // the remote being drawn (for trained / reading marks)
   const mk = (l) => { const r = curR; if (!r || !checking()) return ''; return `${trained(r, l) ? ' tr' : ' untr'}${r._reading === l ? ' reading' : ''}${r._sel === l ? ' sel' : ''}`; };
   const K = (l, o = {}) => `<button class="ir-k ${o.cls || ''}${o.ic && o.text ? ' lab' : ''}${mk(l)}" data-action="${o.act || 'ir-send'}" data-l="${esc(l)}" aria-label="${esc(o.aria || l)}">${o.ic ? icon(o.ic, 'icon', `style="width:${o.s || (o.text ? 24 : 32)}px;height:${o.s || (o.text ? 24 : 32)}px"`) : ''}${o.text ? `<span>${esc(o.text)}</span>` : ''}</button>`;
-  const rocker = (label, up, down, upIc = 'ir-plus', downIc = 'ir-minus') => `<div class="ir-k ir-rk"><button class="up${mk(up)}" data-action="ir-send" data-l="${esc(up)}" aria-label="${esc(up)}">${icon(upIc, 'icon', 'style="width:24px;height:24px"')}</button><span>${esc(label)}</span><button class="dn${mk(down)}" data-action="ir-send" data-l="${esc(down)}" aria-label="${esc(down)}">${icon(downIc, 'icon', 'style="width:24px;height:24px"')}</button></div>`;
+  const rocker = (label, up, down, upIc = 'ir-plus', downIc = 'ir-minus') => `<div class="ir-k ir-rk"><i class="sh up" aria-hidden="true"></i><i class="sh dn" aria-hidden="true"></i><button class="up${mk(up)}" data-action="ir-send" data-l="${esc(up)}" aria-label="${esc(up)}">${icon(upIc, 'icon', 'style="width:24px;height:24px"')}</button><span>${esc(label)}</span><button class="dn${mk(down)}" data-action="ir-send" data-l="${esc(down)}" aria-label="${esc(down)}">${icon(downIc, 'icon', 'style="width:24px;height:24px"')}</button></div>`;
   const pair = (a, b) => `<div class="ir-pair">${a}${b}</div>`;
   const row = (...k) => `<div class="ir-r">${k.join('')}</div>`;
   const tall = (...k) => `<div class="ir-r tall">${k.join('')}</div>`;
@@ -9488,7 +9499,7 @@ Devices.ir = (() => {
   function tvPad(d) {
     // the D-pad: four wedges of one 228 px disc; a pressed wedge sinks into the surface (gradient), OK is white
     const dp = (c, l, ic) => `<button class="${c}${mk(l)}" data-action="ir-send" data-l="${l}" aria-label="${l}"><span>${icon(ic, 'icon', 'style="width:24px;height:24px"')}</span></button>`;
-    return `<div class="ir-dpad">${dp('u', 'Up', 'ir-chev-up')}${dp('d', 'Down', 'ir-chev-down')}${dp('l', 'Left', 'ir-chev-left')}${dp('r', 'Right', 'ir-chev-right')}<button class="ok${mk('OK')}" data-action="ir-send" data-l="OK">OK</button></div>
+    return `<div class="ir-dpad"><i class="sh u" aria-hidden="true"></i><i class="sh d" aria-hidden="true"></i><i class="sh l" aria-hidden="true"></i><i class="sh r" aria-hidden="true"></i>${dp('u', 'Up', 'ir-chev-up')}${dp('d', 'Down', 'ir-chev-down')}${dp('l', 'Left', 'ir-chev-left')}${dp('r', 'Right', 'ir-chev-right')}<button class="ok${mk('OK')}" data-action="ir-send" data-l="OK">OK</button></div>
       <div class="ir-keys">
         ${row(K('Source', { ic: 'ir-source' }), gap, POWER)}
         ${tall(rocker('Volume', 'Volume up', 'Volume down'), pair(K('Mute', { ic: 'ir-mute', s: 24 }), K('Settings', { ic: 'ir-setting', s: 24 })), rocker('Channel', 'Channel up', 'Channel down', 'ir-chev-up', 'ir-chev-down'))}

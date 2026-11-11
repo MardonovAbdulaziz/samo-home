@@ -215,7 +215,7 @@ Check: `tools/checks/wave2.js` (Chrome + Safari) · editions: `python3 tools/bun
 ## Sensor mark sizes & air dust
 
 - `Kit.markIcon`: Figma “Sensors/*” icons (a disc with the glyph cut out: drop, smoke, flame, temperature, robot) fill 80 px; plain glyphs (air, lock, TV, fan…) sit at 48 px so they never touch the ring
-- Air quality: when the air is Moderate or worse, soft dust specks drift around the mark (9 / 15 / 22 by level; seeded positions so re-renders don't move them; off with reduced motion)
+- Air quality: when the air is Moderate or worse, fine, faint dust specks drift behind the mark icon (14 / 22 / 32 by level, 1.2–2.8 px; seeded positions so re-renders don't move them; off with reduced motion)
 
 ## Device icons & alert cards
 
