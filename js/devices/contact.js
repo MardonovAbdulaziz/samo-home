@@ -230,15 +230,14 @@ Devices.contact = (() => {
     switch (k) {
       case 'window': return `<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-sill"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-pane"><i class="ct-glass"></i></div><i class="ct-mull"></i>
           <div class="ct-turn"><div class="ct-sash"><i class="ct-glass"></i><i class="ct-shade"></i><i class="ct-magnet"></i><i class="ct-whandle"></i></div></div></div>`;
-      case 'other': return `<i class="ctx-shadow"></i><i class="ctx-spill"></i><div class="ctx"><i class="ctx-in"></i><div class="ctx-door"><div class="ctx-panel"><i class="ctx-magnet"></i></div><i class="ctx-edge"></i></div>
-          <i class="ctx-sensor"><i class="ctx-led"></i></i><i class="ctx-wave"></i><i class="ctx-wave w2"></i></div>`;   // abstract: a front panel swings open on its left hinge
+      case 'other': return '<i class="cto-shadow"></i><i class="cto-spill"></i><div class="cto-cab"><i class="cto-in"></i><div class="cto-door"><i class="cto-h"></i><i class="ct-magnet"></i></div></div>';   // a cabinet: the door swings from right to left (hinge on the left); the sensor sits on the frame like on the door / window
       default: return '<i class="ct-ground"></i><i class="ct-bloom"></i><i class="ct-beam"></i><div class="ct-frame"><div class="ct-hole"></div><div class="ct-leaf"><i class="ct-lever"></i><i class="ct-magnet"></i></div></div>';
     }
   }
   function scene(d) {
     const st = d.st, k = kind(d);
     const cls = ['ct-card', k === 'window' ? 'win' : k, st.open && !st.tilt ? 'is-open' : '', st.tilt && k === 'window' ? 'is-tilt' : '', st.tamper ? 'is-tamper' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${stateWord(d).toLowerCase()}"><div class="ct-stage">${sceneBody(k)}${k === 'other' ? '' : SENSOR}</div></div>`;
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${stateWord(d).toLowerCase()}"><div class="ct-stage">${sceneBody(k)}${SENSOR}</div></div>`;
   }
 
   function page(d) {

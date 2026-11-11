@@ -102,7 +102,7 @@ Built from `Device Interface 3/3. Contact_Sensor_Interface.html`, in the look of
 - Presets: Aqara, SONOFF SNZB-04P, Tuya TS0203, Third Reality (report delay), Bosch II plus (knock + airing break), window handle sensor (tilted), All features
 - Icons not in Figma yet (so not offered): drawer, wardrobe, freezer, medicine box, mailbox
 
-Contact sensor “Other” (fridge, cabinet, safe…) is abstract: a rounded body and its front panel — open: the panel swings out on its left hinge (door-like, but a plain shape, not a house door) and the lit opening is the same blue as the door and window pictures; the door sits inside its frame (the rim stays visible) and opens towards you like a fridge door, 4 px thick (a cube-style door: front face + edge face drawn front-side only, so the closed door has no line), 62° with a soft curve; sensor on the body's edge, magnet on the panel (one level of CSS 3D, same in Chrome and Safari).
+Contact sensor “Other” (fridge, cabinet, safe, box…) is a simple cabinet: a white body and one door hinged on the left that swings out from right to left, with the blue lit inside of the door / window pictures; the sensor sits on the frame at the free edge and its magnet on the door, like on the door and window (design lab: `design/other-simple.html`, option 2).
 
 ## Light (step 4)
 
