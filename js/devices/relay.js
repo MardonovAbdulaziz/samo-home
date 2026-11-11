@@ -73,7 +73,7 @@ const RELAY_K = (() => {
     { id: 'all', name: 'All features (design)', model: 'every feature on', manufacturer: 'Samo', ch: 2, names: ['Light 1', 'Light 2'], feats: Object.keys(F) },
   ];
   return {
-    type: 'relay', label: 'Relay', noun: 'Relay', F, SETTINGS_CARDS, ALL_GROUPS, PRESETS, CH_COUNTS: [1, 2, 3, 4, 6],
+    type: 'relay', label: 'Relay', noun: 'Relay', suffix: ' r', F, SETTINGS_CARDS, ALL_GROUPS, PRESETS, CH_COUNTS: [1, 2, 3, 4, 6],
     chName: (i) => 'Light ' + (i + 1), chDisplay: (name) => (/boiler|heater/i.test(name || '') ? 'heater' : 'light'),
     spec: '2.%20Relay_Interface.html', specName: 'Relay_Interface',
   };
@@ -146,6 +146,8 @@ function makeSwitch(K) {
         d.settings[k] = d.channels.map((_, i) => (arr[i] !== undefined ? arr[i] : clone(def)));
       } else if (d.settings[k] === undefined) d.settings[k] = clone(def);
     }
+    // prototype: relays end in " r", plugs in " s" so they are easy to tell apart (user, 2026-11-11) — once, also for saved ones
+    if (K.suffix && !d.sfx) { if (!d.name.endsWith(K.suffix)) d.name += K.suffix; d.sfx = 1; }
     const lc = d.settings.ledColor; if (lc) ['on', 'off'].forEach((w) => { if (!COLORS[lc[w]]) lc[w] = OLD_COLOR[lc[w]] || (w === 'on' ? 'green' : 'blue'); });
   }
   function setChannelCount(d, n) {
@@ -161,7 +163,7 @@ function makeSwitch(K) {
     const p = PRESETS.find((x) => x.id === presetId) || PRESETS[0];
     const names = channelNames || p.names;
     const d = {
-      id: Store.uid('d'), type: K.type, preset: p.id, name: name || p.name, roomId: roomId || null,
+      id: Store.uid('d'), type: K.type, preset: p.id, name: (name || p.name) + (K.suffix || ''), roomId: roomId || null, sfx: 1,
       model: p.model, manufacturer: p.manufacturer, originalName: p.name, protocol: 'Zigbee 3.0',
       serial: 'SN' + Math.random().toString().slice(2, 14) + 'LX', mac: Array.from({ length: 6 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase()).join(':'),
       firmware: '1.0.8_0012', online: true, showOnHome: true, isNew: true, createdAt: Date.now(),

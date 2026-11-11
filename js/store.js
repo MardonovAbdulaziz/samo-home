@@ -29,10 +29,10 @@ const Store = (() => {
       climateSeed(),
       motionSeed(),
       plugSeed(),
-      { id: 'd-leak', type: 'sensor', name: 'Water Leak Sensor', roomId: 'r-kitchen', model: 'SJCGQ11LM', manufacturer: 'Aqara', protocol: 'Zigbee 3.0', online: true, showOnHome: true, status: 'No leak' },
+      leakSeed(),
     ];
     devices.forEach((d) => { d.isNew = false; });
-    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true, motionAdded: true, plugAdded: true };
+    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true, motionAdded: true, plugAdded: true, leakAdded: true };
   }
   /** Example curtain: a track motor that is paired but not set up yet (shows the setup flow). */
   function curtainSeed() {
@@ -55,6 +55,8 @@ const Store = (() => {
   function motionSeed() { const m = Devices.motion.create('hue', { name: 'Living room motion', roomId: 'r-living' }); m.id = 'd-motion'; m.settings.motionLight.target = { id: 'd-light', ch: 0 }; return m; }
   /** Example smart plug in the kitchen with a washing machine on it. */
   function plugSeed() { const p = Devices.plug.create('third', { name: 'Washing machine', roomId: 'r-kitchen' }); p.id = 'd-plug'; p.channels[0].display = 'switch'; p.channels[0].icon = 'dev-washing'; return p; }
+  /** Water leak sensor under the kitchen sink (replaces the old placeholder "Water Leak Sensor"). */
+  function leakSeed() { const l = Devices.leak.create('aqara', { name: 'Kitchen sink', roomId: 'r-kitchen' }); l.id = 'd-leak'; return l; }
   /** Existing data from before curtains existed: add the example curtain once (stays deleted if removed). */
   function ensureCurtain() {
     if (ED || state.curtainAdded) return;
@@ -79,6 +81,11 @@ const Store = (() => {
     if (!ED && !state.climateAdded) { const c = climateSeed(); c.isNew = true; if (!state.rooms.some((r) => r.id === c.roomId)) c.roomId = (state.rooms[0] || {}).id || null; state.devices.push(c); state.climateAdded = true; save(); }
     if (!ED && !state.motionAdded) { const m = motionSeed(); m.isNew = true; if (!state.devices.some((x) => x.id === 'd-light')) m.settings.motionLight.target = null; if (!state.rooms.some((r) => r.id === m.roomId)) m.roomId = (state.rooms[0] || {}).id || null; state.devices.push(m); state.motionAdded = true; save(); }
     if (!ED && !state.plugAdded) { const p = plugSeed(); p.isNew = true; if (!state.rooms.some((r) => r.id === p.roomId)) p.roomId = (state.rooms[0] || {}).id || null; state.devices.push(p); state.plugAdded = true; save(); }
+    if (!ED && !state.leakAdded) {   // the old placeholder sensor becomes a real leak sensor
+      const i = state.devices.findIndex((x) => x.id === 'd-leak' && x.type === 'sensor'), l = leakSeed();
+      if (i >= 0) { l.roomId = state.devices[i].roomId; l.isNew = false; state.devices[i] = l; } else { l.isNew = true; if (!state.rooms.some((r) => r.id === l.roomId)) l.roomId = (state.rooms[0] || {}).id || null; state.devices.push(l); }
+      state.leakAdded = true; save();
+    }
     // bring saved devices up to the current model (new settings get defaults, renamed values are mapped)
     state.devices.forEach((d) => { const T = Devices[d.type]; if (T && T.applyDefaults && d.settings) T.applyDefaults(d); });
     return state;

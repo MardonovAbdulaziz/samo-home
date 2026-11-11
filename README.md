@@ -17,12 +17,14 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Temperature & humidity sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-climate.html |
 | Motion sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-motion.html |
 | Smart plugs & sockets | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-plugs.html |
+| Water leak sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-leak.html |
 | Light page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-light |
 | Curtain page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-curtain |
 | Contact sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-contact |
 | Temperature sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-climate |
 | Motion sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-motion |
 | Smart plug page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-plug |
+| Leak sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-leak |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 | Design lab · contact “Other” open / closed (5 ideas) | https://mardonovabdulaziz.github.io/samo-home/design/other-open.html |
 | Design lab · 10 pictures of “contact” | https://mardonovabdulaziz.github.io/samo-home/design/contact-ideas.html |
@@ -150,6 +152,15 @@ Built from `Device Interface 3/5. Smart_Plug_Interface.html` (328 plugs, double 
 - Simulated (prototype panel): what is plugged in per socket (charger fading to 1 W, TV, kettle, heater, washing machine cycle, fridge compressor), power cut, voltage spike 262 V, the plug's button, 1 s = 1 min
 - Presets: Tuya with metering, Aqara EU, SONOFF S60, Third Reality, double socket, 4 + USB strip, wall socket 2 + USB, All features
 - Check: `tools/checks/plug.js` · edition: `python3 tools/bundle.py --edition plug` → `dist/samo-home-plugs.html`
+
+## Water leak sensor (step 8)
+
+Built from `Device Interface 3/8. Water_Leak_Sensor_Interface.html` (89 sensors). Type `leak` (`js/devices/leak.js`); it replaces the old placeholder "Water Leak Sensor" (`d-leak`, also in saved data).
+
+- Device page: the sensor on the floor — wet: drops fall, a puddle spreads, rings move out, the LED blinks red. "Dry · Checked 3 min ago · Last leak Nov 5" or, in red, "Leak! · Since 9:52 · Kitchen" with a red banner (spec: the page turns red). Banners: offline (a silent leak sensor is the real risk — the home tile goes red too), test mode, moved / opened, frost below 3 °C, battery low. Cards: temperature, battery
+- Settings: Sensor (Sound on leak — tone and volume, or on/off only on Third Reality; Alarm on water appears / disappears; Test mode), Notifications (everyone, critical, family or a neighbour with a key, frost, battery / moved), Automation: Close the water on a leak (a scenario with a valve device — none paired yet, so it says so). Event History: today strip (red = wet) + events
+- Prototype names: relays end in " r", plugs in " s" (user, to tell them apart in the prototype; saved devices are renamed once)
+- Check: `tools/checks/leak.js` · edition: `python3 tools/bundle.py --edition leak` → `dist/samo-home-leak.html`
 
 ## Performance on weak phones
 

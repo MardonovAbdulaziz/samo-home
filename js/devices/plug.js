@@ -71,7 +71,7 @@ const PLUG_K = (() => {
     { id: 'all', name: 'All features (design)', model: 'every feature on', manufacturer: 'Samo', ch: 2, names: ['Left', 'USB'], app: ['heater', 'charger'], feats: Object.keys(F) },
   ];
   return {
-    type: 'plug', label: 'Smart plug', noun: 'Plug', F, PRESETS, CH_COUNTS: [1, 2, 3, 4, 5, 6],
+    type: 'plug', label: 'Smart plug', noun: 'Plug', suffix: ' s', F, PRESETS, CH_COUNTS: [1, 2, 3, 4, 5, 6],
     SETTINGS_CARDS: [['Power cut', ['Power cut']], ['Safety', ['Safety']], ['Output', ['Output']], ['Button & lights', ['Button & lights']]],
     ALL_GROUPS: ['Device page', 'Power cut', 'Safety', 'Output', 'Button & lights', 'Notifications', 'Automation', 'Log', 'Device'],
     chName: (i) => 'Socket ' + (i + 1), chDisplay: () => 'socket',

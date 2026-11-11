@@ -1409,3 +1409,28 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pl-bar.now i { background: var(--primary); }
 .pl-bar b { font: var(--body-xs); color: var(--label-secondary); font-variant-numeric: tabular-nums; }
 .pl-bar span { font: var(--body-xs); color: var(--label-tertiary); }
+
+/* Water leak sensor picture (shares .ct-card / .ct-readout). The sensor on the floor; wet: drops fall, a puddle
+   spreads (scale), rings move out, the LED blinks red. Only transform / opacity animate; calm when dry. */
+.lk-svg { width: 270px; height: 240px; overflow: visible; }   /* viewBox cropped to the sensor: ~1.5× bigger */
+.lk-floor { fill: rgba(255, 255, 255, .04); }
+.lk-puddle, .lk-ring, .lk-drop, .lk-sensor { transform-box: fill-box; transform-origin: center; }
+.lk-puddle { opacity: 0; transform: scale(.15); transition: transform 1000ms cubic-bezier(.32, .72, 0, 1), opacity 500ms var(--ease-out); }
+.lk-card.is-wet .lk-puddle { opacity: 1; transform: scale(1); }
+.lk-ring { fill: none; stroke: #9cd0ff; stroke-width: 1.2; opacity: 0; }
+.lk-card.is-wet .lk-ring { animation: lk-ring 2400ms cubic-bezier(.32, .72, 0, 1) infinite; }
+.lk-card.is-wet .lk-ring.r2 { animation-delay: 1200ms; }
+@keyframes lk-ring { 0% { opacity: .7; transform: scale(.45); } 100% { opacity: 0; transform: scale(1.5); } }
+.lk-drop { fill: #7cc0ff; opacity: 0; }
+.lk-card.is-wet .lk-drop { animation: lk-drop 1600ms cubic-bezier(.55, 0, .9, .5) infinite; }
+.lk-card.is-wet .lk-drop.d2 { animation-delay: 800ms; }
+@keyframes lk-drop { 0% { opacity: 0; transform: translateY(-8px); } 15% { opacity: .95; } 85% { opacity: .95; } 100% { opacity: 0; transform: translateY(96px) scale(.8); } }
+.lk-sensor { transition: transform 420ms var(--ease-out); }
+.lk-led { fill: rgba(0, 0, 0, .15); }
+.lk-card.is-alarm .lk-led { animation: lk-led 1000ms steps(1) infinite; }
+@keyframes lk-led { 0% { fill: #ff453a; } 50% { fill: rgba(0, 0, 0, .15); } }
+.lk-card.is-tamper .lk-sensor { transform: translate(-8px, -16px) rotate(-8deg); }
+.lk-card.is-off .lk-svg { opacity: .45; }
+.ct-word.alarm { color: var(--red); }
+.lk-strip .bar { background: var(--green-soft); } .lk-strip .bar i { background: var(--red); }
+@media (prefers-reduced-motion: reduce) { .lk-card .lk-ring, .lk-card .lk-drop, .lk-card .lk-led { animation: none !important; } }
