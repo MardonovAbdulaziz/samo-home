@@ -14,10 +14,12 @@
   const ctx = {
     render() {
       const sub = Store.roomName(d.roomId) + (d.online === false ? ' · Offline' : '');
-      UI.patch(UI.screen, UI.toolbar({
+      // a device type may show a sub-page with its own title (e.g. one remote of the IR blaster: “TV · Living Room · Edit”)
+      const own = Devices[d.type].toolbar ? Devices[d.type].toolbar(d) : null;
+      UI.patch(UI.screen, UI.toolbar(Object.assign({
         title: d.name, subtitle: sub, back: 'index.html',
         right: `<a class="glass-btn" href="device-settings.html?id=${d.id}" aria-label="Settings"><img class="icon" src="assets/icons/setting.svg" width="24" height="24" alt=""></a>`,
-      }) + api.page(ctx));
+      }, own || {})) + api.page(ctx));
       const panel = document.getElementById('protoPanel');
       if (panel) UI.patch(panel, api.protoPanel(ctx));
       if (Devices[d.type].afterRender) Devices[d.type].afterRender(d, UI.screen);

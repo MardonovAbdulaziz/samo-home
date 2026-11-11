@@ -55,20 +55,19 @@ Devices.ir = (() => {
     if (p.feats.includes('acBuiltIn')) d.remotes.push({ kind: 'ac', brand: 'Midea', name: 'Air conditioner', ac: acState(), builtin: true });
     else {
       if (p.feats.includes('tvRemote')) d.remotes.push({ kind: 'tv', brand: 'Samsung', name: 'TV' });
-      if (p.feats.includes('acRemote')) d.remotes.push({ kind: 'ac', brand: 'Artel', name: 'Air conditioner', ac: acState() });
+      if (p.feats.includes('acRemote')) d.remotes.push({ kind: 'ac', brand: 'Artel', name: 'Air conditioner' });   // an old AC: buttons only
       if (p.feats.includes('custom')) d.remotes.push({ kind: 'custom', brand: '', name: 'Ceiling fan', buttons: ['Power', 'Speed', 'Light'] });
     }
     if (p.feats.includes('irSwitches')) d.sw = ['Heater', 'Fan', 'Lamp', '', '', ''].map((n, i) => ({ name: n || `Switch ${i + 1}`, learned: !!n, on: false }));
   }
   const applyDefaults = (d) => { Kit.applyDefaults(F, d); d.remotes = d.remotes || []; d.sw = d.sw || []; };
-  const rem = (d) => d.remotes[Math.min(d.cur || 0, d.remotes.length - 1)];
   const fmtT = (d, c) => (has(d, 'calibration') && S(d, 'calibration').unit === 'fahrenheit' ? `${(c * 9 / 5 + 32).toFixed(0)} °F` : `${c.toFixed(1)} °C`);
   const roomT = (d) => d.st.t + (has(d, 'calibration') ? S(d, 'calibration').t : 0);
 
   /* ---------- Sending ---------- */
   function send(d, r, label) {
     if (!d.online) { UI.toast('The blaster is offline'); return false; }
-    d.st.last = { r: r ? r.name : '', label, t: Date.now() }; d.st.blink = Date.now(); d.st.lastSeen = Date.now();
+    d.st.last = { r: r ? r.name : '', label, t: Date.now() }; if (r) r.last = { label, t: Date.now() }; d.st.blink = Date.now(); d.st.lastSeen = Date.now();
     Kit.logEv(d, 'sent', { text: `${r ? r.name + ' · ' : ''}${label}` });
     return true;
   }
@@ -79,55 +78,91 @@ Devices.ir = (() => {
   function tileStatus(d) {
     if (!d.online) return { text: 'Offline', tone: 'danger' };
     if (has(d, 'battery') && d.battery <= 20) return { text: 'Battery low', tone: 'warn' };
-    const ac = d.remotes.find((r) => r.kind === 'ac');
+    const ac = d.remotes.find((r) => r.kind === 'ac' && r.builtin && r.ac);
     if (ac && ac.ac.on) return { text: `AC · ${ac.ac.t}° ${MODES.find((m) => m[0] === ac.ac.mode)[1].toLowerCase()}` };
     if (has(d, 'climateSensor')) return { text: fmtT(d, roomT(d)) };
     return { text: d.remotes.length ? `${d.remotes.length} remote${d.remotes.length > 1 ? 's' : ''}` : 'No remotes yet' };
   }
   const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: 'dev-remote', on: false, status: s.text, tone: s.tone, controllable: false, offline: !d.online }]; };
 
-  /* ---------- Remote layouts ---------- */
-  const B = (label, act, opts = {}) => `<button class="ir-b ${opts.cls || ''}" data-action="${act}" data-l="${esc(opts.l || label)}" ${opts.dis ? 'disabled' : ''} aria-label="${esc(opts.l || label)}">${opts.ic ? icon(opts.ic, 'icon', 'style="width:22px;height:22px"') : ''}${opts.ic && !opts.text ? '' : `<span>${esc(label)}</span>`}</button>`;
-  function tvPad(d, r) {
-    return `<div class="ir-pad">
-      <div class="ir-row">${B('Power', 'ir-send', { ic: 'power', cls: 'ir-pw' })}${B('Source', 'ir-send')}${B('Mute', 'ir-send')}</div>
-      <div class="ir-mid"><div class="ir-rock">${B('+', 'ir-send', { l: 'Volume up' })}<i>VOL</i>${B('−', 'ir-send', { l: 'Volume down' })}</div>
-        <div class="ir-dpad">${B('', 'ir-send', { l: 'Up', cls: 'u' })}${B('', 'ir-send', { l: 'Left', cls: 'l' })}${B('OK', 'ir-send', { cls: 'ok' })}${B('', 'ir-send', { l: 'Right', cls: 'r' })}${B('', 'ir-send', { l: 'Down', cls: 'd' })}</div>
-        <div class="ir-rock">${B('+', 'ir-send', { l: 'Channel up' })}<i>CH</i>${B('−', 'ir-send', { l: 'Channel down' })}</div></div>
-      <div class="ir-row">${B('Back', 'ir-send')}${B('Home', 'ir-send')}${B('123', 'ir-num', { l: 'Numbers' })}</div>
-      ${d.sim.nums ? `<div class="ir-nums">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, ''].map((x) => (x === '' ? '<i></i>' : B(String(x), 'ir-send', { l: `Number ${x}` }))).join('')}</div>` : ''}</div>`;
+  /* ---------- Remote layouts (Figma 5433:50373 “TV - Remote - Default”) ----------
+     The blaster's page lists its remotes; each remote opens as its own page (device.html?id=…&r=N, title = the
+     appliance, Edit on the right). Keys: fills/tertiary, radius 24, 76 px rows, a 156 px row for the rockers. */
+  const view = () => { const r = UI.param('r'); return r === null || r === '' || r === undefined ? -1 : +r; };
+  const rem = (d) => d.remotes[view()] || null;
+  const K = (l, o = {}) => `<button class="ir-k ${o.cls || ''}" data-action="${o.act || 'ir-send'}" data-l="${esc(l)}" aria-label="${esc(o.aria || l)}">${o.ic ? icon(o.ic, 'icon', `style="width:${o.s || 32}px;height:${o.s || 32}px"`) : ''}${o.text ? `<span>${esc(o.text)}</span>` : ''}</button>`;
+  const rocker = (label, up, down, upIc, downIc) => `<div class="ir-k ir-rk"><button data-action="ir-send" data-l="${esc(up)}" aria-label="${esc(up)}">${icon(upIc, 'icon', 'style="width:24px;height:24px"')}</button><span>${esc(label)}</span><button data-action="ir-send" data-l="${esc(down)}" aria-label="${esc(down)}">${icon(downIc, 'icon', 'style="width:24px;height:24px"')}</button></div>`;
+  const pair = (a, b) => `<div class="ir-pair">${a}${b}</div>`;
+  const nums = (d) => (d.sim.nums ? `<div class="ir-r ir-nums">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, ''].map((x) => (x === '' ? '<i></i>' : K(`Number ${x}`, { text: String(x) }))).join('')}</div>` : '');
+  function tvPad(d) {
+    const dp = (c, l, ic) => `<button class="${c}" data-action="ir-send" data-l="${l}" aria-label="${l}">${icon(ic, 'icon', 'style="width:24px;height:24px"')}</button>`;
+    return `<div class="ir-dpad">${dp('u', 'Up', 'ir-chev-up')}${dp('l', 'Left', 'ir-chev-left')}${dp('r', 'Right', 'ir-chev-right')}${dp('d', 'Down', 'ir-chev-down')}<button class="ok" data-action="ir-send" data-l="OK">OK</button></div>
+      <div class="ir-keys">
+        <div class="ir-r">${K('Source', { ic: 'ir-source' })}<i></i>${K('Power', { ic: 'ir-power', cls: 'pw' })}</div>
+        <div class="ir-r tall">${rocker('Volume', 'Volume up', 'Volume down', 'ir-plus', 'ir-minus')}${pair(K('Mute', { ic: 'ir-mute', s: 24 }), K('Settings', { ic: 'ir-setting', s: 24 }))}${rocker('Channel', 'Channel up', 'Channel down', 'ir-chev-up', 'ir-chev-down')}</div>
+        <div class="ir-r">${K('Back', { ic: 'ir-back', cls: 'flip' })}${K('Numbers', { ic: 'ir-numpad', act: 'ir-num', cls: d.sim.nums ? 'on' : '' })}${K('Home', { ic: 'ir-home' })}</div>
+        ${nums(d)}</div>`;
   }
-  function acPad(d, r) {
+  /** A universal AC remote for old air conditioners: buttons only. The AC answers nothing — Swing starts or stops the
+      flap, Mode goes to the next mode — so the app shows no temperature or state, only what it sent. */
+  function acKeys() {
+    return `<div class="ir-keys">
+      <div class="ir-r">${K('Power', { ic: 'ir-power', cls: 'pw' })}${K('Mode', { text: 'Mode' })}${K('Fan speed', { text: 'Fan speed' })}</div>
+      <div class="ir-r tall">${rocker('Temperature', 'Warmer', 'Cooler', 'ir-plus', 'ir-minus')}${pair(K('Swing', { text: 'Swing' }), K('Air direction', { text: 'Direction' }))}${pair(K('Timer', { text: 'Timer' }), K('Sleep', { text: 'Sleep' }))}</div>
+      <div class="ir-r">${K('Turbo', { text: 'Turbo' })}${K('Display light', { text: 'Light' })}${K('Eco', { text: 'Eco' })}</div></div>
+      <p class="ir-note">Old air conditioners don’t answer back — each button only sends its signal. Look at the AC to see what changed.</p>`;
+  }
+  /** The blaster that speaks AC itself (NodOn, OWON…): it keeps the state, so the app can show 24 ° Cool. */
+  function acPanel(d, r) {
     const a = r.ac;
     return `<div class="ir-ac ${a.on ? 'on' : ''}">
       <div class="ir-ac-top"><button class="ir-step" data-action="ir-ac-t" data-v="-1" ${!a.on || a.t <= 16 ? 'disabled' : ''} aria-label="Cooler">−</button>
         <div class="ir-temp"><b data-num>${a.on ? a.t + '°' : 'Off'}</b><span>${a.on ? MODES.find((m) => m[0] === a.mode)[1] + ' · fan ' + FANS.find((f) => f[0] === a.fan)[1].toLowerCase() : (has(d, 'climateSensor') ? `Room ${fmtT(d, roomT(d))}` : 'Tap power to turn on')}</span></div>
         <button class="ir-step" data-action="ir-ac-t" data-v="1" ${!a.on || a.t >= 30 ? 'disabled' : ''} aria-label="Warmer">+</button></div>
-      <div class="pad" style="padding:0"><button class="btn ${a.on ? 'btn-glass' : 'btn-primary'} btn-block" data-action="ir-ac-pw">${icon('power')}${a.on ? 'Turn off' : 'Turn on'}</button></div>
+      <button class="btn ${a.on ? 'btn-glass' : 'btn-primary'} btn-block" data-action="ir-ac-pw">${icon('power')}${a.on ? 'Turn off' : 'Turn on'}</button>
       <div class="ir-lbl">Mode</div><div class="segmented">${MODES.map(([k, l]) => `<button class="${a.mode === k ? 'on' : ''}" data-action="ir-ac-mode" data-v="${k}" ${!a.on ? 'disabled' : ''}>${l}</button>`).join('')}</div>
       <div class="ir-lbl">Fan</div><div class="segmented">${FANS.map(([k, l]) => `<button class="${a.fan === k ? 'on' : ''}" data-action="ir-ac-fan" data-v="${k}" ${!a.on ? 'disabled' : ''}>${l}</button>`).join('')}</div>
       <div class="list" style="margin:16px 0 0">${Kit.sw('ir-ac-swing', 's', 'Swing', 'The flap moves up and down', a.swing, !a.on)}</div></div>`;
   }
-  const OTHER = { box: ['Power', 'Home', 'Back', 'OK', 'Play / Pause', 'Volume +', 'Volume −'], projector: ['Power', 'Source', 'Focus +', 'Focus −', 'Volume +', 'Volume −'], soundbar: ['Power', 'Volume +', 'Volume −', 'Mute', 'Bass', 'Input'], fan: ['Power', 'Speed', 'Swing', 'Timer'], heater: ['Power', 'Warmer', 'Cooler', 'Timer'], purifier: ['Power', 'Speed', 'Auto', 'Night'], strip: ['On', 'Off', 'Brighter', 'Dimmer', 'Red', 'Green', 'Blue', 'White'], vacuum: ['Start', 'Pause', 'Go home', 'Spot clean'] };
-  function otherPad(d, r) {
-    const btns = r.kind === 'custom' ? (r.buttons || []) : (OTHER[r.kind] || ['Power']).concat(r.extra || []);
-    return `<div class="ir-grid">${btns.map((l) => B(l, 'ir-send', { ic: /^(Power|On)$/.test(l) ? 'power' : '', text: true, cls: /^(Power|On)$/.test(l) ? 'ir-pw' : '' })).join('')}${(r.kind === 'custom' || has(d, 'learn')) ? `<button class="ir-b ir-add" data-action="ir-learn">${icon('plus', 'icon', 'style="width:20px;height:20px"')}<span>Learn a button</span></button>` : ''}</div>`;
+  const OTHER = { box: ['Home', 'Back', 'OK', 'Play / Pause', 'Volume +', 'Volume −'], projector: ['Source', 'Focus +', 'Focus −', 'Volume +', 'Volume −'], soundbar: ['Volume +', 'Volume −', 'Mute', 'Bass', 'Input'], fan: ['Speed', 'Swing', 'Timer', 'Light'], heater: ['Warmer', 'Cooler', 'Timer'], purifier: ['Speed', 'Auto', 'Night'], strip: ['Brighter', 'Dimmer', 'Red', 'Green', 'Blue', 'White'], vacuum: ['Start', 'Pause', 'Go home', 'Spot clean'] };
+  function keysPad(d, r) {
+    const btns = r.kind === 'custom' ? (r.buttons || []) : (OTHER[r.kind] || []).concat(r.extra || []);
+    const power = r.kind === 'custom' || r.kind === 'vacuum' ? '' : K('Power', { ic: 'ir-power', cls: 'pw' });
+    const learn = has(d, 'learn') || r.kind === 'custom' ? `<button class="ir-k ir-learnk" data-action="ir-learn">${icon('plus', 'icon', 'style="width:24px;height:24px"')}<span>Learn a button</span></button>` : '';
+    return `<div class="ir-keys"><div class="ir-r ir-flow">${power}${btns.map((l) => K(l, { text: l })).join('')}${learn}</div></div>
+      ${r.kind === 'custom' && !btns.length ? '<p class="ir-note">No buttons yet — tap “Learn a button” and press the button on the original remote.</p>' : ''}`;
   }
 
   /* ---------- Device page ---------- */
+  /** On a remote's page: what was last sent to THIS appliance; on the blaster's page: the last code of any remote. */
+  function headText(d) {
+    if (!has(d, 'lastSent') && !has(d, 'acBuiltIn')) return 'Ready';
+    const r = rem(d); if (!r) return lastLine(d);
+    return r.last ? `Sent “${r.last.label}” · ${when(r.last.t)}` : 'Nothing sent yet';
+  }
+  function head(d) {
+    const blink = d.st.blink && Date.now() - d.st.blink < 1200;
+    return `<div class="pad ir-head" data-key="head"><span class="ir-led ${blink ? 'on' : ''}" aria-hidden="true"></span><span class="cw-state" data-num data-live="sub">${esc(headText(d))}</span></div>`;
+  }
   function page(d) {
-    const st = d.st, r = rem(d), blink = st.blink && Date.now() - st.blink < 1200;
+    const st = d.st, r = rem(d);
     let h = '';
     if (!d.online) h += Kit.banner('ban-off', 'danger', 'bolt-crossed', `<b>Offline</b> · No report since ${when(st.lastSeen)}`);
     if (has(d, 'battery') && d.battery <= 20) h += Kit.banner('ban-batt', 'warn', 'battery', `<b>Battery low · ${d.battery} %</b>`);
-    // the blaster light + what was last sent (IR is one-way)
-    h += `<div class="pad ir-head" data-key="head"><span class="ir-led ${blink ? 'on' : ''}" aria-hidden="true"></span><span class="cw-state" data-num data-live="sub">${esc(has(d, 'lastSent') || has(d, 'acBuiltIn') ? lastLine(d) : 'Ready')}</span></div>`;
-    if (d.remotes.length) {
-      h += `<div class="pad ir-tabs" data-key="tabs">${d.remotes.map((x, i) => `<button class="ir-tab ${i === (d.cur || 0) ? 'on' : ''}" data-action="ir-tab" data-i="${i}">${icon(kindOf(x.kind)[2], 'icon', 'style="width:20px;height:20px"')}<span>${esc(x.name)}</span></button>`).join('')}${has(d, 'brandSetup') || has(d, 'appliances') ? `<button class="ir-tab add" data-action="ir-add" aria-label="Add a remote">${icon('plus', 'icon', 'style="width:20px;height:20px"')}</button>` : ''}</div>`;
-      h += `<div class="pad" data-key="pad-${d.cur || 0}-${r.kind}" style="margin-top:16px">${r.kind === 'tv' ? tvPad(d, r) : r.kind === 'ac' ? acPad(d, r) : otherPad(d, r)}</div>`;
-      if (r.brand) h += `<div class="list-footer" data-key="brand" style="text-align:center;padding-left:0;padding-right:0">${esc(r.brand)} codes · ${r.builtin ? 'the blaster speaks AC by itself' : 'it can’t see if the original remote was used'}</div>`;
-    } else if (!has(d, 'irSwitches')) h += `<div class="pad" data-key="empty" style="margin-top:24px"><button class="btn btn-primary btn-block" data-action="ir-add">${icon('plus')} Add a remote</button></div>`;
-    if (has(d, 'irSwitches')) h += `<div class="list-header" data-key="sw-h">Switches</div><div class="list" data-key="sw">${d.sw.map((x, i) => x.learned ? Kit.sw('ir-sw', i, x.name, x.on ? 'Sent “on”' : 'Sent “off”', x.on) : `<button class="cell" data-action="ir-sw-learn" data-i="${i}"><span class="cell-main"><span class="cell-title" style="display:block">${esc(x.name)}</span><span class="cell-sub" style="display:block">Not learned yet</span></span><span class="cell-value">Learn</span></button>`).join('')}</div>`;
+    if (r) {   // one remote
+      h += head(d);
+      h += `<div class="pad ir-remote" data-key="pad-${view()}-${r.kind}">${r.kind === 'tv' ? tvPad(d) : r.kind === 'ac' ? (r.builtin ? acPanel(d, r) : acKeys()) : keysPad(d, r)}</div>`;
+      return h + '<div style="height:28px"></div>';
+    }
+    // the blaster: its remotes (Figma 5433:46868 “Remote control”)
+    if (!d.remotes.length && !has(d, 'irSwitches')) {
+      h += `<div class="ir-empty" data-key="empty"><h2>No devices yet</h2><p>Tap “Add a device” to add a device for remote control use</p><button class="btn btn-opposite btn-block" data-action="ir-add">${icon('plus')}Add a device</button></div>`;
+      return h;
+    }
+    h += head(d);
+    if (d.remotes.length) h += `<div class="list" data-key="remotes" style="margin-top:16px">${d.remotes.map((x, i) => `<a class="cell has-icon" href="device.html?id=${d.id}&r=${i}"><span class="cell-icon">${icon(kindOf(x.kind)[2])}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(x.name)}</span><span class="cell-sub" style="display:block">${esc(x.brand ? `${x.brand}${x.kind === 'ac' && !x.builtin ? ' · buttons only' : ''}` : `${(x.buttons || []).length} learned buttons`)}</span></span>${icon('chevron-right', 'chev')}</a>`).join('')}</div>`;
+    if (has(d, 'brandSetup') || has(d, 'appliances') || has(d, 'tvRemote')) h += `<div class="pad" data-key="add" style="margin-top:16px"><button class="btn btn-glass btn-block" data-action="ir-add">${icon('plus')}Add a device</button></div>`;
+    if (has(d, 'irSwitches')) h += `<div class="list-header" data-key="sw-h">Switches</div><div class="list" data-key="sw">${d.sw.map((x, i) => x.learned ? Kit.sw('ir-sw', i, x.name, x.on ? 'Sent “on”' : 'Sent “off”', x.on) : `<button class="cell" data-action="ir-sw-learn" data-i="${i}"><span class="cell-main"><span class="cell-title" style="display:block">${esc(x.name)}</span><span class="cell-sub" style="display:block">Not learned yet</span></span>${icon('chevron-right', 'chev')}</button>`).join('')}</div>`;
     h += Kit.cards([
       has(d, 'climateSensor') && ['Room temperature', fmtT(d, roomT(d)), { count: true }],
       has(d, 'climateSensor') && ['Humidity', `${Math.round(st.h + (has(d, 'calibration') ? S(d, 'calibration').h : 0))} %`, { count: true }],
@@ -135,7 +170,11 @@ Devices.ir = (() => {
     ]);
     return h + '<div style="height:28px"></div>';
   }
-  function live(d, root) { UI.setNum(root.querySelector('[data-live="sub"]'), has(d, 'lastSent') || has(d, 'acBuiltIn') ? lastLine(d) : 'Ready'); const led = root.querySelector('.ir-led'); if (led) led.classList.toggle('on', !!(d.st.blink && Date.now() - d.st.blink < 1200)); }
+  function toolbar(d) {
+    const r = rem(d); if (!r) return null;
+    return { title: r.name, subtitle: Store.roomName(d.roomId), back: `device.html?id=${d.id}`, right: '<button class="glass-btn txt" data-action="ir-edit">Edit</button>' };
+  }
+  function live(d, root) { UI.setNum(root.querySelector('[data-live="sub"]'), headText(d)); const led = root.querySelector('.ir-led'); if (led) led.classList.toggle('on', !!(d.st.blink && Date.now() - d.st.blink < 1200)); }
 
   /* ---------- Learn & setup ---------- */
   function openLearn(d, ctx, onDone) {
@@ -163,22 +202,34 @@ Devices.ir = (() => {
       footer: () => (step === 'test' ? '<div class="wz-row" style="margin:0"><button class="btn btn-glass" data-action="ir-no">No, try next</button><button class="btn btn-primary" data-action="ir-yes">Yes, it reacted</button></div>' : ''),
     });
     UI.on({
-      'ir-k': ({ k }) => { kind = k; if (k === 'custom') { d.remotes.push({ kind: 'custom', brand: '', name: 'Custom', buttons: [] }); d.cur = d.remotes.length - 1; Store.save(); UI.closeSheet(); ctx.render(); return; } step = 'brand'; s.refresh(); },
+      'ir-k': ({ k }) => { kind = k; if (k === 'custom') { d.remotes.push({ kind: 'custom', brand: '', name: 'Custom', buttons: [] }); Store.save(); UI.closeSheet(); location.href = `device.html?id=${d.id}&r=${d.remotes.length - 1}`; return; } step = 'brand'; s.refresh(); },
       'ir-brand': ({ b }) => { brand = b; step = 'test'; send(d, null, 'Power (test)'); s.refresh(); },
       'ir-try': () => { send(d, null, 'Power (test)'); s.refresh(); },
       'ir-no': () => { code = code % 5 + 1; send(d, null, 'Power (test)'); s.refresh(); },
-      'ir-yes': () => { const k = kindOf(kind); const r = { kind, brand, name: k[1], code }; if (kind === 'ac') r.ac = acState(); d.remotes.push(r); d.cur = d.remotes.length - 1; Kit.logEv(d, 'added', { text: `Added ${brand} ${k[1]}` }); Store.save(); UI.closeSheet(); ctx.render(); showTab(); UI.toast(`${brand} ${k[1].toLowerCase()} remote added`); },
+      'ir-yes': () => { const k = kindOf(kind); const r = { kind, brand, name: k[1], code }; if (kind === 'ac' && has(d, 'acBuiltIn')) { r.ac = acState(); r.builtin = true; } d.remotes.push(r); Kit.logEv(d, 'added', { text: `Added ${brand} ${k[1]}` }); Store.save(); UI.closeSheet(); UI.flash(`${brand} ${k[1].toLowerCase()} remote added`); location.href = `device.html?id=${d.id}&r=${d.remotes.length - 1}`; },
     });
   }
-  const showTab = () => requestAnimationFrame(() => { const t = document.querySelector('.ir-tab.on'); if (t) t.scrollIntoView({ inline: 'center', block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); });
-  function bindPage(d, ctx) {
-    const commit = () => { Store.save(); ctx.render(); showTab(); };
+  function openEdit(d, ctx) {
+    const r = rem(d), i = view();
+    UI.sheet({
+      title: `Edit ${r.name}`, sub: r.brand ? `${r.brand} codes` : 'Learned buttons',
+      render: () => `<div class="list"><button class="cell" data-action="ir-rename"><span class="cell-main cell-title">Name</span><span class="cell-value">${esc(r.name)}</span>${icon('chevron-right', 'chev')}</button>
+        ${has(d, 'learn') && r.kind !== 'ac' ? `<button class="cell" data-action="ir-learn"><span class="cell-main cell-title">Learn a button</span>${icon('chevron-right', 'chev')}</button>` : ''}</div>
+        <div class="pad" style="margin-top:24px"><button class="btn btn-danger btn-block" data-action="ir-remove">Remove this remote</button></div>`,
+    });
     UI.on({
-      'ir-tab': ({ i }) => { d.cur = +i; d.sim.nums = false; commit(); },
+      'ir-rename': () => UI.prompt({ title: 'Name', label: 'e.g. Bedroom TV', value: r.name, onOk: (v) => { r.name = v; Store.save(); UI.closeSheet(); ctx.render(); } }),
+      'ir-remove': () => UI.confirm({ title: `Remove ${r.name}?`, text: 'Its buttons are deleted from the app.', ok: 'Remove', onOk: () => { d.remotes.splice(i, 1); Store.save(); UI.flash(`${r.name} removed`); location.href = `device.html?id=${d.id}`; } }),
+    });
+  }
+  function bindPage(d, ctx) {
+    const commit = () => { Store.save(); ctx.render(); };
+    UI.on({
       'ir-add': () => openAdd(d, ctx),
+      'ir-edit': () => openEdit(d, ctx),
       'ir-send': ({ l }) => { if (send(d, rem(d), l)) commit(); },
       'ir-num': () => { d.sim.nums = !d.sim.nums; commit(); },
-      'ir-learn': () => openLearn(d, ctx, (v) => { const r = rem(d); if (r.kind === 'custom') r.buttons.push(v); else (r.extra = r.extra || []).push(v); }),
+      'ir-learn': () => openLearn(d, ctx, (v) => { const r = rem(d); if (r.kind === 'custom') (r.buttons = r.buttons || []).push(v); else (r.extra = r.extra || []).push(v); }),
       'ir-ac-pw': () => { const a = rem(d).ac; a.on = !a.on; if (send(d, rem(d), a.on ? `On · ${a.t}°` : 'Off')) commit(); },
       'ir-ac-t': ({ v }) => { const a = rem(d).ac; a.t = Math.max(16, Math.min(30, a.t + +v)); if (send(d, rem(d), `${a.t}°`)) commit(); },
       'ir-ac-mode': ({ v }) => { const a = rem(d).ac; a.mode = v; if (send(d, rem(d), MODES.find((m) => m[0] === v)[1])) commit(); },
@@ -221,7 +272,7 @@ Devices.ir = (() => {
     label: 'IR remote', F, PRESETS, GROUPS, create, applyDefaults, defaultName: 'IR remote',
     icon: () => 'dev-remote', describe: (p) => `${p.manufacturer} · IR blaster`,
     historyValue: (d) => `${d.log.length} codes sent`,
-    homeTiles, page, bindPage, live, settings, bindSettings, about, tick, busy: (d) => !!d.st.blink,
+    homeTiles, page, toolbar, bindPage, live, settings, bindSettings, about, tick, busy: (d) => !!d.st.blink,
     protoPanel, bindProto,
   };
 })();

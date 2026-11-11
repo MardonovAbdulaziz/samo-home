@@ -91,14 +91,25 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   ok('Meter: 14 kW over the 13 kW limit → main switch cut for safety', !s.st.relay && /Power too high/.test(s.st.trip || ''), s.st.trip);
   ok('Meter: home tile is the alert card', await (async () => { await go('index.html'); return ev(() => document.querySelector('.tile[data-id="d-meter"]').classList.contains('alert')); })());
 
-  // ---- IR remote
+  // ---- IR remote: the blaster lists its remotes; each remote is its own page (Figma 5433:50373)
   await go('device.html?id=d-ir');
+  s = await ev(() => [...document.querySelectorAll('[data-key="remotes"] .cell-title')].map((x) => x.textContent).join(','));
+  ok('IR: the blaster lists its remotes (TV, Air conditioner, Ceiling fan)', s === 'TV,Air conditioner,Ceiling fan', s);
+  await go('device.html?id=d-ir&r=0');
+  s = await ev(() => ({ title: document.querySelector('.toolbar .title').textContent, edit: !!document.querySelector('[data-action="ir-edit"]'), dpad: !!document.querySelector('.ir-dpad .ok'), rows: document.querySelectorAll('.ir-keys .ir-r').length }));
+  ok('IR: the TV page — title “TV”, Edit, the D-pad with OK and three key rows', s.title === 'TV' && s.edit && s.dpad && s.rows === 3, JSON.stringify(s));
   await click('[data-action="ir-send"][data-l="OK"]'); await sl(200);
-  ok('IR: TV OK → “Sent “OK” to TV”, the light blinks', /Sent “OK” to TV/.test(await sub()) && await ev(() => document.querySelector('.ir-led').classList.contains('on')), await sub());
-  await click('[data-action="ir-tab"][data-i="1"]'); await click('[data-action="ir-ac-pw"]'); await sl(200);
-  ok('IR: AC on → 24°', /24°/.test(await ev(() => document.querySelector('.ir-temp b').textContent)));
-  await click('[data-action="ir-add"]'); await sl(300); await click('[data-action="ir-k"][data-k="fan"]'); await sl(250); await click('[data-action="ir-brand"]'); await sl(250); await click('[data-action="ir-yes"]'); await sl(300);
-  ok('IR: brand setup adds a Fan remote', (await dev('d-ir')).remotes.some((r) => r.kind === 'fan'));
+  ok('IR: OK → “Sent “OK” · …”, the light blinks', /Sent “OK”/.test(await sub()) && await ev(() => document.querySelector('.ir-led').classList.contains('on')), await sub());
+  await go('device.html?id=d-ir&r=1');
+  s = await ev(() => ({ temp: !!document.querySelector('.ir-temp'), swing: !!document.querySelector('[data-l="Swing"]'), sub: document.querySelector('[data-live="sub"]').textContent }));
+  ok('IR: old AC = buttons only (no temperature, no state); its own last-sent line', !s.temp && s.swing && s.sub === 'Nothing sent yet', JSON.stringify(s));
+  await click('[data-action="ir-send"][data-l="Swing"]'); await sl(200);
+  ok('IR: Swing → “Sent “Swing””', /Sent “Swing”/.test(await sub()));
+  await go('device.html?id=d-ir&r=2');
+  s = await ev(() => { const r = document.querySelector('.ir-remote').getBoundingClientRect(), sc = document.querySelector('.screen'); return { w: Math.round(r.width), sx: sc.scrollLeft, over: sc.scrollWidth > sc.clientWidth }; });
+  ok('IR: the ceiling fan page does not slide sideways', s.sx === 0 && !s.over, JSON.stringify(s));
+  await go('device.html?id=d-ir'); await click('[data-action="ir-add"]'); await sl(300); await click('[data-action="ir-k"][data-k="fan"]'); await sl(250); await click('[data-action="ir-brand"]'); await sl(250); await click('[data-action="ir-yes"]'); await sl(700);
+  ok('IR: brand setup adds a Fan remote and opens its page', (await dev('d-ir')).remotes.some((r) => r.kind === 'fan') && /&r=3/.test(pg.url()), pg.url());
 
   // settings + about of every new device open without errors
   for (const id of ['d-lock', 'd-valve', 'd-gas', 'd-air', 'd-presence', 'd-vibration', 'd-meter', 'd-ir']) { await go('device-settings.html?id=' + id); await go('about-device.html?id=' + id); }

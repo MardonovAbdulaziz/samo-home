@@ -1554,35 +1554,47 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .em-ph .info-card small { font: var(--body-xs); color: var(--label-tertiary); }
 .em-ph:has(.em-third) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
-/* ---------- IR remote: the phone becomes the remote. The blaster light blinks color/red when a code goes out. ---------- */
+/* ---------- IR remote (Figma 5433:50373 “TV - Remote - Default”, 5433:46868 “Remote control”)
+   Keys are fills/tertiary, radius 24, 4 px apart, 76 px rows and a 156 px row for the Volume / Channel rockers;
+   the D-pad is a 228 px circle with a white OK. The blaster light blinks color/red when a code goes out. ---------- */
 .ir-head { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; text-align: center; }
 .ir-led { width: 8px; height: 8px; border-radius: 50%; background: var(--label-quaternary); flex-shrink: 0; transition: background-color 120ms linear, box-shadow 240ms var(--ease-out); }
 .ir-led.on { background: var(--red); box-shadow: 0 0 10px 2px rgba(255, 69, 58, .55); }
 .ir-led.big { width: 18px; height: 18px; }
 .ir-led.pulse { animation: ir-pulse 1200ms ease-in-out infinite; }
 @keyframes ir-pulse { 0%, 100% { background: var(--label-quaternary); } 50% { background: var(--red); box-shadow: 0 0 12px 3px rgba(255, 69, 58, .45); } }
-.ir-tabs { display: flex; gap: 8px; overflow-x: auto; margin-top: 16px; scrollbar-width: none; }
-.ir-tab { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px 0 10px; border-radius: 20px; background: var(--fill-tertiary); color: var(--label-secondary); font: var(--body-sm-accent); transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out); }
-.ir-tab.on { background: var(--bg-opposite); color: var(--label-opposite); }
-.ir-tab.add { padding: 0 10px; }
-.ir-b { min-height: 52px; border-radius: 16px; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out); -webkit-tap-highlight-color: transparent; }
-.ir-b:active { transform: scale(0.94); background: var(--fill-secondary, rgba(120, 120, 128, .32)); }
-.ir-b.ir-pw { color: var(--red); }
-.ir-pad { display: flex; flex-direction: column; gap: 14px; }
-.ir-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.ir-mid { display: grid; grid-template-columns: 64px 1fr 64px; gap: 12px; align-items: center; }
-.ir-rock { display: flex; flex-direction: column; align-items: stretch; gap: 0; border-radius: 32px; background: var(--fill-tertiary); overflow: hidden; }
-.ir-rock .ir-b { background: none; min-height: 58px; border-radius: 0; font: var(--body-lg-accent); }
-.ir-rock i { font: var(--body-xs-accent); font-style: normal; color: var(--label-tertiary); text-align: center; }
-.ir-dpad { position: relative; width: 168px; height: 168px; margin: 0 auto; border-radius: 50%; background: var(--fill-tertiary); }
-.ir-dpad .ir-b { position: absolute; background: none; min-height: 0; width: 56px; height: 56px; border-radius: 50%; }
-.ir-dpad .ir-b.u { left: 56px; top: 0; } .ir-dpad .ir-b.d { left: 56px; bottom: 0; } .ir-dpad .ir-b.l { left: 0; top: 56px; } .ir-dpad .ir-b.r { right: 0; top: 56px; }
-.ir-dpad .ir-b.ok { left: 46px; top: 46px; width: 76px; height: 76px; background: var(--fill-secondary, rgba(120, 120, 128, .32)); }
-.ir-dpad .ir-b.u::before, .ir-dpad .ir-b.d::before, .ir-dpad .ir-b.l::before, .ir-dpad .ir-b.r::before { content: ''; width: 10px; height: 10px; border: solid var(--label-secondary); border-width: 2.5px 2.5px 0 0; transform: rotate(-45deg); }
-.ir-dpad .ir-b.d::before { transform: rotate(135deg); } .ir-dpad .ir-b.l::before { transform: rotate(-135deg); } .ir-dpad .ir-b.r::before { transform: rotate(45deg); }
-.ir-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.ir-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.ir-grid .ir-add { color: var(--primary); }
+.glass-btn.txt { width: auto; padding: 0 16px; font: 500 17px/22px var(--font); color: var(--label-primary); }
+.ir-remote { padding-top: 32px; }
+.ir-dpad { position: relative; width: 228px; height: 228px; margin: 0 auto; border-radius: 50%; background: var(--fill-tertiary); }
+.ir-dpad button { position: absolute; width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; color: var(--label-primary); transition: background-color 120ms var(--ease-out), transform 120ms var(--ease-out); -webkit-tap-highlight-color: transparent; }
+.ir-dpad button:active { background: var(--fill-quaternary); }
+.ir-dpad .u { left: 86px; top: 3px; } .ir-dpad .d { left: 86px; bottom: 3px; } .ir-dpad .l { left: 3px; top: 86px; } .ir-dpad .r { right: 3px; top: 86px; }
+.ir-dpad .ok { left: 62px; top: 62px; width: 104px; height: 104px; background: var(--label-primary); color: var(--label-opposite); font: 590 15px/20px var(--font); letter-spacing: -0.23px; }
+.ir-dpad .ok:active { background: var(--label-primary); transform: scale(0.95); }
+.ir-keys { display: flex; flex-direction: column; gap: 4px; margin-top: 32px; }
+.ir-r { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.ir-r > * { height: 76px; min-width: 0; }
+.ir-r.tall > * { height: 156px; }
+.ir-k { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 24px; background: var(--fill-tertiary); color: var(--label-primary); font: 590 15px/20px var(--font); letter-spacing: -0.23px; text-align: center; padding: 4px 6px; transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out); -webkit-tap-highlight-color: transparent; }
+.ir-k:active { transform: scale(0.96); background: var(--fill-quaternary); }
+.ir-k.on { background: var(--fill-secondary, rgba(120, 120, 128, .32)); }
+.ir-k.pw { color: var(--red); }
+.ir-k.flip .icon { transform: scaleY(-1); }
+.ir-rk { padding: 0; justify-content: space-between; overflow: hidden; }
+.ir-rk button { flex: 1; width: 100%; display: grid; place-items: center; color: var(--label-primary); transition: background-color 120ms var(--ease-out); }
+.ir-rk button:active { background: var(--fill-quaternary); }
+.ir-rk span { pointer-events: none; }
+.ir-rk:active { transform: none; background: var(--fill-tertiary); }
+.ir-pair { display: grid; grid-template-rows: 1fr 1fr; gap: 4px; }
+.ir-pair .ir-k { height: auto; }
+.ir-flow { grid-auto-rows: 76px; }
+.ir-nums > * { height: 60px; }
+.ir-nums i { display: block; }
+.ir-learnk { color: var(--primary); }
+.ir-note { margin: 16px 8px 0; font: var(--body-sm); color: var(--label-tertiary); text-align: center; }
+.ir-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 180px var(--screen-pad) 0; }
+.ir-empty h2 { font: var(--h2); letter-spacing: var(--h2-ls); }
+.ir-empty p { margin: 8px 0 32px; font: var(--body-md); color: var(--label-secondary); }
 .ir-ac { display: flex; flex-direction: column; }
 .ir-ac-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 .ir-step { width: 56px; height: 56px; border-radius: 50%; background: var(--fill-tertiary); font: 500 26px/1 var(--font); color: var(--label-primary); transition: transform 120ms var(--ease-out); }
