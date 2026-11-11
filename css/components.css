@@ -1416,6 +1416,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .lk-disc { position: relative; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center; background: var(--fill-tertiary); color: var(--label-secondary);
   transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out); }
 .lk-halo { position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; margin: -56px 0 0 -56px; border-radius: 50%; border: 1.5px solid var(--red); opacity: 0; }
+.lk-mark.is-blue .lk-disc { background: var(--blue-soft); color: #64d2ff; }   /* blue look: calm water when dry */
 .lk-mark.is-alarm .lk-disc { background: var(--red-soft); color: var(--red); }
 .lk-mark.is-alarm .lk-halo { animation: lk-halo 2600ms cubic-bezier(.32, .72, 0, 1) infinite; }
 @keyframes lk-halo { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }

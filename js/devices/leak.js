@@ -146,7 +146,8 @@ Devices.leak = (() => {
   /** No illustration (user, 2026-11-11): one minimal mark — a water drop in a circle. Dry: quiet grey. Leak: red, and one
       soft ring breathes out slowly. Offline: dimmed. */
   function scene(d) {
-    const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
+    // two looks to compare (prototype panel): blue = calm blue when dry (default), grey = neutral when dry
+    const cls = ['lk-mark', (d.sim && d.sim.mark) === 'grey' ? '' : 'is-blue', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
     return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('dev-drop', 'icon', 'style="width:44px;height:44px"')}</span></div>`;
   }
 
@@ -300,6 +301,8 @@ Devices.leak = (() => {
       <h3>The floor · <span style="font-weight:400">${d.phys.wet ? 'wet' : 'dry'}</span></h3>
       <div class="pp-row"><button class="pp-btn" data-action="pp-wet">${d.phys.wet ? '🧽 Wipe it dry' : '💧 Spill water'}</button>
         ${has(d, 'temperature') ? `<button class="pp-btn" data-action="pp-cold">${d.temp < 3 ? '🌤 Normal 18 °C' : '❄️ Winter 1 °C'}</button>` : ''}</div>
+      <h3>Look (to compare)</h3>
+      <div class="pp-seg">${[['blue', 'Blue mark'], ['grey', 'Grey mark']].map(([k, l]) => `<button class="${((d.sim && d.sim.mark) || 'blue') === k ? 'on' : ''}" data-action="pp-mark" data-v="${k}">${l}</button>`).join('')}</div>
       <h3>The sensor</h3>
       <div class="pp-row">${has(d, 'tamper') ? `<button class="pp-btn" data-action="pp-tamper">${d.st.tamper ? '📍 Put it back' : '✋ Pick it up'}</button>` : ''}
         ${has(d, 'battery') ? `<button class="pp-btn" data-action="pp-batt">🔋 ${battLow(d) ? 'New battery' : 'Battery low'}</button>` : ''}
@@ -343,6 +346,7 @@ Devices.leak = (() => {
         }
         d.st.lastSeen = Date.now(); report(d); commit();
       },
+      'pp-mark': ({ v }) => { d.sim = d.sim || {}; d.sim.mark = v; commit(); },
       'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
     });
   }
