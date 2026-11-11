@@ -13,7 +13,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   // one device per type with every feature on
   const ids = await ev(() => {
     const out = [];
-    for (const [type, preset] of [['relay', 'all'], ['curtain', 'all'], ['contact', 'all'], ['light', 'all'], ['light', 'moes3'], ['climate', 'all'], ['motion', 'all'], ['plug', 'all'], ['plug', 'aqara'], ['leak', 'all']]) {
+    for (const [type, preset] of [['relay', 'all'], ['curtain', 'all'], ['contact', 'all'], ['light', 'all'], ['light', 'moes3'], ['climate', 'all'], ['motion', 'all'], ['plug', 'all'], ['plug', 'aqara'], ['leak', 'all'], ['smoke', 'all']]) {
       const T = Devices[type], d = T.create(preset, { name: 'Audit ' + type, roomId: 'r-living' }); d.isNew = false;
       if (type === 'curtain') d.curtains.forEach((m) => { m.calibrated = true; m.q = 40; });
       Store.state.devices.push(d); out.push(d.id);

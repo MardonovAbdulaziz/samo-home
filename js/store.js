@@ -30,9 +30,10 @@ const Store = (() => {
       motionSeed(),
       plugSeed(),
       leakSeed(),
+      smokeSeed(),
     ];
     devices.forEach((d) => { d.isNew = false; });
-    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true, motionAdded: true, plugAdded: true, leakAdded: true };
+    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true, motionAdded: true, plugAdded: true, leakAdded: true, smokeAdded: true };
   }
   /** Example curtain: a track motor that is paired but not set up yet (shows the setup flow). */
   function curtainSeed() {
@@ -57,6 +58,8 @@ const Store = (() => {
   function plugSeed() { const p = Devices.plug.create('third', { name: 'Washing machine', roomId: 'r-kitchen' }); p.id = 'd-plug'; p.channels[0].display = 'switch'; p.channels[0].icon = 'dev-washing'; return p; }
   /** Water leak sensor under the kitchen sink (replaces the old placeholder "Water Leak Sensor"). */
   function leakSeed() { const l = Devices.leak.create('aqara', { name: 'Kitchen sink', roomId: 'r-kitchen' }); l.id = 'd-leak'; return l; }
+  /** Smoke detector in the kitchen (Heiman: pre-alarm, heat, silence, cooking pause). */
+  function smokeSeed() { const s = Devices.smoke.create('heiman', { name: 'Kitchen smoke', roomId: 'r-kitchen' }); s.id = 'd-smoke'; return s; }
   /** Existing data from before curtains existed: add the example curtain once (stays deleted if removed). */
   function ensureCurtain() {
     if (ED || state.curtainAdded) return;
@@ -86,6 +89,7 @@ const Store = (() => {
       if (i >= 0) { l.roomId = state.devices[i].roomId; l.isNew = false; state.devices[i] = l; } else { l.isNew = true; if (!state.rooms.some((r) => r.id === l.roomId)) l.roomId = (state.rooms[0] || {}).id || null; state.devices.push(l); }
       state.leakAdded = true; save();
     }
+    if (!ED && !state.smokeAdded) { const s = smokeSeed(); s.isNew = true; if (!state.rooms.some((r) => r.id === s.roomId)) s.roomId = (state.rooms[0] || {}).id || null; state.devices.push(s); state.smokeAdded = true; save(); }
     // bring saved devices up to the current model (new settings get defaults, renamed values are mapped)
     state.devices.forEach((d) => { const T = Devices[d.type]; if (T && T.applyDefaults && d.settings) T.applyDefaults(d); });
     return state;

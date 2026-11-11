@@ -15,6 +15,7 @@ Usage:  python3 tools/bundle.py                     → dist/samo-home.html
         python3 tools/bundle.py --edition motion    → dist/samo-home-motion.html (motion sensors only)
         python3 tools/bundle.py --edition plug      → dist/samo-home-plugs.html (smart plugs and sockets only)
         python3 tools/bundle.py --edition leak      → dist/samo-home-leak.html (water leak sensors only)
+        python3 tools/bundle.py --edition smoke     → dist/samo-home-smoke.html (smoke detectors only)
 """
 import base64, json, mimetypes, pathlib, re
 
@@ -143,6 +144,20 @@ EDITIONS = {
       return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
     }''',
     },
+    'smoke': {
+        'out': 'samo-home-smoke.html', 'title': 'Samo-home · Smoke detectors', 'types': ['smoke'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-hall', name: 'Hallway' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-boiler', name: 'Boiler room' }];
+      const S = Devices.smoke;
+      const kitchen = S.create('heiman', { name: 'Kitchen smoke', roomId: 'r-kitchen' });
+      const hall = S.create('xiaomi', { name: 'Hallway', roomId: 'r-hall' });
+      const bed = S.create('tuyaalarm', { name: 'Bedroom', roomId: 'r-bedroom' });
+      const boiler = S.create('combo', { name: 'Boiler room', roomId: 'r-boiler' });
+      const devs = [kitchen, hall, bed, boiler]; devs.forEach((d) => { d.isNew = false; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-kitchen', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
 }
 PAGES = {  # route → page script
     'index.html': 'js/pages/home.js',
@@ -151,7 +166,7 @@ PAGES = {  # route → page script
     'about-device.html': 'js/pages/about-device.js',
     'add-device.html': 'js/pages/add-device.js',
 }
-CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/devices/leak.js', 'js/store.js']
+CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/devices/leak.js', 'js/devices/smoke.js', 'js/store.js']
 CSS = ['css/tokens.css', 'css/components.css']
 
 

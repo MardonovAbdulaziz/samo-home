@@ -18,6 +18,7 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Motion sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-motion.html |
 | Smart plugs & sockets | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-plugs.html |
 | Water leak sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-leak.html |
+| Smoke detectors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-smoke.html |
 | Light page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-light |
 | Curtain page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-curtain |
 | Contact sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-contact |
@@ -25,6 +26,7 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Motion sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-motion |
 | Smart plug page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-plug |
 | Leak sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-leak |
+| Smoke detector page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-smoke |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 | Design lab · contact “Other” open / closed (5 ideas) | https://mardonovabdulaziz.github.io/samo-home/design/other-open.html |
 | Design lab · 10 pictures of “contact” | https://mardonovabdulaziz.github.io/samo-home/design/contact-ideas.html |
@@ -163,6 +165,15 @@ Built from `Device Interface 3/8. Water_Leak_Sensor_Interface.html` (89 sensors)
 - Settings: Sensor (Sound on leak — tone and volume, or on/off only on Third Reality; Alarm on water appears / disappears; Test mode), Notifications (everyone, critical, family or a neighbour with a key, frost, battery / moved), Automation: Close the water on a leak (a scenario with a valve device — none paired yet, so it says so). Event History: today strip (red = wet) + events
 - Prototype names: relays end in " r", plugs in " s" (user, to tell them apart in the prototype; saved devices are renamed once)
 - Check: `tools/checks/leak.js` · edition: `python3 tools/bundle.py --edition leak` → `dist/samo-home-leak.html`
+
+## Smoke detector (step 9)
+
+Built from `Device Interface 3/12. Smoke_Detector_Interface.html` (58 detectors). Type `smoke` (`js/devices/smoke.js`). Icon: Hamroh `fire-fill`, exported from Figma.
+
+- Device page: one big mark like the leak sensor — color/gray "Clear" (white word), color/orange "A little smoke" (pre-alarm), color/red "Smoke! / Heat! / CO!" with a soft ring, a red banner and, while it rings, Silence (only if the detector can) + Call 101 (tel: link; 101 = fire service). Cards: smoke level bar with the pre-alarm / alarm marks, temperature, CO, battery; "Test the alarm" row (once a month → "Test OK — the app received the alarm"). Banners: offline, test OK, cooking pause, taken down, dusty chamber, battery low
+- Behaviour: thresholds follow Sensitivity; Silence lasts 3 min and the siren rings again if the smoke keeps rising; very thick smoke refuses silence; cooking pause ignores smoke; a real alarm always pushes (critical), runs the safety scenario and sounds the other detectors (interconnect)
+- Settings: Detector (Sensitivity, Cooking pause — start now, Siren & light, Heartbeat light), Notifications (owner always; critical, family, pre-alarm, service), Automation (When smoke is detected, Interconnected detectors). Event History: alarms, silence, tests, faults
+- Check: `tools/checks/smoke.js` · edition: `python3 tools/bundle.py --edition smoke` → `dist/samo-home-smoke.html`
 
 ## Performance on weak phones
 

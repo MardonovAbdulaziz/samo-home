@@ -1430,3 +1430,15 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ct-word.alarm { color: var(--red); }
 .lk-strip .bar { background: var(--green-soft); } .lk-strip .bar i { background: var(--red); }
 @media (prefers-reduced-motion: reduce) { .lk-mark .lk-halo { animation: none !important; } }
+
+/* Smoke detector — the same big mark as the leak sensor (fire icon): color/gray clear, color/orange pre-alarm / test,
+   color/red alarm. While it rings: Silence + Call 101. The smoke level as a bar with the pre-alarm and alarm marks. */
+.lk-mark.is-big.is-warn .lk-disc { color: var(--orange); }
+.sm-acts { display: flex; gap: 10px; margin-top: 8px; }
+.sm-acts .btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.sm-acts .btn .icon { width: 20px; height: 20px; }
+.sm-level { gap: 6px; }
+.sm-bar { position: relative; height: 8px; margin-top: 6px; border-radius: 4px; background: var(--fill-tertiary); overflow: hidden; }
+.sm-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--label-secondary); transition: width 600ms var(--ease-out); }
+.sm-bar.z1 i { background: var(--orange); } .sm-bar.z2 i { background: var(--red); }
+.sm-bar b { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: rgba(255, 255, 255, .35); }
