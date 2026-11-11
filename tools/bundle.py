@@ -16,6 +16,7 @@ Usage:  python3 tools/bundle.py                     → dist/samo-home.html
         python3 tools/bundle.py --edition plug      → dist/samo-home-plugs.html (smart plugs and sockets only)
         python3 tools/bundle.py --edition leak      → dist/samo-home-leak.html (water leak sensors only)
         python3 tools/bundle.py --edition smoke     → dist/samo-home-smoke.html (smoke detectors only)
+        python3 tools/bundle.py --edition lock|valve|gas|air|presence|vibration|meter|ir → one file per wave-2 device
 """
 import base64, json, mimetypes, pathlib, re
 
@@ -158,6 +159,86 @@ EDITIONS = {
       return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
     }''',
     },
+    'lock': {
+        'out': 'samo-home-locks.html', 'title': 'Samo-home · Door locks', 'types': ['lock'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
+      const T = Devices.lock, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
+      const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
+    'valve': {
+        'out': 'samo-home-valves.html', 'title': 'Samo-home · Valves & watering', 'types': ['valve'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
+      const T = Devices.valve, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
+      const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
+    'gas': {
+        'out': 'samo-home-gas.html', 'title': 'Samo-home · Gas & CO detectors', 'types': ['gas'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
+      const T = Devices.gas, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
+      const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
+    'air': {
+        'out': 'samo-home-air.html', 'title': 'Samo-home · Air quality', 'types': ['air'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
+      const T = Devices.air, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
+      const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
+    'presence': {
+        'out': 'samo-home-presence.html', 'title': 'Samo-home · Presence sensors', 'types': ['presence'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
+      const T = Devices.presence, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
+      const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
+    'vibration': {
+        'out': 'samo-home-vibration.html', 'title': 'Samo-home · Vibration sensors', 'types': ['vibration'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
+      const T = Devices.vibration, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
+      const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
+    'meter': {
+        'out': 'samo-home-meters.html', 'title': 'Samo-home · Energy meters', 'types': ['meter'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
+      const T = Devices.meter, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
+      const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
+    'ir': {
+        'out': 'samo-home-ir.html', 'title': 'Samo-home · IR remotes', 'types': ['ir'],
+        'seed': r'''() => {
+      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
+      const T = Devices.ir, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
+      const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, ...devs], notifications: 0 };
+    }''',
+    },
 }
 PAGES = {  # route → page script
     'index.html': 'js/pages/home.js',
@@ -166,7 +247,7 @@ PAGES = {  # route → page script
     'about-device.html': 'js/pages/about-device.js',
     'add-device.html': 'js/pages/add-device.js',
 }
-CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/devices/leak.js', 'js/devices/smoke.js', 'js/store.js']
+CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/devices/leak.js', 'js/devices/smoke.js', 'js/devices/kit.js', 'js/devices/lock.js', 'js/devices/valve.js', 'js/devices/gas.js', 'js/devices/air.js', 'js/devices/presence.js', 'js/devices/vibration.js', 'js/devices/meter.js', 'js/devices/ir.js', 'js/store.js']
 CSS = ['css/tokens.css', 'css/components.css']
 
 

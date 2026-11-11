@@ -19,6 +19,7 @@ page sections not being rebuilt when a banner appears, counts never going backwa
     node tools/checks/plug.js              # smart plug: appliance watts + power alerts, flip timer, metering only, overload / voltage trip + turn back on, too hot, auto-on inching, finished-charging auto-off, strips, history + reset
     node tools/checks/leak.js              # water leak sensor: dry / leak (red, push, picture), wipe dry, water-disappears mode, test mode, frost, moved, offline, settings per sensor, history; relay " r" / plug " s" names
     node tools/checks/smoke.js             # smoke detector: clear / pre-alarm / smoke (push, Silence + Call 101, scenario, interconnect), silence & ring again, thick smoke, test, cooking pause, sensitivity, no-level / CO presets, banners, history
+    node tools/checks/wave2.js             # wave 2: lock (hold to unlock, codes, auto-lock), valve (+ leak closes it), gas, air, presence, vibration, meter (trip), IR remote
     node tools/checks/spacing.js           # every page and every sheet (all features, switches on): neighbouring blocks never touch (gap ≥ 16 px)
     node tools/checks/timer.js             # shared timer sheet on the relay: 5 presets + Custom wheel (mouse drag, flick, Start lock, remembered), channel tabs, ring + row countdown
     node tools/checks/curtain-perf.js      # curtain loop sleeps at rest, wakes on a command; lite mode drops blur/textures

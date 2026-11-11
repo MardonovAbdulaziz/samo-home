@@ -1457,3 +1457,141 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .lk-mark.is-alarm .lk-disc { animation: lk-beat 520ms cubic-bezier(0.23, 1, 0.32, 1); }
 @keyframes lk-beat { 0% { transform: scale(0.94); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .lk-mark.is-alarm .lk-disc { animation: none; } }
+
+/* ---------- Wave 2 shared: the sensor mark when something is active (presence here, valve open…) — color/blue ---------- */
+.lk-mark.is-on .lk-disc { color: var(--primary); }
+.lk-mark.is-on .lk-halo { border-color: var(--primary); animation: lk-halo 3200ms cubic-bezier(.32, .72, 0, 1) infinite; }
+.pad.lo-hint { text-align: center; margin-top: -4px; font: var(--body-sm); color: var(--label-tertiary); }
+
+/* ---------- Door lock: the lock is the button. Tap = lock; press and hold = unlock (the ring fills in 0.7 s) ---------- */
+.lo-ctl { display: grid; place-items: center; width: 100%; background: none; border: 0; padding: 0; color: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.lo-ctl .lk-disc { transition: color 400ms var(--ease-out), transform 160ms var(--ease-out); }
+.lo-ctl:active .lk-disc { transform: scale(0.96); }
+.lo-ring { position: absolute; left: 50%; top: 50%; width: 124px; height: 124px; margin: -62px 0 0 -62px; transform: rotate(-90deg); pointer-events: none; }
+.lo-ring circle { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 377; stroke-dashoffset: 377; opacity: 0; transition: stroke-dashoffset 160ms var(--ease-out), opacity 160ms var(--ease-out); }
+.lo-ctl.holding .lo-ring circle { opacity: 1; stroke-dashoffset: 0; transition: stroke-dashoffset 700ms linear, opacity 120ms var(--ease-out); }
+.lo-ctl.is-moving .lo-ring circle { opacity: 1; stroke-dasharray: 90 287; stroke-dashoffset: 0; animation: lo-spin 900ms linear infinite; transform-origin: 62px 62px; }
+@keyframes lo-spin { to { transform: rotate(360deg); } }
+.lo-code { display: flex; align-items: center; justify-content: space-between; margin: 8px var(--screen-pad) 0; padding: 16px; border-radius: var(--radius-md); background: var(--fill-tertiary); }
+.lo-code span { font: 700 28px/34px var(--font); letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .lk-mark.is-on .lk-halo, .lo-ctl.is-moving .lo-ring circle { animation: none; } }
+
+/* ---------- Valve: the valve is the button; while a timer runs the blue ring empties ---------- */
+.va-ring.is-run circle { opacity: 1; transition: stroke-dashoffset 1000ms linear; }
+.va-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 8px var(--screen-pad) 4px; }
+.va-chip { height: 56px; border-radius: var(--radius-md); background: var(--fill-tertiary); font: var(--body-lg-accent); color: var(--label-primary); border: 2px solid transparent; transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
+.va-chip.on { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+
+/* ---------- Gas & CO: what to do (plain numbered steps), and the mounting picture ---------- */
+.gs-steps { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--radius-md); background: var(--fill-tertiary); }
+.gs-steps > div { display: flex; gap: 12px; align-items: flex-start; font: var(--body-md); letter-spacing: var(--body-md-ls); }
+.gs-steps i { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font: var(--body-xs-accent); font-style: normal; display: grid; place-items: center; margin-top: -1px; }
+.gs-mount { padding: 4px var(--screen-pad) 16px; }
+.gs-mount svg { display: block; width: 100%; height: auto; max-height: 180px; }
+.gs-mount .w { fill: var(--fill-quaternary); stroke: var(--separator); }
+.gs-mount .c { stroke: var(--label-tertiary); stroke-width: 2; }
+.gs-mount .s { fill: var(--label-tertiary); }
+.gs-mount .dt { fill: var(--primary); transition: y 400ms var(--ease-out); }
+.gs-mount .ar { stroke: var(--primary); stroke-width: 2; stroke-dasharray: 4 4; }
+.gs-mount text { fill: var(--primary); font: var(--body-sm-accent); }
+
+/* ---------- Air quality: Moderate = color/yellow; bars by level ---------- */
+.ct-word.mid { color: var(--yellow); }
+.sm-bar.zy i { background: var(--yellow); }
+.lk-mark.is-mid .lk-disc { color: var(--yellow); }
+/* simple bar charts (history sheets): <div class="pl-bars"><i style="height:…"><s>label</s></i>…</div> */
+.pl-bars > i { flex: 1; min-width: 0; position: relative; display: block; border-radius: 4px; background: var(--label-tertiary); transition: height 400ms var(--ease-out); }
+.pl-bars > i s { position: absolute; left: 50%; bottom: -20px; transform: translateX(-50%); font: var(--body-xs); color: var(--label-tertiary); text-decoration: none; white-space: nowrap; }
+.pl-bars:has(> i) { padding-bottom: 22px; height: 140px; }
+.aq-bars { gap: 3px; }
+.aq-bars i.zy { background: var(--yellow); } .aq-bars i.z1 { background: var(--orange); } .aq-bars i.z2 { background: var(--red); }
+
+/* ---------- Presence: the room from above. The dot glides when the person walks (transform transition) and breathes
+   when they sit still; it fades out while the room empties. Zones light up in color/blue when occupied. ---------- */
+.pr-map { position: relative; margin-top: 16px; padding: 12px 8px 8px; border-radius: var(--radius-lg, 24px); background: var(--fill-quaternary); }
+.pr-map svg { display: block; width: 100%; height: auto; overflow: visible; }
+.pr-fan { fill: var(--fill-tertiary); }
+.pr-ring { fill: none; stroke: var(--separator); stroke-width: 1; stroke-dasharray: 3 4; }
+.pr-m { fill: var(--label-tertiary); font: 500 10px/1 var(--font); }
+.pr-ign { fill: none; stroke: var(--primary-soft); }
+.pr-zone { fill: transparent; stroke: var(--label-quaternary); stroke-width: 1; transition: fill 400ms var(--ease-out), stroke 400ms var(--ease-out); }
+.pr-zone.on { fill: var(--primary-soft); stroke: var(--primary); }
+.pr-zl { fill: var(--label-secondary); font: 500 11px/1 var(--font); text-anchor: middle; dominant-baseline: middle; }
+.pr-dev { fill: var(--label-secondary); }
+.pr-dot { transition: transform 1100ms cubic-bezier(0.32, 0.72, 0, 1), opacity 600ms var(--ease-out); }
+.pr-core { fill: var(--primary); }
+.pr-halo { fill: var(--primary); opacity: .22; transform-box: fill-box; transform-origin: center; }
+.pr-map.is-still .pr-halo { animation: pr-breathe 3200ms ease-in-out infinite; }
+.pr-map.is-leaving .pr-dot { opacity: .35 !important; }
+@keyframes pr-breathe { 0%, 100% { transform: scale(0.8); opacity: .3; } 50% { transform: scale(1.25); opacity: .12; } }
+.pr-only { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); color: var(--label-secondary); transition: color 400ms var(--ease-out); }
+.pr-map.is-occ .pr-only { color: var(--primary); }
+.pr-bands { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 8px var(--screen-pad) 4px; }
+.pr-bands .va-chip { height: 48px; font: var(--body-sm-accent); }
+.pr-strip-card .ct-strip .bar { background: var(--fill-tertiary); } .pr-strip-card .ct-strip .bar i { background: var(--primary); }
+@media (prefers-reduced-motion: reduce) { .pr-map.is-still .pr-halo { animation: none; } .pr-dot { transition: opacity 200ms; } }
+
+.cw-hint { white-space: nowrap; }
+
+/* ---------- Vibration: the mark trembles while the thing shakes (a few px, never more) ---------- */
+.lk-mark.vb-shake .lk-disc { animation: vb-shake 260ms linear infinite; }
+@keyframes vb-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-1.5px) rotate(-1deg); } 75% { transform: translateX(1.5px) rotate(1deg); } }
+@media (prefers-reduced-motion: reduce) { .lk-mark.vb-shake .lk-disc { animation: none; } }
+
+/* ---------- Energy meter: a half-ring gauge — power now in the middle, the ring fills toward the limit
+   (label/secondary → color/orange from 70 % → color/red from 90 % or when it trips). ---------- */
+.em-gauge { position: relative; margin: 16px auto 0; max-width: 300px; }
+.em-gauge svg { display: block; width: 100%; height: auto; }
+.em-track, .em-fill { fill: none; stroke-width: 14; stroke-linecap: round; }
+.em-track { stroke: var(--fill-tertiary); }
+.em-fill { stroke: var(--label-secondary); stroke-dasharray: 100 100; transition: stroke-dashoffset 900ms var(--ease-out), stroke 400ms var(--ease-out); }
+.em-gauge.z1 .em-fill { stroke: var(--orange); } .em-gauge.z2 .em-fill { stroke: var(--red); } .em-gauge.off .em-fill { stroke-dashoffset: 100 !important; }
+.em-mid { position: absolute; left: 0; right: 0; bottom: 4px; text-align: center; }
+.em-mid .ct-word { font-variant-numeric: tabular-nums; }
+.em-lim { font: var(--body-sm); color: var(--label-tertiary); min-height: 16px; }
+.em-sub { text-align: center; margin-top: 8px; padding: 0 var(--screen-pad); }
+.em-top { position: absolute; right: 16px; top: 14px; }
+.em-ph .info-card small { font: var(--body-xs); color: var(--label-tertiary); }
+.em-ph:has(.em-third) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* ---------- IR remote: the phone becomes the remote. The blaster light blinks color/red when a code goes out. ---------- */
+.ir-head { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; text-align: center; }
+.ir-led { width: 8px; height: 8px; border-radius: 50%; background: var(--label-quaternary); flex-shrink: 0; transition: background-color 120ms linear, box-shadow 240ms var(--ease-out); }
+.ir-led.on { background: var(--red); box-shadow: 0 0 10px 2px rgba(255, 69, 58, .55); }
+.ir-led.big { width: 18px; height: 18px; }
+.ir-led.pulse { animation: ir-pulse 1200ms ease-in-out infinite; }
+@keyframes ir-pulse { 0%, 100% { background: var(--label-quaternary); } 50% { background: var(--red); box-shadow: 0 0 12px 3px rgba(255, 69, 58, .45); } }
+.ir-tabs { display: flex; gap: 8px; overflow-x: auto; margin-top: 16px; scrollbar-width: none; }
+.ir-tab { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px 0 10px; border-radius: 20px; background: var(--fill-tertiary); color: var(--label-secondary); font: var(--body-sm-accent); transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out); }
+.ir-tab.on { background: var(--bg-opposite); color: var(--label-opposite); }
+.ir-tab.add { padding: 0 10px; }
+.ir-b { min-height: 52px; border-radius: 16px; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out); -webkit-tap-highlight-color: transparent; }
+.ir-b:active { transform: scale(0.94); background: var(--fill-secondary, rgba(120, 120, 128, .32)); }
+.ir-b.ir-pw { color: var(--red); }
+.ir-pad { display: flex; flex-direction: column; gap: 14px; }
+.ir-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ir-mid { display: grid; grid-template-columns: 64px 1fr 64px; gap: 12px; align-items: center; }
+.ir-rock { display: flex; flex-direction: column; align-items: stretch; gap: 0; border-radius: 32px; background: var(--fill-tertiary); overflow: hidden; }
+.ir-rock .ir-b { background: none; min-height: 58px; border-radius: 0; font: var(--body-lg-accent); }
+.ir-rock i { font: var(--body-xs-accent); font-style: normal; color: var(--label-tertiary); text-align: center; }
+.ir-dpad { position: relative; width: 168px; height: 168px; margin: 0 auto; border-radius: 50%; background: var(--fill-tertiary); }
+.ir-dpad .ir-b { position: absolute; background: none; min-height: 0; width: 56px; height: 56px; border-radius: 50%; }
+.ir-dpad .ir-b.u { left: 56px; top: 0; } .ir-dpad .ir-b.d { left: 56px; bottom: 0; } .ir-dpad .ir-b.l { left: 0; top: 56px; } .ir-dpad .ir-b.r { right: 0; top: 56px; }
+.ir-dpad .ir-b.ok { left: 46px; top: 46px; width: 76px; height: 76px; background: var(--fill-secondary, rgba(120, 120, 128, .32)); }
+.ir-dpad .ir-b.u::before, .ir-dpad .ir-b.d::before, .ir-dpad .ir-b.l::before, .ir-dpad .ir-b.r::before { content: ''; width: 10px; height: 10px; border: solid var(--label-secondary); border-width: 2.5px 2.5px 0 0; transform: rotate(-45deg); }
+.ir-dpad .ir-b.d::before { transform: rotate(135deg); } .ir-dpad .ir-b.l::before { transform: rotate(-135deg); } .ir-dpad .ir-b.r::before { transform: rotate(45deg); }
+.ir-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ir-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ir-grid .ir-add { color: var(--primary); }
+.ir-ac { display: flex; flex-direction: column; }
+.ir-ac-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.ir-step { width: 56px; height: 56px; border-radius: 50%; background: var(--fill-tertiary); font: 500 26px/1 var(--font); color: var(--label-primary); transition: transform 120ms var(--ease-out); }
+.ir-step:active { transform: scale(0.92); } .ir-step:disabled { opacity: .35; }
+.ir-temp { text-align: center; } .ir-temp b { display: block; font: 700 56px/60px var(--font); letter-spacing: -1px; font-variant-numeric: tabular-nums; color: var(--label-tertiary); transition: color 300ms var(--ease-out); }
+.ir-ac.on .ir-temp b { color: var(--label-primary); }
+.ir-temp span { font: var(--body-sm); color: var(--label-secondary); }
+.ir-lbl { font: var(--body-sm); color: var(--label-secondary); margin: 20px 4px 8px; }
+.ir-ac .segmented button:disabled { opacity: .4; }
+.ir-learn { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 24px var(--screen-pad) 20px; }
+.ir-learn b { font: var(--body-lg-accent); } .ir-learn span { font: var(--body-sm); color: var(--label-secondary); }
+@media (prefers-reduced-motion: reduce) { .ir-led.pulse { animation: none; background: var(--red); } }

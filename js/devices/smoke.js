@@ -105,7 +105,7 @@ Devices.smoke = (() => {
       logEv(d, next);
       // a real alarm always tells at least the owner — critical, rings on silent phones
       notifyPush(d, `${what}! · ${W(d)}`, `${room(d)} — get out, call 101`, 'danger');
-      if (has(d, 'fireActions') && next !== 'co') { const a = S(d, 'fireActions'); const done = [a.lights && 'lights on', a.ac && 'AC off', a.unlock && 'door unlocked', a.sirens && 'other sirens on'].filter(Boolean); if (done.length) logEv(d, 'scene', { text: done.join(', ') }); }
+      if (has(d, 'fireActions') && next !== 'co') { const a = S(d, 'fireActions'); const locks = a.unlock ? Store.state.devices.filter((x) => x.type === 'lock' && Devices.lock && Devices.lock.remote(x, false, '', 'scene')) : []; const done = [a.lights && 'lights on', a.ac && 'AC off', locks.length && 'door unlocked', a.sirens && 'other sirens on'].filter(Boolean); if (done.length) logEv(d, 'scene', { text: done.join(', ') }); }
       if (has(d, 'interconnect') && S(d, 'interconnect')) logEv(d, 'linked');
       if (was === 'pre' || was === 'clear') st.hushUntil = 0;
     }

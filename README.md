@@ -19,6 +19,14 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Smart plugs & sockets | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-plugs.html |
 | Water leak sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-leak.html |
 | Smoke detectors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-smoke.html |
+| Door locks | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-locks.html |
+| Valves & watering | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-valves.html |
+| Gas & CO detectors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-gas.html |
+| Air quality | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-air.html |
+| Presence sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-presence.html |
+| Vibration sensors | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-vibration.html |
+| Energy meters | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-meters.html |
+| IR remotes | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-ir.html |
 | Light page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-light |
 | Curtain page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-curtain |
 | Contact sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-contact |
@@ -27,6 +35,14 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Smart plug page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-plug |
 | Leak sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-leak |
 | Smoke detector page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-smoke |
+| Door lock page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-lock |
+| Valve page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-valve |
+| Gas detector page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-gas |
+| Air quality page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-air |
+| Presence sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-presence |
+| Vibration sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-vibration |
+| Energy meter page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-meter |
+| IR remote page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-ir |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 | Design lab · contact “Other” open / closed (5 ideas) | https://mardonovabdulaziz.github.io/samo-home/design/other-open.html |
 | Design lab · 10 pictures of “contact” | https://mardonovabdulaziz.github.io/samo-home/design/contact-ideas.html |
@@ -174,6 +190,27 @@ Built from `Device Interface 3/12. Smoke_Detector_Interface.html` (58 detectors)
 - Behaviour: thresholds follow Sensitivity; Silence lasts 3 min and the siren rings again if the smoke keeps rising; very thick smoke refuses silence; cooking pause ignores smoke; a real alarm always pushes (critical), runs the safety scenario and sounds the other detectors (interconnect)
 - Settings: Detector (Sensitivity, Cooking pause — start now, Siren & light, Heartbeat light), Notifications (owner always; critical, family, pre-alarm, service), Automation (When smoke is detected, Interconnected detectors). Event History: alarms, silence, tests, faults
 - Check: `tools/checks/smoke.js` · edition: `python3 tools/bundle.py --edition smoke` → `dist/samo-home-smoke.html`
+
+## Wave 2 — the rest of Device Interface 3 (2026-11-11)
+
+Built from the specs 9, 13, 15–19 and 21 on one shared base, `js/devices/kit.js` (text, banners, the sensor mark, the big word,
+info cards, a settings page generated from each spec's groups, a sheet editor for spec `fields` — switches, choices and
+steppers — Event History and the prototype panel). Every device follows the same rules as the hand-built ones: show only
+what the paired device has, no banner that repeats the big word, neutral states white, alarms red, calm animations.
+
+| # | Device | Type | What the page does |
+|---|---|---|---|
+| 16 | Door lock | `lock` | The lock is the button: tap = lock, **press and hold 0.7 s = unlock** (a ring fills). Who and how (“Unlocked by Mum with a code”), auto-lock countdown, PIN codes per person, guest codes (once / today / week / weekdays), wrong codes, jammed, forced door, locked from inside |
+| 21 | Valve & watering | `valve` | Main water, gas valve, or 1–5 garden zones. Tap to open; “Water for…” / “Water litres…” with a ring that empties; flow, used today, part-way open, schedule, rain delay, no-water and seat-leak protection. **Leak sensors now really close it**; gas detectors close a gas valve |
+| 17 | Gas & CO | `gas` | Like smoke: Clear → A little gas → **Gas!** with Silence + Call 104 and three plain steps (don't switch lights · open windows · leave). Warm-up, monthly test, level bar, mounting picture (high / low / middle), end of life. Closes the gas valve |
+| 18 | Air quality | `air` | One word (Excellent … Unhealthy) + one tip (“CO2 1 450 — open a window for 10 minutes”); a card with a level bar per value; 24 h CO2 chart; built-in beep, fan, calibration, screen |
+| 9 | Presence (radar) | `presence` | The room from above: rings every metre, the person as a dot that glides when walking and breathes when still; zones (Sofa / Desk / Door) light up; leaving countdown; occupied-today strip; ignore areas, learn the empty room |
+| 15 | Vibration | `vibration` | “What is it on?” — on a washer / dryer: Running → **Finished**; on a window / safe / door: Calm → Shaken (red only when it should alarm). The mark trembles while it shakes |
+| 13 | Energy meter | `meter` | A half-ring gauge: power now in the middle, filling toward the limit (orange 70 %, red 90 % / trip). Main switch, prepaid balance with Top up, phases, tariffs, solar, protection limits, reclose, leakage, timer, 7-day chart |
+| 19 | IR remote | `ir` | The phone is the remote: TV (power, volume, channels, D-pad, numbers), AC (temperature, mode, fan, swing), 9 more appliance kinds, learned buttons, brand setup (“Press Power — did it react?”); the blaster light blinks on every code; IR is one-way, so it shows what it last sent |
+
+Icons: from the Figma Icons page where one exists (lock, remote, air, flame, TV, fan …); four come from the Hamroh library until they are drawn on the Icons page — `radar-fill` (presence), `dashboard-3-fill` (meter), `pulse-fill` (vibration), `seedling-fill` (garden valve).
+Check: `tools/checks/wave2.js` (Chrome + Safari) · editions: `python3 tools/bundle.py --edition lock|valve|gas|air|presence|vibration|meter|ir`
 
 ## Device icons & alert cards
 

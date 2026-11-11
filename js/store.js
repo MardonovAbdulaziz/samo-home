@@ -31,9 +31,10 @@ const Store = (() => {
       plugSeed(),
       leakSeed(),
       smokeSeed(),
+      ...WAVE2.filter((t) => Devices[t[0]]).map(wave2Seed),
     ];
     devices.forEach((d) => { d.isNew = false; });
-    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true, motionAdded: true, plugAdded: true, leakAdded: true, smokeAdded: true };
+    return { home: { name: 'My Home' }, rooms, devices, notifications: 8, curtainAdded: true, contactAdded: true, lightAdded: true, climateAdded: true, motionAdded: true, plugAdded: true, leakAdded: true, smokeAdded: true, wave2: Object.fromEntries(WAVE2.filter((t) => Devices[t[0]]).map((t) => [t[0], true])) };
   }
   /** Example curtain: a track motor that is paired but not set up yet (shows the setup flow). */
   function curtainSeed() {
@@ -60,6 +61,18 @@ const Store = (() => {
   function leakSeed() { const l = Devices.leak.create('aqara', { name: 'Kitchen sink', roomId: 'r-kitchen' }); l.id = 'd-leak'; return l; }
   /** Smoke detector in the kitchen (Heiman: pre-alarm, heat, silence, cooking pause). */
   function smokeSeed() { const s = Devices.smoke.create('heiman', { name: 'Kitchen smoke', roomId: 'r-kitchen' }); s.id = 'd-smoke'; return s; }
+  /** Wave 2 (Device Interface 3: 9, 13, 15–19, 21): one example of each, added once to existing homes too. */
+  const WAVE2 = [
+    ['lock', 'idlock', 'Front door lock', 'r-living', 'd-lock'],
+    ['valve', 'frank', 'Main water', 'r-kitchen', 'd-valve'],
+    ['gas', 'aqara', 'Kitchen gas', 'r-kitchen', 'd-gas'],
+    ['air', 'efekta', 'Bedroom air', 'r-bedroom', 'd-air'],
+    ['presence', 'fp1e', 'Living room presence', 'r-living', 'd-presence'],
+    ['vibration', 'aqara', 'Dryer', 'r-kitchen', 'd-vibration'],
+    ['meter', 'd5z', 'Home meter', 'r-living', 'd-meter'],
+    ['ir', 'zs06', 'Bedroom remote', 'r-bedroom', 'd-ir'],
+  ];
+  function wave2Seed([type, preset, name, roomId, id]) { const d = Devices[type].create(preset, { name, roomId }); d.id = id; return d; }
   /** Existing data from before curtains existed: add the example curtain once (stays deleted if removed). */
   function ensureCurtain() {
     if (ED || state.curtainAdded) return;
@@ -90,6 +103,11 @@ const Store = (() => {
       state.leakAdded = true; save();
     }
     if (!ED && !state.smokeAdded) { const s = smokeSeed(); s.isNew = true; if (!state.rooms.some((r) => r.id === s.roomId)) s.roomId = (state.rooms[0] || {}).id || null; state.devices.push(s); state.smokeAdded = true; save(); }
+    if (!ED) WAVE2.forEach((t) => {
+      if (!Devices[t[0]] || (state.wave2 || {})[t[0]]) return;
+      const d = wave2Seed(t); d.isNew = true; if (!state.rooms.some((r) => r.id === d.roomId)) d.roomId = (state.rooms[0] || {}).id || null;
+      state.devices.push(d); state.wave2 = Object.assign({}, state.wave2, { [t[0]]: true }); save();
+    });
     // bring saved devices up to the current model (new settings get defaults, renamed values are mapped)
     state.devices.forEach((d) => { const T = Devices[d.type]; if (T && T.applyDefaults && d.settings) T.applyDefaults(d); });
     return state;

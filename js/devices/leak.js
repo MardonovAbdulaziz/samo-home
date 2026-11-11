@@ -55,7 +55,9 @@ Devices.leak = (() => {
   const testing = (d) => d.st.testUntil > Date.now();
   const battLow = (d) => has(d, 'battery') && d.battery <= 20;
   const frost = (d) => has(d, 'temperature') && d.online && d.temp < 3;
-  const valves = () => Store.state.devices.filter((x) => x.type === 'valve');   // the valve device comes later (spec 21)
+  // water valves that agreed to close on a leak (valve settings → Automation → Close on leak or gas)
+  const valves = () => Store.state.devices.filter((x) => x.type === 'valve' && Devices.valve && Devices.valve.linkable(x, 'leak'));
+  const closeValves = (d, why) => { valves().forEach((v) => Devices.valve.alarmClose(v, why)); d.st.valveClosed = true; logEv(d, 'valve'); };
 
   function applyDefaults(d) {
     for (const k in F) { const def = F[k].def; if (def !== undefined && d.settings[k] === undefined) d.settings[k] = clone(def); }
@@ -102,7 +104,7 @@ Devices.leak = (() => {
     const what = absence(d) ? 'No water' : 'Water leak';
     notifyPush(d, `${what} · ${W(d)}`, absence(d) ? `${room(d)}: the water is gone` : `${room(d)} — check it now`, 'danger');
     // a safety scenario (our hub): close the valve
-    if (!absence(d) && has(d, 'autoClose') && S(d, 'autoClose').on && valves().length) { st.valveClosed = true; logEv(d, 'valve'); }
+    if (!absence(d) && has(d, 'autoClose') && S(d, 'autoClose').on && valves().length) closeValves(d, `leak · ${d.name}`);
     return '';
   }
 
@@ -337,7 +339,7 @@ Devices.leak = (() => {
         d.online = !d.online;
         if (!d.online) {
           logEv(d, 'offline');
-          if (has(d, 'autoClose') && S(d, 'autoClose').lost && valves().length) { d.st.valveClosed = true; logEv(d, 'valve'); }
+          if (has(d, 'autoClose') && S(d, 'autoClose').lost && valves().length) closeValves(d, `${d.name} stopped answering`);
           return commit();
         }
         d.st.lastSeen = Date.now(); report(d); commit();
