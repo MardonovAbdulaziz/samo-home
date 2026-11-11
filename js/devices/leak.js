@@ -143,13 +143,11 @@ Devices.leak = (() => {
   /* ==========================================================================
      Device page
      ========================================================================== */
-  /** No illustration (user, 2026-11-11): one minimal mark — a water drop in a circle. Dry: quiet grey. Leak: red, and one
-      soft ring breathes out slowly. Offline: dimmed. */
+  /** No illustration: the sensor mark from Figma (6631:50597 "Sensors/Drop") — a 100 px fills/quaternary ring around an
+      80 px disc with the drop cut out. Dry: label/secondary. Leak: color/red, and one soft ring breathes out. Offline: dimmed. */
   function scene(d) {
-    // looks to compare (prototype panel): gray = the big icon in color/gray when dry (default), blue = color/blue, disc = a grey disc
-    const look = (d.sim && d.sim.mark) || 'gray';
-    const cls = ['lk-mark', look === 'disc' ? '' : 'is-big', look === 'blue' ? 'is-blue' : '', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('dev-drop', 'icon', 'style="width:44px;height:44px"')}</span></div>`;
+    const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', !d.online ? 'is-off' : ''].join(' ');
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('sensor-drop', 'icon', 'style="width:80px;height:80px"')}</span></div>`;
   }
 
   function page(d) {
@@ -302,8 +300,6 @@ Devices.leak = (() => {
       <h3>The floor · <span style="font-weight:400">${d.phys.wet ? 'wet' : 'dry'}</span></h3>
       <div class="pp-row"><button class="pp-btn" data-action="pp-wet">${d.phys.wet ? '🧽 Wipe it dry' : '💧 Spill water'}</button>
         ${has(d, 'temperature') ? `<button class="pp-btn" data-action="pp-cold">${d.temp < 3 ? '🌤 Normal 18 °C' : '❄️ Winter 1 °C'}</button>` : ''}</div>
-      <h3>Look (to compare)</h3>
-      <div class="pp-seg">${[['gray', 'Gray icon'], ['blue', 'Blue icon'], ['disc', 'Disc']].map(([k, l]) => `<button class="${((d.sim && d.sim.mark) || 'gray') === k ? 'on' : ''}" data-action="pp-mark" data-v="${k}">${l}</button>`).join('')}</div>
       <h3>The sensor</h3>
       <div class="pp-row">${has(d, 'tamper') ? `<button class="pp-btn" data-action="pp-tamper">${d.st.tamper ? '📍 Put it back' : '✋ Pick it up'}</button>` : ''}
         ${has(d, 'battery') ? `<button class="pp-btn" data-action="pp-batt">🔋 ${battLow(d) ? 'New battery' : 'Battery low'}</button>` : ''}
@@ -347,7 +343,6 @@ Devices.leak = (() => {
         }
         d.st.lastSeen = Date.now(); report(d); commit();
       },
-      'pp-mark': ({ v }) => { d.sim = d.sim || {}; d.sim.mark = v; commit(); },
       'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
     });
   }

@@ -1,4 +1,4 @@
-/* Smoke detector: clear (white) → pre-alarm (orange) → smoke (red, push, Silence + Call 101, safety scenario,
+/* Smoke detector: clear (white) → pre-alarm (orange) → smoke (red, push, white Silence + red Call 101 with a phone icon, safety scenario,
    interconnect), silence and ringing again, thick smoke refuses silence, air clears, monthly test, cooking pause,
    sensitivity, detectors without a level / with CO, tamper / dust / battery / offline, settings, history.
    node tools/checks/smoke.js            (Chrome)
@@ -30,8 +30,8 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   ok('Burnt toast: "A little smoke" in orange + a pre-alarm push', s.w === 'A little smoke' && /open/.test(s.cls) && (await ev(() => Store.state.notifications)) === n0 + 1, JSON.stringify(s));
   // real fire
   await click('[data-action="pp-fire"]'); await sl(300);
-  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, ban: (document.querySelector('[data-key="ban-alarm"]') || {}).textContent || '', hush: !!document.querySelector('[data-action="sm-hush"]'), call: (document.querySelector('a[href="tel:101"]') || {}).textContent, push: (document.querySelector('.push') || {}).textContent || '', log: Store.device('d-smoke').log.slice(0, 3).map((e) => e.k).join(',') }));
-  ok('Real fire: "Smoke!", red banner, push, Silence + Call 101, safety scenario + other detectors', s.w === 'Smoke!' && /Smoke detected · Kitchen/.test(s.ban) && s.hush && s.call === 'Call 101' && /Smoke! · Kitchen smoke/.test(s.push) && s.log === 'linked,scene,smoke', JSON.stringify(s).slice(0, 260));
+  s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, ban: (document.querySelector('[data-key="ban-alarm"]') || {}).textContent || '', hush: !!document.querySelector('[data-action="sm-hush"]'), call: (() => { const c = document.querySelector('a[href="tel:101"]'), h = document.querySelector('[data-action="sm-hush"]'); if (!c || !h) return ''; const cs = getComputedStyle(c), hs = getComputedStyle(h); return [c.textContent.trim(), !!c.querySelector('svg'), cs.backgroundColor, cs.color, hs.backgroundColor, hs.color].join('|'); })(), push: (document.querySelector('.push') || {}).textContent || '', log: Store.device('d-smoke').log.slice(0, 3).map((e) => e.k).join(',') }));
+  ok('Real fire: "Smoke!", red banner, push, white Silence + red Call 101 with a phone icon, safety scenario + other detectors', s.w === 'Smoke!' && /Smoke detected · Kitchen/.test(s.ban) && s.hush && s.call === 'Call 101|true|rgb(255, 255, 255)|rgb(255, 69, 58)|rgb(255, 255, 255)|rgb(51, 51, 51)' && /Smoke! · Kitchen smoke/.test(s.push) && s.log === 'linked,scene,smoke', JSON.stringify(s).slice(0, 260));
   await pg.goto(root + 'index.html'); await sl(300);
   ok('Home tile: "Smoke!" in red', /tone-danger \| Smoke!$/.test(await tile()), await tile());
   await pg.goto(root + 'device.html?id=d-smoke'); await sl(300);

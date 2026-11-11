@@ -1413,17 +1413,13 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* Water leak sensor — no illustration: one minimal mark (a drop in a circle). Dry: grey; leak: red with one soft ring
    breathing out (opacity / transform only). */
 .lk-mark { position: relative; height: 200px; display: grid; place-items: center; margin-top: 24px; }
-.lk-disc { position: relative; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center; background: var(--fill-tertiary); color: var(--label-secondary);
-  transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out); }
-.lk-halo { position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; margin: -56px 0 0 -56px; border-radius: 50%; border: 1.5px solid var(--red); opacity: 0; }
-/* big-icon look (default): the drop icon itself, no disc, in system colours — color/gray when dry (or color/blue in the
-   blue look), color/red with a soft ring on a leak (user, 2026-11-11) */
-.lk-mark.is-big .lk-disc { background: none; color: var(--gray); }
-.lk-mark.is-big.is-blue .lk-disc { color: var(--blue); }
-.lk-mark.is-big .lk-disc .icon { width: 96px !important; height: 96px !important; }
-.lk-mark.is-big.is-alarm .lk-disc { background: none; color: var(--red); }
-.lk-mark.is-big .lk-halo { width: 120px; height: 120px; margin: -60px 0 0 -60px; }
-.lk-mark.is-alarm .lk-disc { background: var(--red-soft); color: var(--red); }
+/* Sensor mark (Figma 6631:50597 / 6631:50419, "avatar"): 100 px ring in fills/quaternary, 10 px padding, the 80 px
+   Sensors/* icon (a disc with the glyph cut out). Neutral = label/secondary; alarm = color/red; pre-alarm/test = color/orange. */
+.lk-disc { position: relative; width: 100px; height: 100px; padding: 10px; border-radius: 50%; display: grid; place-items: center; background: var(--fill-quaternary); color: var(--label-secondary);
+  transition: color 400ms var(--ease-out); }
+.lk-halo { position: absolute; left: 50%; top: 50%; width: 100px; height: 100px; margin: -50px 0 0 -50px; border-radius: 50%; border: 1.5px solid var(--red); opacity: 0; }
+.lk-mark.is-alarm .lk-disc { color: var(--red); }
+.lk-mark.is-warn .lk-disc { color: var(--orange); }
 .lk-mark.is-alarm .lk-halo { animation: lk-halo 2600ms cubic-bezier(.32, .72, 0, 1) infinite; }
 @keyframes lk-halo { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }
 .lk-mark.is-off { opacity: .45; }
@@ -1433,10 +1429,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 
 /* Smoke detector — the same big mark as the leak sensor (fire icon): color/gray clear, color/orange pre-alarm / test,
    color/red alarm. While it rings: Silence + Call 101. The smoke level as a bar with the pre-alarm and alarm marks. */
-.lk-mark.is-big.is-warn .lk-disc { color: var(--orange); }
 .sm-acts { display: flex; gap: 10px; margin-top: 8px; }
 .sm-acts .btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-.sm-acts .btn .icon { width: 20px; height: 20px; }
+.sm-acts .btn .icon { width: 24px; height: 24px; }
+/* Hamroh button, Type=Alternative, L 56 (static: no glass): background/opposite bg + label/oposite; "Call 101" in color/red */
+.btn-opposite { background: var(--bg-opposite); color: var(--label-opposite); padding: 0 16px; }
+.btn-opposite.is-red { color: var(--red); }
 .sm-level { gap: 6px; }
 .sm-bar { position: relative; height: 8px; margin-top: 6px; border-radius: 4px; background: var(--fill-tertiary); overflow: hidden; }
 .sm-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--label-secondary); transition: width 600ms var(--ease-out); }

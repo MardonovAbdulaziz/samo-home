@@ -2,7 +2,7 @@
    Smoke detector — device interface
    Source: "Device Interface 3 / 12. Smoke_Detector_Interface.html" (features from zigbee2mqtt, 58 detectors)
    Rule: show a value or setting only if the paired detector has it.
-   Look: like the leak sensor — one big mark (the Hamroh fire icon) in system colours: color/gray when clear,
+   Look: the sensor mark from Figma (6631:50419 "Sensors/Smoke"), like the leak sensor: label/secondary when clear,
    color/orange on a pre-alarm, color/red with a ring on an alarm; the state word is white when clear (neutral).
 
    The detector sounds its own siren and reports smoke / its level (d.st). The real room (d.phys) lives in the
@@ -162,8 +162,8 @@ Devices.smoke = (() => {
      Device page
      ========================================================================== */
   function mark(d) {
-    const cls = ['lk-mark', 'is-big', alarm(d) ? 'is-alarm' : '', d.st.state === 'pre' || testing(d) ? 'is-warn' : '', !d.online ? 'is-off' : ''].join(' ');
-    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('fire-fill', 'icon', 'style="width:44px;height:44px"')}</span></div>`;
+    const cls = ['lk-mark', alarm(d) ? 'is-alarm' : '', d.st.state === 'pre' || testing(d) ? 'is-warn' : '', !d.online ? 'is-off' : ''].join(' ');
+    return `<div class="${cls}" data-cl="scene" role="img" aria-label="${esc(W(d))}: ${esc(word(d))}"><i class="lk-halo"></i><span class="lk-disc">${icon('sensor-smoke', 'icon', 'style="width:80px;height:80px"')}</span></div>`;
   }
   function page(d) {
     const st = d.st;
@@ -184,7 +184,7 @@ Devices.smoke = (() => {
     // while it rings: silence (if the detector can) and call the fire service (a phone link our app adds)
     if (d.online && alarm(d)) {
       const canHush = has(d, 'silence') && !hushed(d);
-      h += `<div class="pad sm-acts" data-key="acts">${canHush ? `<button class="btn btn-secondary" data-action="sm-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-danger" href="tel:101">Call 101</a></div>`;
+      h += `<div class="pad sm-acts" data-key="acts">${canHush ? `<button class="btn btn-opposite" data-action="sm-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite is-red" href="tel:101">${icon('phone')}Call 101</a></div>`;
     }
 
     const cards = [];
