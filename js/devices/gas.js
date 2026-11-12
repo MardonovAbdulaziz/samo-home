@@ -146,7 +146,7 @@ Devices.gas = (() => {
     h += Kit.mark(d, icon0(d), state, `${d.name}: ${word(d)}`);
     h += Kit.readout(word(d), tone(d), subText(d), has(d, 'test') && !alarm(d) && !heating(d) ? `Last test ${when(st.lastTest)}` : '');
     if (d.online && alarm(d)) {
-      h += `<div class="pad sm-acts" data-key="acts">${has(d, 'silence') && !hushed(d) ? `<button class="btn btn-opposite" data-action="gs-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite is-red" href="tel:104">${icon('phone')}Call 104</a></div>`;
+      h += `<div class="pad sm-acts" data-key="acts">${has(d, 'silence') && !hushed(d) ? `<button class="btn btn-opposite" data-action="gs-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite" href="tel:104">${icon('phone')}Call 104</a></div>`;
       // what to do — plain steps, not a banner repeating the word
       const steps = st.state === 'gas' ? ['Don’t switch lights or appliances — on or off', 'Open the windows and doors', 'Leave the home and call 104 from outside'] : ['Open the windows', 'Take everyone outside — CO has no smell', 'Call 104 or 103 if someone feels dizzy'];
       h += `<div class="pad" data-key="steps" style="margin-top:16px"><div class="gs-steps">${steps.map((s, i) => `<div><i>${i + 1}</i><span>${esc(s)}</span></div>`).join('')}</div></div>`;

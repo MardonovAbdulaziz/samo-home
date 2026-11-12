@@ -185,7 +185,7 @@ Devices.smoke = (() => {
     // while it rings: silence (if the detector can) and call the fire service (a phone link our app adds)
     if (d.online && alarm(d)) {
       const canHush = has(d, 'silence') && !hushed(d);
-      h += `<div class="pad sm-acts" data-key="acts">${canHush ? `<button class="btn btn-opposite" data-action="sm-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite is-red" href="tel:101">${icon('phone')}Call 101</a></div>`;
+      h += `<div class="pad sm-acts" data-key="acts">${canHush ? `<button class="btn btn-opposite" data-action="sm-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite" href="tel:101">${icon('phone')}Call 101</a></div>`;
     }
 
     const cards = [];

@@ -1437,7 +1437,9 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .sm-acts .btn .icon { width: 24px; height: 24px; }
 /* Hamroh button, Type=Alternative, L 56 (static: no glass): background/opposite bg + label/oposite; "Call 101" in color/red */
 .btn-opposite { background: var(--bg-opposite); color: var(--label-opposite); padding: 0 16px; }
-.btn-opposite.is-red { color: var(--red); }
+/* device-page actions (Silence, Call 101/104, It’s fine) sit on the dark page in both themes:
+   static white, icon + title the same static black (user, 2026-11-12) */
+.sm-acts .btn-opposite { background: var(--static-white); color: var(--static-black); }
 .info-card.sm-level { gap: 6px; padding-right: 16px; }   /* no icon in this card: the bar fills the width, 16 px on both sides */
 .sm-bar { position: relative; height: 8px; margin-top: 6px; border-radius: 4px; background: var(--fill-tertiary); overflow: hidden; }
 .sm-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--label-secondary); transition: width 600ms var(--ease-out); }

@@ -1613,7 +1613,9 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .sm-acts .btn .icon { width: 24px; height: 24px; }
 /* Hamroh button, Type=Alternative, L 56 (static: no glass): background/opposite bg + label/oposite; "Call 101" in color/red */
 .btn-opposite { background: var(--bg-opposite); color: var(--label-opposite); padding: 0 16px; }
-.btn-opposite.is-red { color: var(--red); }
+/* device-page actions (Silence, Call 101/104, It’s fine) sit on the dark page in both themes:
+   static white, icon + title the same static black (user, 2026-11-12) */
+.sm-acts .btn-opposite { background: var(--static-white); color: var(--static-black); }
 .info-card.sm-level { gap: 6px; padding-right: 16px; }   /* no icon in this card: the bar fills the width, 16 px on both sides */
 .sm-bar { position: relative; height: 8px; margin-top: 6px; border-radius: 4px; background: var(--fill-tertiary); overflow: hidden; }
 .sm-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--label-secondary); transition: width 600ms var(--ease-out); }
@@ -7329,7 +7331,7 @@ Devices.smoke = (() => {
     // while it rings: silence (if the detector can) and call the fire service (a phone link our app adds)
     if (d.online && alarm(d)) {
       const canHush = has(d, 'silence') && !hushed(d);
-      h += `<div class="pad sm-acts" data-key="acts">${canHush ? `<button class="btn btn-opposite" data-action="sm-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite is-red" href="tel:101">${icon('phone')}Call 101</a></div>`;
+      h += `<div class="pad sm-acts" data-key="acts">${canHush ? `<button class="btn btn-opposite" data-action="sm-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite" href="tel:101">${icon('phone')}Call 101</a></div>`;
     }
 
     const cards = [];
@@ -8454,7 +8456,7 @@ Devices.gas = (() => {
     h += Kit.mark(d, icon0(d), state, `${d.name}: ${word(d)}`);
     h += Kit.readout(word(d), tone(d), subText(d), has(d, 'test') && !alarm(d) && !heating(d) ? `Last test ${when(st.lastTest)}` : '');
     if (d.online && alarm(d)) {
-      h += `<div class="pad sm-acts" data-key="acts">${has(d, 'silence') && !hushed(d) ? `<button class="btn btn-opposite" data-action="gs-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite is-red" href="tel:104">${icon('phone')}Call 104</a></div>`;
+      h += `<div class="pad sm-acts" data-key="acts">${has(d, 'silence') && !hushed(d) ? `<button class="btn btn-opposite" data-action="gs-hush">${icon('bell')}Silence</button>` : ''}<a class="btn btn-opposite" href="tel:104">${icon('phone')}Call 104</a></div>`;
       // what to do — plain steps, not a banner repeating the word
       const steps = st.state === 'gas' ? ['Don’t switch lights or appliances — on or off', 'Open the windows and doors', 'Leave the home and call 104 from outside'] : ['Open the windows', 'Take everyone outside — CO has no smell', 'Call 104 or 103 if someone feels dizzy'];
       h += `<div class="pad" data-key="steps" style="margin-top:16px"><div class="gs-steps">${steps.map((s, i) => `<div><i>${i + 1}</i><span>${esc(s)}</span></div>`).join('')}</div></div>`;
