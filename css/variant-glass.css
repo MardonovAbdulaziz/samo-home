@@ -1,0 +1,20 @@
+/* ==========================================================================
+   VARIANT "glass" — only in dist/samo-home-glass.html (tools/bundle.py --variant glass); the main build does not load it.
+   Every surface on the device view page takes the look of the user's Figma remote
+   (HUB Tidied › Wi-fi remote › TV - Remote - Default, 5767:16508):
+   fills/tertiary + a 1 px TOP-only inside edge of white 32 %, cards radius 20. Pills keep their pill shape.
+   Scope: html.vg-device = the device page (set by the bundle router). Sheets, banners and bars are left alone.
+   ========================================================================== */
+html.vg-device { --vg-edge: inset 0 1px 0 0 rgba(255, 255, 255, 0.32); }
+
+/* cards and lists on the device page: radius 20 + the top edge */
+html.vg-device .screen :is(.info-card, .list, .card, .metric, .master, .cw-card, .gs-steps, .all-action, .lo-code, .pr-strip-card, .tile, .pr-map) {
+  border-radius: 20px; box-shadow: var(--vg-edge);
+}
+/* buttons, chips, toggles and controls: keep their shape, take the edge */
+html.vg-device .screen :is(.btn-glass, .btn-sm, .btn-pill, .btn-circle, .power-toggle, .all-pill, .stepper, .preset-grid button,
+  .cw-ctl > *, .cw-chips > *, .cw-chip, .tile-power, .va-chip, .pr-chip, .lt-bar, .segmented, .dir-test .btn, .chip:not(.on):not([aria-pressed="true"])) {
+  box-shadow: var(--vg-edge);
+}
+/* toolbar back / settings buttons (Figma Button Group) */
+html.vg-device .glass-btn { box-shadow: var(--vg-edge); }

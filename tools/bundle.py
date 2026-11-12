@@ -17,6 +17,8 @@ Usage:  python3 tools/bundle.py                     → dist/samo-home.html
         python3 tools/bundle.py --edition leak      → dist/samo-home-leak.html (water leak sensors only)
         python3 tools/bundle.py --edition smoke     → dist/samo-home-smoke.html (smoke detectors only)
         python3 tools/bundle.py --edition lock|valve|gas|air|presence|vibration|meter|ir → one file per wave-2 device
+        python3 tools/bundle.py --variant glass     → dist/samo-home-glass.html (all devices; device-page surfaces in the
+                                                      Figma remote style 5767:16508 — css/variant-glass.css, main build untouched)
 """
 import base64, json, mimetypes, pathlib, re
 
@@ -315,12 +317,18 @@ ROUTER = r"""
 """
 
 
-def build(edition=None):
+VARIANTS = {'glass': {'out': 'samo-home-glass.html', 'title': 'Samo-home · Glass variant', 'css': 'css/variant-glass.css',
+                      'pre': "document.documentElement.classList.toggle('vg-device', window.__ROUTE.page === 'device.html');"}}
+
+
+def build(edition=None, variant=None):
     E = EDITIONS[edition] if edition else None
-    out = (ROOT / 'dist' / E['out']) if E else OUT
-    title = E['title'] if E else 'Samo-home · Prototype'
+    V = VARIANTS[variant] if variant else None
+    out = (ROOT / 'dist' / E['out']) if E else (ROOT / 'dist' / V['out']) if V else OUT
+    title = E['title'] if E else V['title'] if V else 'Samo-home · Prototype'
     pre = (f"window.SAMO_EDITION = {{ id: {json.dumps(edition)}, types: {json.dumps(E['types'])}, seed: {E['seed']} }};") if E else ''
-    css = '\n'.join(inline_assets((ROOT / c).read_text(encoding='utf-8')) for c in CSS)
+    if V: pre += V['pre']
+    css = '\n'.join(inline_assets((ROOT / c).read_text(encoding='utf-8')) for c in CSS + ([V['css']] if V else []))
     core = '\n;\n'.join(f'/* ===== {r} ===== */\n' + js(r) for r in CORE)
     pages = ',\n'.join(f'{json.dumps(k)}: function () {{\n{js(v)}\n}}' for k, v in PAGES.items())
     html = f"""<!DOCTYPE html>
@@ -364,5 +372,7 @@ if __name__ == '__main__':
     args = sys.argv[1:]
     if '--edition' in args:
         build(args[args.index('--edition') + 1])
+    elif '--variant' in args:
+        build(variant=args[args.index('--variant') + 1])
     else:
         build()
