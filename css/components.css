@@ -1701,10 +1701,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .ir-temp span { font: var(--body-sm); color: var(--label-secondary); }
 .ir-lbl { font: var(--body-sm); color: var(--label-secondary); margin: 20px 4px 8px; }
 .ir-ac .segmented button:disabled { opacity: .4; }
-/* Remote-control buttons are glass, like the toolbar buttons (Figma Button Group: BG fill + inner highlight + blur) —
+/* Remote-control buttons = the Figma remote (HUB Tidied › Wi-fi remote › TV - Remote - Default, 5767:16508):
+   fills/tertiary + a 1 px TOP-only inside stroke of white 32 % (the light catching the top edge), radius 20; the chosen one is white 24 %.
    TV / AC / fan keys, the round d-pad, the AC ± steps and the remote tiles (user, 2026-11-12) */
-.ir-k, .ir-dpad, .ir-step, .ir-tile { background: var(--glass-fill); box-shadow: var(--glass-highlight); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); }
-.ir-k.on { background: rgba(153, 153, 153, 0.30); }
+.ir-k, .ir-dpad, .ir-step, .ir-tile { background: var(--fill-tertiary); box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.32); }
+.ir-k, .ir-tile { border-radius: 20px; }
+.ir-k.on { background: rgba(255, 255, 255, 0.24); }
 .ir-learn { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 24px var(--screen-pad) 20px; }
 .ir-learn b { font: var(--body-lg-accent); } .ir-learn span { font: var(--body-sm); color: var(--label-secondary); }
 @media (prefers-reduced-motion: reduce) { .ir-led.pulse, .ir-head.is-reading .ir-led, .ir-remote.checking .reading { animation: none; } }
