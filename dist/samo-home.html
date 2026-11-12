@@ -7668,7 +7668,7 @@ const Kit = (() => {
   function settingsHTML(F, groups, d, opts = {}) {
     let h = '';
     groups.filter((g) => !['Device page', 'Log'].includes(g)).forEach((g) => {
-      const rows = Object.keys(F).filter((k) => F[k].grp === g && has(d, k) && !F[k].hidden).map((k) => {
+      const rows = Object.keys(F).filter((k) => F[k].grp === g && has(d, k) && !F[k].hidden && k !== 'identify').map((k) => {   // identify: the page adds “Find this device” at the bottom — don't list it twice
         const f = F[k];
         if (f.row) return f.row(d);
         if (f.type === 'toggle') return sw('kt-sw', k, f.name, f.short, d.settings[k]);
