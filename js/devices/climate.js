@@ -374,7 +374,7 @@ Devices.climate = (() => {
     const keys = ['temp'].concat(has(d, 'humidity') ? ['hum'] : [], has(d, 'pressure') ? ['p'] : []);
     let cur = 'temp';
     const s = UI.sheet({
-      title: 'Event History', sub: 'Last 24 hours · built by our server from the sensor’s reports',
+      title: 'Event History',
       tabs: keys.length > 1 ? () => `<div class="segmented" role="tablist">${keys.map((x, i) => `<button role="tab" class="${x === cur ? 'on' : ''}" aria-selected="${x === cur}" data-action="th-ser" data-ch="${i}">${SERIES[x].label}</button>`).join('')}</div>` : null,
       render: () => {
         const sr = SERIES[cur], ex = extremes(d, cur);

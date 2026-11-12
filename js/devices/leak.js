@@ -251,11 +251,11 @@ Devices.leak = (() => {
     if (a !== null) segs.push([a, now]);
     const pct = (t) => ((t - t0) / span) * 100;
     return `<div class="ct-strip lk-strip"><div class="bar">${segs.map(([x, z]) => `<i style="left:${pct(x).toFixed(2)}%;width:max(3px,${(pct(z) - pct(x)).toFixed(2)}%)"></i>`).join('')}<b style="left:${pct(now).toFixed(2)}%"></b></div>
-      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>`;
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>${Kit.stripLegend('Wet')}</div>`;
   }
   function openHistory(d) {
     UI.sheet({
-      title: 'Event History', sub: 'Today · red = wet',
+      title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 20).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(EV[e.k] || e.k)}${e.test ? ' · test' : ''}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
         return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')

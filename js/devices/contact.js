@@ -425,12 +425,12 @@ Devices.contact = (() => {
     if (openAt !== null) segs.push([openAt, now]);
     const pct = (t) => ((t - t0) / span) * 100;
     return `<div class="ct-strip"><div class="bar">${segs.map(([a, z]) => `<i style="left:${pct(a).toFixed(2)}%;width:max(3px,${(pct(z) - pct(a)).toFixed(2)}%)"></i>`).join('')}<b style="left:${pct(now).toFixed(2)}%"></b></div>
-      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>`;
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>${Kit.stripLegend('Open')}</div>`;
   }
   function openHistory(d) {
     const day = startOfDay();
     UI.sheet({
-      title: 'Event History', sub: `${timesText(opensToday(d))} · orange = open`,
+      title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 20).map((e) => {
           const when = e.t >= day ? UI.fmtTime(e.t) : e.t >= day - 86400000 ? 'Yesterday ' + UI.fmtTime(e.t) : new Date(e.t).toLocaleDateString();

@@ -161,10 +161,13 @@ const Kit = (() => {
     });
   }
 
+  /* ---------- Day-strip legend: the coloured dot names the state, the white dot is “now” (user, 2026-11-12) ---------- */
+  const stripLegend = (word) => `<div class="ct-legend"><span><i></i>${esc(word)}</span><span><i class="now"></i>Now</span></div>`;
+
   /* ---------- Event History ---------- */
   function historySheet(d, EV, sub, chart) {
     UI.sheet({
-      title: 'Event History', sub,
+      title: 'Event History',   // no sub-line under the title on log sheets (user, 2026-11-12)
       render: () => {
         const rows = d.log.slice(0, 30).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.text || (typeof EV[e.k] === 'function' ? EV[e.k](e) : EV[e.k]) || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
         return (chart ? chart() : '') + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">Stored by our server — the device keeps no history.</div>';
@@ -201,5 +204,5 @@ const Kit = (() => {
   }
   const ppBtn = (act, label, on = true) => (on ? `<button class="pp-btn" data-action="${act}">${label}</button>` : '');
 
-  return { markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, protoHead, protoFeatures, bindProto, ppBtn };
+  return { markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, stripLegend, protoHead, protoFeatures, bindProto, ppBtn };
 })();

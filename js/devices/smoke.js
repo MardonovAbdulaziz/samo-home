@@ -298,7 +298,7 @@ Devices.smoke = (() => {
   const EV = { smoke: 'Smoke alarm', heat: 'Heat alarm', co: 'Carbon monoxide alarm', pre: 'Pre-alarm · a little smoke', clear: 'Clear again', hush: 'Siren silenced', rering: 'Rang again — smoke rising', test: 'Test OK', pause: 'Cooking pause', pauseEnd: 'Pause over', linked: 'Other detectors sounded', tamper: 'Taken down', back: 'Back on its base', fault: 'Dusty chamber', battery: 'Battery low', offline: 'Stopped answering' };
   function openHistory(d) {
     UI.sheet({
-      title: 'Event History', sub: `Last test ${when(d.st.lastTest)} · stored by our server`,
+      title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 24).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.k === 'scene' ? 'Safety scenario: ' + e.text : EV[e.k] || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
         return UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">The detector keeps no history.</div>';

@@ -675,7 +675,7 @@ function makeSwitch(K) {
   /* ---------- Energy history (Settings → Event History): built by our server from the plug's total ---------- */
   function openHistory(d) {
     UI.sheet({
-      title: 'Event History', sub: 'Energy per day · built by our server from the plug’s kWh total',
+      title: 'Event History',
       render: () => {
         const today = Math.max(0, Math.round((d.energy - d.dayStart) * 100) / 100), days = d.daily.concat([today]), mx = Math.max(...days, 0.1);
         const names = days.map((_, i) => { const t = new Date(Date.now() - (days.length - 1 - i) * 86400000); return i === days.length - 1 ? 'Today' : t.toLocaleDateString('en', { weekday: 'short' }); });

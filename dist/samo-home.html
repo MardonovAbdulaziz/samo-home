@@ -1380,6 +1380,12 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .ct-strip .bar i { position: absolute; top: 0; bottom: 0; background: var(--orange); border-radius: 2px; }
 .ct-strip .bar b { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--label-primary); border-radius: 1px; }
 .ct-strip .axis { display: flex; justify-content: space-between; margin-top: 6px; font: var(--body-xs); color: var(--label-tertiary); }
+/* legend under the day strip: dot in the segment colour = the state, white dot = now */
+.ct-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font: var(--body-xs); color: var(--label-secondary); }
+.ct-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ct-legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); flex: none; }
+.ct-legend i.now { background: var(--label-primary); }
+.lk-strip .ct-legend i:not(.now) { background: var(--red); }
 
 /* Icon grid with names (Name & icon) */
 
@@ -3320,7 +3326,7 @@ function makeSwitch(K) {
   /* ---------- Energy history (Settings → Event History): built by our server from the plug's total ---------- */
   function openHistory(d) {
     UI.sheet({
-      title: 'Event History', sub: 'Energy per day · built by our server from the plug’s kWh total',
+      title: 'Event History',
       render: () => {
         const today = Math.max(0, Math.round((d.energy - d.dayStart) * 100) / 100), days = d.daily.concat([today]), mx = Math.max(...days, 0.1);
         const names = days.map((_, i) => { const t = new Date(Date.now() - (days.length - 1 - i) * 86400000); return i === days.length - 1 ? 'Today' : t.toLocaleDateString('en', { weekday: 'short' }); });
@@ -5092,12 +5098,12 @@ Devices.contact = (() => {
     if (openAt !== null) segs.push([openAt, now]);
     const pct = (t) => ((t - t0) / span) * 100;
     return `<div class="ct-strip"><div class="bar">${segs.map(([a, z]) => `<i style="left:${pct(a).toFixed(2)}%;width:max(3px,${(pct(z) - pct(a)).toFixed(2)}%)"></i>`).join('')}<b style="left:${pct(now).toFixed(2)}%"></b></div>
-      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>`;
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>${Kit.stripLegend('Open')}</div>`;
   }
   function openHistory(d) {
     const day = startOfDay();
     UI.sheet({
-      title: 'Event History', sub: `${timesText(opensToday(d))} · orange = open`,
+      title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 20).map((e) => {
           const when = e.t >= day ? UI.fmtTime(e.t) : e.t >= day - 86400000 ? 'Yesterday ' + UI.fmtTime(e.t) : new Date(e.t).toLocaleDateString();
@@ -6188,7 +6194,7 @@ Devices.climate = (() => {
     const keys = ['temp'].concat(has(d, 'humidity') ? ['hum'] : [], has(d, 'pressure') ? ['p'] : []);
     let cur = 'temp';
     const s = UI.sheet({
-      title: 'Event History', sub: 'Last 24 hours · built by our server from the sensor’s reports',
+      title: 'Event History',
       tabs: keys.length > 1 ? () => `<div class="segmented" role="tablist">${keys.map((x, i) => `<button role="tab" class="${x === cur ? 'on' : ''}" aria-selected="${x === cur}" data-action="th-ser" data-ch="${i}">${SERIES[x].label}</button>`).join('')}</div>` : null,
       render: () => {
         const sr = SERIES[cur], ex = extremes(d, cur);
@@ -6654,11 +6660,11 @@ Devices.motion = (() => {
     if (a !== null) segs.push([a, now]);
     const pct = (t) => ((t - t0) / span) * 100;
     return `<div class="ct-strip mo-strip"><div class="bar">${segs.map(([x, z]) => `<i style="left:${pct(x).toFixed(2)}%;width:max(3px,${(pct(z) - pct(x)).toFixed(2)}%)"></i>`).join('')}<b style="left:${pct(now).toFixed(2)}%"></b></div>
-      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>`;
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>${Kit.stripLegend('Motion')}</div>`;
   }
   function openHistory(d) {
     UI.sheet({
-      title: 'Event History', sub: `${timesText(countToday(d))} · orange = motion`,
+      title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 24).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(EV[e.k] || e.k)}${e.name ? ` · ${esc(e.name)}` : ''}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
         return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
@@ -7025,11 +7031,11 @@ Devices.leak = (() => {
     if (a !== null) segs.push([a, now]);
     const pct = (t) => ((t - t0) / span) * 100;
     return `<div class="ct-strip lk-strip"><div class="bar">${segs.map(([x, z]) => `<i style="left:${pct(x).toFixed(2)}%;width:max(3px,${(pct(z) - pct(x)).toFixed(2)}%)"></i>`).join('')}<b style="left:${pct(now).toFixed(2)}%"></b></div>
-      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>`;
+      <div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>${Kit.stripLegend('Wet')}</div>`;
   }
   function openHistory(d) {
     UI.sheet({
-      title: 'Event History', sub: 'Today · red = wet',
+      title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 20).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(EV[e.k] || e.k)}${e.test ? ' · test' : ''}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
         return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
@@ -7437,7 +7443,7 @@ Devices.smoke = (() => {
   const EV = { smoke: 'Smoke alarm', heat: 'Heat alarm', co: 'Carbon monoxide alarm', pre: 'Pre-alarm · a little smoke', clear: 'Clear again', hush: 'Siren silenced', rering: 'Rang again — smoke rising', test: 'Test OK', pause: 'Cooking pause', pauseEnd: 'Pause over', linked: 'Other detectors sounded', tamper: 'Taken down', back: 'Back on its base', fault: 'Dusty chamber', battery: 'Battery low', offline: 'Stopped answering' };
   function openHistory(d) {
     UI.sheet({
-      title: 'Event History', sub: `Last test ${when(d.st.lastTest)} · stored by our server`,
+      title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 24).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.k === 'scene' ? 'Safety scenario: ' + e.text : EV[e.k] || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
         return UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">The detector keeps no history.</div>';
@@ -7684,10 +7690,13 @@ const Kit = (() => {
     });
   }
 
+  /* ---------- Day-strip legend: the coloured dot names the state, the white dot is “now” (user, 2026-11-12) ---------- */
+  const stripLegend = (word) => `<div class="ct-legend"><span><i></i>${esc(word)}</span><span><i class="now"></i>Now</span></div>`;
+
   /* ---------- Event History ---------- */
   function historySheet(d, EV, sub, chart) {
     UI.sheet({
-      title: 'Event History', sub,
+      title: 'Event History',   // no sub-line under the title on log sheets (user, 2026-11-12)
       render: () => {
         const rows = d.log.slice(0, 30).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.text || (typeof EV[e.k] === 'function' ? EV[e.k](e) : EV[e.k]) || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
         return (chart ? chart() : '') + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">Stored by our server — the device keeps no history.</div>';
@@ -7724,7 +7733,7 @@ const Kit = (() => {
   }
   const ppBtn = (act, label, on = true) => (on ? `<button class="pp-btn" data-action="${act}">${label}</button>` : '');
 
-  return { markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, protoHead, protoFeatures, bindProto, ppBtn };
+  return { markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, stripLegend, protoHead, protoFeatures, bindProto, ppBtn };
 })();
 
 ;
