@@ -1378,13 +1378,13 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 .ct-strip { padding: 4px 0 2px; }
 .ct-strip .bar { position: relative; height: 12px; border-radius: 6px; background: var(--fill-tertiary); overflow: hidden; }   /* one grey track on every day strip (user, 2026-11-12) */
 .ct-strip .bar i { position: absolute; top: 0; bottom: 0; background: var(--orange); border-radius: 2px; }
-.ct-strip .bar b { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--label-primary); border-radius: 1px; }
+.ct-strip .bar b { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: var(--primary); border-radius: 1px; }   /* “Now” = brand blue: white vanished in light mode (user, 2026-11-12) */
 .ct-strip .axis { display: flex; justify-content: space-between; margin-top: 6px; font: var(--body-xs); color: var(--label-tertiary); }
 /* legend under the day strip: dot in the segment colour = the state, white dot = now */
 .ct-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font: var(--body-xs); color: var(--label-secondary); }
 .ct-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .ct-legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); flex: none; }
-.ct-legend i.now { background: var(--label-primary); }
+.ct-legend i.now { background: var(--primary); }
 .lk-strip .ct-legend i:not(.now) { background: var(--red); }
 
 /* Icon grid with names (Name & icon) */
@@ -1724,7 +1724,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pr-chip.add { color: var(--primary); }
 .pr-names { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 4px; padding-bottom: 4px; }
 .pr-names .va-chip { height: 40px; font: var(--body-sm-accent); }
-.pr-strip-card .ct-strip .bar { background: var(--fill-tertiary); } .pr-strip-card .ct-strip .bar i { background: var(--primary); }
+.pr-strip-card .ct-strip .bar { background: var(--fill-tertiary); } .pr-strip-card .ct-strip .bar i { background: var(--primary); } .pr-strip-card .ct-strip .bar b { background: var(--label-primary); }   /* blue segments here, so “now” stays neutral */
 @media (prefers-reduced-motion: reduce) { .pr-map.is-still .pr-halo { animation: none; } .pr-dot { transition: opacity 200ms; } }
 
 .cw-hint { white-space: nowrap; }
