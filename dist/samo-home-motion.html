@@ -11174,14 +11174,11 @@ if (typeof Store !== 'undefined') Scenarios.start();
   function render() {
     const L = Scenarios.list(), scenes = L.filter((s) => s.manual), autos = L.filter((s) => !s.manual), ideas = Scenarios.ideas(), built = Scenarios.builtIn();
     let h = `<header class="home-header"><h1 class="scn-h1">Scenarios</h1>
-        <button class="icon-btn" data-action="new" aria-label="New scenario">${icon('plus')}</button></header>`;
-    if (!L.length) h += `<div class="scn-empty"><b>Make your home work on its own</b><span>A scenario does several things at once — with one tap, at a set time, or when a sensor notices something. Start from an idea below.</span></div>`;
-    h += `<div class="section-title">Tap to run</div>
-      <div class="tile-grid">${scenes.map(sceneTile).join('')}
-        <button class="tile add" data-action="new" data-manual="1"><span class="plus">${icon('plus', 'icon icon-sm')}</span><span>New scene</span></button></div>`;
-    h += `<div class="section-title">Automatic</div>`;
-    h += autos.length ? `<div class="scn-cards">${autos.map(autoCard).join('')}</div>`
-      : `<div class="pad"><button class="scn-card scn-add" data-action="new"><span class="plus">${icon('plus', 'icon icon-sm')}</span><span><b>New automation</b><span class="scn-sent">At a time, at sunset, or when a sensor notices something</span></span></button></div>`;
+        <button class="icon-btn" data-action="plus" aria-label="New scenario">${icon('plus')}</button></header>`;
+    if (!L.length) h += `<div class="scn-empty"><b>Make your home work on its own</b><span>A scenario does several things at once — with one tap, at a set time, or when a sensor notices something. Start from an idea below, or tap +.</span></div>`;
+    // no "add" tiles: like Home, the + in the header opens a menu (Figma 3. Home Page, "+button")
+    if (scenes.length) h += `<div class="section-title">Tap to run</div><div class="tile-grid">${scenes.map(sceneTile).join('')}</div>`;
+    if (autos.length) h += `<div class="section-title">Automatic</div><div class="scn-cards">${autos.map(autoCard).join('')}</div>`;
     if (ideas.length) h += `<div class="section-title">Ideas for your home</div><div class="scn-ideas">${ideas.map(ideaCard).join('')}</div>`;
     if (built.length) h += `<div class="section-title">Built into your devices</div>
       <div class="list scn-built"><button class="cell" data-action="built"><span class="cell-icon">${icon('shield-check', 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${built.length} automation${built.length > 1 ? 's' : ''} in device settings</span><span class="cell-sub" style="display:block">${UI.esc([...new Set(built.map((x) => x.name))].slice(0, 2).join(', '))}${built.length > 2 ? '…' : ''}</span></span>${icon('chevron-right', 'chev')}</button></div>`;
@@ -11223,6 +11220,9 @@ if (typeof Store !== 'undefined') Scenarios.start();
     },
     edit: ({ id }) => UI.go(`scenario.html?id=${id}`),
     new: ({ manual }) => UI.go(`scenario.html?new=${manual ? 'scene' : 'auto'}`),
+    plus: () => UI.popover(`
+      <button data-action="new" data-manual="1">${icon('tab-scenarios')} New scene</button>
+      <button data-action="new">${icon('clock')} New automation</button>`),
     idea: ({ k }) => UI.go(`scenario.html?idea=${k}`),
     toggle: ({ id }) => { const s = Scenarios.get(id); if (!s) return; s.on = s.on === false; Store.save(); render(); UI.toast(s.on ? `${s.name} is on` : `${s.name} is paused`); },
     'pp-leave': () => { Scenarios.presence('leave'); render(); UI.toast('Location: everyone left'); },
