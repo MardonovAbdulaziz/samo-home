@@ -2128,6 +2128,10 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* run finished: blue like the rest of the ring (no green) */
 .scn-ring.is-done .prg { stroke: var(--primary) !important; }
 .scn-ring.is-done .icon { color: var(--primary) !important; }
+/* Home: scenes shown on Home sit in their own untitled group above the rooms; the top row ends with Edit */
+.scn-home-grid { margin-top: 20px; }
+.quick-chip.row-edit { padding-right: 16px; }
+.quick-chip.row-edit .icon { color: var(--label-secondary); }
 
 </style>
 </head>
@@ -10447,13 +10451,13 @@ const Scenarios = (() => {
   function list() {
     const st = S();
     if (!st.scenarios) { st.scenarios = []; Store.save(); }   // simple version: start empty (no ready-made scenarios)
-    if (!st.scenarios.some((x) => x.id === ALL_OFF)) { st.scenarios.unshift({ id: ALL_OFF, sys: true, follow: true, name: 'Turn off all', icon: 'power', manual: true, on: true, home: 'top', when: [], only: [], do: [], log: [] }); Store.save(); }
+    if (!st.scenarios.some((x) => x.id === ALL_OFF)) { st.scenarios.unshift({ id: ALL_OFF, sys: true, follow: true, name: 'Turn off all', icon: 'power', manual: true, on: true, home: false, when: [], only: [], do: [], log: [] }); Store.save(); }
     const ao = st.scenarios.find((x) => x.id === ALL_OFF);
     if (ao.follow) ao.do = allOffDefault();
     return st.scenarios;
   }
-  /** Where a scene shows on Home: 'top' (chip row), a room id (a tile in that room) or false */
-  const homeOf = (x) => (x.home === false ? false : x.home === true || x.home == null ? 'top' : x.home);
+  /** "Show on Home Screen": the scene is a tile in the untitled group at the top of Home (older values count as on) */
+  const homeOf = (x) => x.home !== false;
   const get = (id) => list().find((s) => s.id === id);
   function upsert(s) { const l = list(); const i = l.findIndex((x) => x.id === s.id); if (i >= 0) l[i] = s; else l.push(s); Store.save(); return s; }
   function remove(id) { if (id === ALL_OFF) return; S().scenarios = list().filter((s) => s.id !== id); Store.save(); }
@@ -10809,11 +10813,39 @@ if (typeof Store !== 'undefined') Scenarios.start();
     return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0">${icon('chip-temperature')}<span><b>Temperature</b><span data-num>${UI.esc(Devices.climate.chipText(d))}</span></span></button>`;
   }
 
-  /** Scenes chosen for Home ("Show on Home Screen" in the scene): one tap runs them, the icon becomes the progress ring */
-  function sceneChips() {
-    if (typeof Scenarios === 'undefined') return '';
-    return Scenarios.list().filter((x) => x.manual && !x.sys && Scenarios.homeOf(x) === 'top' && x.do.length).map((x) => `<button class="quick-chip scn-chip ${Scenarios.isBusy(x.id) ? 'busy' : ''}" data-action="scene-run" data-id="${x.id}" data-key="qc-${x.id}" aria-label="Run ${UI.esc(x.name)}">
-      ${Scenarios.isBusy(x.id) ? Scenarios.ringHTML(x.id) : icon(x.icon || 'tab-scenarios')}<span><b>${UI.esc(x.name)}</b><span data-num>${UI.esc(Scenarios.isBusy(x.id) ? Scenarios.statusText(x) : 'Scene')}</span></span></button>`).join('');
+  /* ---------- Top row: the user's own list of chips (edited from the Edit chip at its end) ---------- */
+  const ROW_DEF = ['all-off', 'temp', 'door'];
+  const topRow = () => (S().topRow = S().topRow || ROW_DEF.slice());
+  const scenesOK = () => typeof Scenarios !== 'undefined';
+  function sceneChip(x) {
+    const busy = Scenarios.isBusy(x.id);
+    return `<button class="quick-chip scn-chip" data-action="scene-run" data-id="${x.id}" data-key="qc-${x.id}" aria-label="Run ${UI.esc(x.name)}">
+      ${busy ? Scenarios.ringHTML(x.id) : icon(x.icon || 'tab-scenarios')}<span><b>${UI.esc(x.name)}</b><span data-num>${UI.esc(busy ? Scenarios.statusText(x) : 'Scene')}</span></span></button>`;
+  }
+  function chipOf(key, n) {
+    if (key === 'all-off') return allOffChip(n);
+    if (key === 'temp') return S().devices.some((x) => x.type === 'climate') ? tempChip() : '';
+    if (key === 'door') return S().devices.some((x) => x.type === 'contact') ? doorChip() : '';
+    if (key.startsWith('scene:') && scenesOK()) { const x = Scenarios.get(key.slice(6)); return x && x.do.length ? sceneChip(x) : ''; }
+    return '';
+  }
+  /** Everything that can sit in the top row, for the Edit sheet */
+  function rowChoices() {
+    const L = [['all-off', 'Turn off all', 'power']];
+    const c = S().devices.find((x) => x.type === 'climate'); if (c) L.push(['temp', 'Temperature', 'chip-temperature', c.name]);
+    const d = S().devices.find((x) => x.type === 'contact'); if (d) L.push(['door', d.name, 'chip-door', 'Door sensor']);
+    if (scenesOK()) Scenarios.list().filter((x) => x.manual && !x.sys).forEach((x) => L.push(['scene:' + x.id, x.name, x.icon || 'tab-scenarios', 'Scene']));
+    return L;
+  }
+  function openRowEdit() {
+    const draw = () => {
+      const on = topRow(), L = rowChoices();
+      return `<div class="list">${L.map(([k, name, ic, sub]) => `<button class="cell" data-action="row-tog" data-k="${k}" role="switch" aria-checked="${on.includes(k)}">
+        <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(name)}</span>${sub ? `<span class="cell-sub" style="display:block">${UI.esc(sub)}</span>` : ''}</span>
+        <span class="switch" aria-hidden="true" aria-checked="${on.includes(k)}"></span></button>`).join('')}</div>`;
+    };
+    const sh = UI.sheet({ title: 'Top row', render: draw });
+    UI.on({ 'row-tog': ({ k }) => { const r = topRow(), i = r.indexOf(k); if (i >= 0) r.splice(i, 1); else r.push(k); Store.save(); render(); sh.refresh(); } });
   }
 
   /** How many devices of "Turn off all" are on (its list can be edited, so count that list) */
@@ -10839,11 +10871,12 @@ if (typeof Store !== 'undefined') Scenarios.start();
           <button class="icon-btn" data-action="plus" aria-label="Add">${icon('plus')}</button>
         </div></header>
       <div class="chips-row">
-        ${allOffChip(n)}
-        ${sceneChips()}
-        ${tempChip()}
-        ${doorChip()}
+        ${topRow().map((k) => chipOf(k, n)).join('')}
+        <button class="quick-chip row-edit" data-action="row-edit" aria-label="Edit the top row">${icon('pen')}<span><b>Edit</b></span></button>
       </div>`;
+    // scenes with "Show on Home Screen": their own untitled group above the rooms
+    const homeScenes = scenesOK() ? Scenarios.list().filter((x) => x.manual && !x.sys && Scenarios.homeOf(x) && x.do.length) : [];
+    if (homeScenes.length) h += `<div class="tile-grid scn-home-grid" data-key="home-scenes">${homeScenes.map(Scenarios.tileHTML).join('')}</div>`;
 
     const rooms = [...st.rooms, { id: null, name: 'No room' }];
     for (const r of rooms) {
@@ -10851,7 +10884,6 @@ if (typeof Store !== 'undefined') Scenarios.start();
       if (r.id === null && !devs.length) continue;
       h += `<div class="section-title">${UI.esc(r.name)} ${icon('chevron-right', 'icon icon-sm')}</div><div class="tile-grid">`;
       devs.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { h += tileHTML(d, t); }));
-      if (r.id && typeof Scenarios !== 'undefined') Scenarios.list().filter((x) => x.manual && Scenarios.homeOf(x) === r.id).forEach((x) => { h += Scenarios.tileHTML(x); });
       if (!devs.length) h += `<button class="tile add" data-action="add-device" data-room="${r.id}"><span class="plus">${icon('plus', 'icon icon-sm')}</span><span>Add a device</span></button>`;
       h += '</div>';
     }
@@ -10909,6 +10941,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
     'all-off-edit': () => UI.go(`scenario.html?id=${Scenarios.ALL_OFF}`),
     'scn-open': ({ id }) => UI.go(`scenario.html?id=${id}`),
     'scene-run': ({ id }) => Scenarios.tapScene(id, render),
+    'row-edit': () => openRowEdit(),
     bell: () => UI.toast('Notifications — coming soon'),
     homes: () => UI.toast('Switch home — coming soon'),
     edit: () => UI.toast('Edit home — coming soon'),
@@ -11366,7 +11399,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
     h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:48px;height:48px"')}</div>
         <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
       <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
-      ${s.manual && !s.sys ? `<div class="list" style="margin-top:24px" data-key="home"><button class="cell" data-action="home-place"><span class="cell-main cell-title">Show on Home</span><span class="cell-value">${esc(placeLabel())}</span>${icon('chevron-right', 'chev')}</button></div>` : ''}
+      ${s.manual && !s.sys ? `<div class="list" style="margin-top:24px" data-key="home"><button class="cell" data-action="home-toggle"><span class="cell-main cell-title">Show on Home Screen</span><span class="switch" role="switch" aria-checked="${s.home !== false}"></span></button></div>` : ''}
       <div class="scn-plain" data-key="plain"><span class="scn-plain-k">In plain words</span><p>${esc(SC.sentence(s))}</p></div>
 `;
     if (auto) {
@@ -11489,18 +11522,6 @@ if (typeof Store !== 'undefined') Scenarios.start();
     reopen();
   }
   function openCond(i) { const c = s.only[i]; if (c.k === 'between') condTime(i); else if (c.k === 'days') condDays(i); else condDeviceState(c.id, c.ch, i); }
-
-  /* ---------- Show on Home: the top chip row, a tile in a room, or not at all ---------- */
-  function placeLabel() { const h = SC.homeOf(s); return h === false ? 'Don’t show' : h === 'top' ? 'Top row' : `${Store.roomName(h)} tile`; }
-  function homePlace() {
-    const cur = SC.homeOf(s);
-    sh = { kind: 'home', x: { home: cur }, open: () => UI.sheet({ title: 'Show on Home', render: () => `<div class="list">${Kit.radio('hp-pick', sh.x.home === false ? 'off' : sh.x.home, [
-        ['top', 'Top row', 'A button next to “Turn off all”'],
-        ...Store.state.rooms.map((r) => [r.id, `In ${r.name}`, 'A tile among the room’s devices']),
-        ['off', 'Don’t show', 'Only on the Scenarios page']])}</div>`,
-      footer: '<button class="btn btn-primary btn-block" data-action="hp-done">Done</button>' }) };
-    reopen();
-  }
 
   /* ---------- Do ---------- */
   function actChooser() {
@@ -11651,9 +11672,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
     rename: () => UI.prompt({ title: 'Name', label: 'Scenario name', value: s.name, onOk: (v) => { s.name = v; renamed = true; touch(); } }),
     'pick-icon': () => { UI.sheet({ title: 'Select an icon', render: () => iconPickerHTML(SCN_ICONS, s.icon, 'sc-icon'), footer: ICON_DONE }); },
     'sc-icon': ({ n }) => { s.icon = n; dirty = true; UI.closeSheet(); render(); },
-    'home-place': () => homePlace(),
-    'hp-pick': ({ v }) => { sh.x.home = v === 'off' ? false : v; reopen(); },
-    'hp-done': () => { s.home = sh.x.home; sh = null; UI.closeSheet(); touch(); },
+    'home-toggle': () => { s.home = s.home === false; touch(); },
     mode: ({ v }) => { const m = v === 'scene'; if (m === s.manual) return; s.manual = m; if (!renamed) s.name = m ? 'New scene' : 'New automation'; touch(); },
 
     'trig-add': trigChooser, trig: ({ i }) => openTrig(+i),

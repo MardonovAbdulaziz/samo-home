@@ -1952,3 +1952,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* run finished: blue like the rest of the ring (no green) */
 .scn-ring.is-done .prg { stroke: var(--primary) !important; }
 .scn-ring.is-done .icon { color: var(--primary) !important; }
+/* Home: scenes shown on Home sit in their own untitled group above the rooms; the top row ends with Edit */
+.scn-home-grid { margin-top: 20px; }
+.quick-chip.row-edit { padding-right: 16px; }
+.quick-chip.row-edit .icon { color: var(--label-secondary); }

@@ -206,13 +206,13 @@ const Scenarios = (() => {
   function list() {
     const st = S();
     if (!st.scenarios) { st.scenarios = []; Store.save(); }   // simple version: start empty (no ready-made scenarios)
-    if (!st.scenarios.some((x) => x.id === ALL_OFF)) { st.scenarios.unshift({ id: ALL_OFF, sys: true, follow: true, name: 'Turn off all', icon: 'power', manual: true, on: true, home: 'top', when: [], only: [], do: [], log: [] }); Store.save(); }
+    if (!st.scenarios.some((x) => x.id === ALL_OFF)) { st.scenarios.unshift({ id: ALL_OFF, sys: true, follow: true, name: 'Turn off all', icon: 'power', manual: true, on: true, home: false, when: [], only: [], do: [], log: [] }); Store.save(); }
     const ao = st.scenarios.find((x) => x.id === ALL_OFF);
     if (ao.follow) ao.do = allOffDefault();
     return st.scenarios;
   }
-  /** Where a scene shows on Home: 'top' (chip row), a room id (a tile in that room) or false */
-  const homeOf = (x) => (x.home === false ? false : x.home === true || x.home == null ? 'top' : x.home);
+  /** "Show on Home Screen": the scene is a tile in the untitled group at the top of Home (older values count as on) */
+  const homeOf = (x) => x.home !== false;
   const get = (id) => list().find((s) => s.id === id);
   function upsert(s) { const l = list(); const i = l.findIndex((x) => x.id === s.id); if (i >= 0) l[i] = s; else l.push(s); Store.save(); return s; }
   function remove(id) { if (id === ALL_OFF) return; S().scenarios = list().filter((s) => s.id !== id); Store.save(); }
