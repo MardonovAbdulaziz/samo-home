@@ -2091,6 +2091,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .tw.tw-clock { gap: 8px; }
 .tw-clock .tw-wheel span { text-align: center; padding-right: 0; }
 .tw-colon { align-self: center; font: 500 22px/40px var(--font); color: var(--label-primary); }
+/* Colour | White and the picker it switches = one block in the light card */
+.scn-look { flex-direction: column; align-items: stretch !important; gap: 20px; padding: 14px 0 18px !important; }
+.scn-look .segmented button { height: 32px; font: var(--body-md-accent); }
+.scn-look .scn-wheel { align-self: center; }
+.scn-look .scn-dots { justify-content: center; gap: 14px; }
+.scn-tone { display: grid; gap: 14px; }
 
 </style>
 </head>
@@ -11427,21 +11433,22 @@ if (typeof Store !== 'undefined') Scenarios.start();
     function lightCard() {
       const on = isSet(), mode = a.mode === 'ct' || !lc.color ? 'ct' : 'hs';
       const hs = hexHS(a.col || '#ff2563');
-      let h = `<div class="list">${Kit.sw('do-set', 'set', 'Set brightness and colour', on ? 'Comes on exactly like this' : 'Comes on as it was last time', on)}`;
+      let h = `<div class="list">${Kit.sw('do-set', 'set', 'Set brightness and colour', on ? '' : 'Comes on as it was last time', on)}`;
       let body = '';
       if (lc.br) { const br = a.br || 80; body += `<div class="cell slider-row scn-slider"><span class="scn-slider-head"><span class="cell-title">Brightness</span><span class="cell-value" data-out="br">${br} %</span></span><input class="range" type="range" min="1" max="100" value="${br}" data-r="br" style="--v:${(br - 1) / 99}" aria-label="Brightness"></div>`; }
-      if (lc.color && lc.ct) body += `<div class="cell scn-seg-row"><div class="segmented"><button class="${mode === 'hs' ? 'on' : ''}" data-action="do-mode" data-v="hs">Colour</button><button class="${mode === 'ct' ? 'on' : ''}" data-action="do-mode" data-v="ct">White</button></div></div>`;
+      // Colour | White chooses the picker under it — one block, no line between them
+      let look = lc.color && lc.ct ? `<div class="segmented"><button class="${mode === 'hs' ? 'on' : ''}" data-action="do-mode" data-v="hs">Colour</button><button class="${mode === 'ct' ? 'on' : ''}" data-action="do-mode" data-v="ct">White</button></div>` : '';
       if (mode === 'hs' && lc.color) {
         const R = 0.5 * Math.min(1, hs.s / 100), ang = (hs.h - 90) * Math.PI / 180;
-        body += `<div class="cell scn-wheel-row"><div class="scn-wheel" data-wheel role="slider" aria-label="Colour" tabindex="0"><i class="scn-knob" style="left:${50 + R * 100 * Math.cos(ang)}%;top:${50 + R * 100 * Math.sin(ang)}%;background:${a.col || '#ff2563'}"></i></div>
-          <div class="scn-dots">${Devices.light.SWATCH.filter((x) => x.n !== 'white').map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.hex}" role="radio" aria-checked="${(a.col || '').toLowerCase() === x.hex}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</div></div>`;
+        look += `<div class="scn-wheel" data-wheel role="slider" aria-label="Colour" tabindex="0"><i class="scn-knob" style="left:${50 + R * 100 * Math.cos(ang)}%;top:${50 + R * 100 * Math.sin(ang)}%;background:${a.col || '#ff2563'}"></i></div>
+          <div class="scn-dots">${Devices.light.SWATCH.filter((x) => x.n !== 'white').map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.hex}" role="radio" aria-checked="${(a.col || '').toLowerCase() === x.hex}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</div>`;
       } else if (lc.ct) {
         const [k0, k1] = lc.k, k = a.kel || 2700;
-        body += `<div class="cell slider-row scn-slider"><span class="scn-slider-head"><span class="cell-title">White tone</span><span class="cell-value" data-out="kel">${k} K</span></span><input class="range scn-ct" type="range" min="${k0}" max="${k1}" step="100" value="${k}" data-r="kel" style="--v:${(k - k0) / (k1 - k0)};--warm:${kColour(k0, k0, k1)};--cool:${kColour(k1, k0, k1)}" aria-label="White tone"></div>`;
+        look += `<div class="scn-tone"><span class="scn-slider-head"><span class="cell-title">Tone</span><span class="cell-value" data-out="kel">${k} K</span></span><input class="range scn-ct" type="range" min="${k0}" max="${k1}" step="100" value="${k}" data-r="kel" style="--v:${(k - k0) / (k1 - k0)};--warm:${kColour(k0, k0, k1)};--cool:${kColour(k1, k0, k1)}" aria-label="White tone"></div>`;
       }
+      if (look) body += `<div class="cell scn-look">${look}</div>`;
       if (lc.fx.length) body += valueRow('fx', 'Effect', a.fx ? (lc.fx.find((x) => x[0] === a.fx) || [])[1] : 'None') + choices('fx', 'do-fx', [['', 'None'], ...lc.fx], a.fx || '');
       h += UI.collapse(on, body) + '</div>';
-      if (on && a.fx) h += `<div class="list-footer">The effect starts after the light comes on.</div>`;
       return h;
     }
     sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => {
@@ -11450,9 +11457,8 @@ if (typeof Store !== 'undefined') Scenarios.start();
       let h = `<div class="list">${Kit.radio('do-pick', a.to, acts.filter((x) => !(x.manualOnly && !s.manual)).map((x) => [x.k, x.label, '']))}</div>`;
       if (blocked.length) h += `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>`;
       if (cur.light && lc && (lc.br || lc.color || lc.ct || lc.fx.length)) h += `<div class="scn-gap"></div>` + lightCard();
-      if (cur.pos) h += `<div class="scn-gap"></div><div class="list"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Open</span><span class="cell-sub" style="display:block">${a.pos === 0 ? 'Fully closed' : a.pos === 100 ? 'Fully open' : `${100 - a.pos} % closed`}</span></span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
-      if (cur.back) h += `<div class="scn-gap"></div><div class="list">${valueRow('back', cur.label === 'Open' ? 'Close after' : 'Turn off after', backLabel(a.back))}${choices('back', 'do-back', BACKS.map((b) => [b, backLabel(b)]), a.back || 0)}</div>
-          <div class="list-footer">${a.back ? `Goes back by itself after ${backLabel(a.back)} — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>`;
+      if (cur.pos) h += `<div class="scn-gap"></div><div class="list"><div class="cell"><span class="cell-main cell-title">Open</span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
+      if (cur.back) h += `<div class="scn-gap"></div><div class="list">${valueRow('back', cur.label === 'Open' ? 'Close after' : 'Turn off after', backLabel(a.back))}${choices('back', 'do-back', BACKS.map((b) => [b, backLabel(b)]), a.back || 0)}</div>`;
       return h;
     }, footer: () => done('act', i != null), onMount: (el) => bindLook(el, a) }) };
     sh.ui = ui;
