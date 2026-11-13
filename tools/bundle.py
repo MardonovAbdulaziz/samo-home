@@ -248,8 +248,10 @@ PAGES = {  # route → page script
     'device-settings.html': 'js/pages/device-settings.js',
     'about-device.html': 'js/pages/about-device.js',
     'add-device.html': 'js/pages/add-device.js',
+    'scenarios.html': 'js/pages/scenarios.js',
+    'scenario.html': 'js/pages/scenario-edit.js',
 }
-CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/devices/leak.js', 'js/devices/smoke.js', 'js/devices/kit.js', 'js/devices/lock.js', 'js/devices/valve.js', 'js/devices/gas.js', 'js/devices/air.js', 'js/devices/presence.js', 'js/devices/vibration.js', 'js/devices/meter.js', 'js/devices/ir.js', 'js/store.js']
+CORE = ['js/icons.js', 'js/ui.js', 'js/devices/registry.js', 'js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js', 'js/devices/contact.js', 'js/devices/light.js', 'js/devices/climate.js', 'js/devices/motion.js', 'js/devices/leak.js', 'js/devices/smoke.js', 'js/devices/kit.js', 'js/devices/lock.js', 'js/devices/valve.js', 'js/devices/gas.js', 'js/devices/air.js', 'js/devices/presence.js', 'js/devices/vibration.js', 'js/devices/meter.js', 'js/devices/ir.js', 'js/store.js', 'js/scenarios.js']
 CSS = ['css/tokens.css', 'css/components.css']
 
 

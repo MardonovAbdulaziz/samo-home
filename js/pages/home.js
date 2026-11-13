@@ -69,7 +69,7 @@
   tb.className = 'tabbar';
   tb.innerHTML = `<button class="ai" data-action="soon" aria-label="Assistant">${icon('ai-stars')}</button>
     <div class="tabs"><a class="tab on" href="index.html">${icon('tab-home')}My Home</a>
-    <button class="tab" data-action="soon">${icon('tab-scenarios')}Scenarios</button>
+    <a class="tab" href="scenarios.html">${icon('tab-scenarios')}Scenarios</a>
     <button class="tab" data-action="soon">${icon('tab-more')}More</button></div>`;
   UI.phone.appendChild(tb);
 

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scenarios Research</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #0b0b0d; color: var(--label-primary); font: var(--body-md); font-family: var(--font); -webkit-font-smoothing: antialiased; padding: 40px 32px 80px; }
+  main { max-width: 980px; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; letter-spacing: .3px; }
+  h2 { font: 700 22px/28px var(--font); margin: 48px 0 6px; display: flex; gap: 12px; align-items: baseline; }
+  h2 .k { font: 700 15px/20px var(--font); color: var(--primary); min-width: 28px; }
+  h3 { font: 600 17px/22px var(--font); margin: 24px 0 6px; }
+  p, li { color: var(--label-secondary); line-height: 1.5; }
+  p.lead { font: var(--body-lg); line-height: 1.5; margin: 0 0 8px; }
+  b, strong { color: var(--label-primary); font-weight: 600; }
+  a { color: var(--primary); text-decoration: none; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 0; }
+  .links a { height: 38px; padding: 0 16px; border-radius: 19px; background: var(--fill-tertiary); color: var(--label-primary); display: inline-flex; align-items: center; font: var(--body-md-accent); }
+  .links a.pri { background: var(--primary); color: #fff; }
+  .tw { overflow-x: auto; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 760px; font: var(--body-sm); }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--separator); }
+  th { color: var(--label-tertiary); font-weight: 500; }
+  td { color: var(--label-secondary); } td:first-child { color: var(--label-primary); font-weight: 600; white-space: nowrap; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 12px; }
+  .card { background: var(--fill-tertiary); border-radius: 16px; padding: 16px; }
+  .card b { display: block; margin-bottom: 4px; }
+  .card p { margin: 0; font: var(--body-sm); line-height: 1.45; }
+  .card .from { margin-top: 8px; color: var(--label-tertiary); font: var(--body-xs); }
+  .ok { color: var(--green); font-weight: 600; } .warn { color: var(--orange); font-weight: 600; }
+  .note { border-left: 3px solid var(--orange); padding: 4px 0 4px 14px; margin: 16px 0; }
+  .sent { background: var(--blue-soft); border-radius: 14px; padding: 12px 16px; color: var(--label-primary); margin: 12px 0; }
+  ol li, ul li { margin: 4px 0; }
+  .src li { font: var(--body-sm); }
+  @media (max-width: 700px) { body { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Scenarios — research, decisions, test</h1>
+<p class="lead">The Scenarios tab (after My Home): simple automations an ordinary family understands at a glance, that still work reliably. What other apps do, what goes wrong for people, what we chose, and how the prototype did in a task test.</p>
+<div class="links">
+  <a class="pri" href="../scenarios.html">Open the prototype</a>
+  <a href="../scenario.html?new=auto">New automation</a>
+  <a href="../scenario.html?idea=nightdoor">An idea, filled in</a>
+</div>
+
+<h2><span class="k">01</span>What the big apps do</h2>
+<p>Every app has the same three parts — something starts it, optional checks, then actions — but they name and split them differently, and that is where people get lost.</p>
+<div class="tw"><table>
+  <tr><th>App</th><th>Names</th><th>Model</th><th>Good to copy</th><th>What hurts</th></tr>
+  <tr><td>Apple Home</td><td>Scenes · Automations</td><td>Time, people (location), sensor, accessory → scenes / accessories; time &amp; people conditions</td><td>“Turn off after X min” inside the action; unlocking from an automation asks for confirmation; scenes reused in automations</td><td>Location automations stopped firing for many after iOS 26 (Apple forum threads); a cap on the number of automations</td></tr>
+  <tr><td>Google Home</td><td>Household automations · Personal routines</td><td>Starters → conditions (any / all) → actions; script editor for power users; ~20 new starters in Jan 2026 (appliance states, buttons)</td><td>Plain three-part editor; appliance states as starters</td><td>Two editors with different features; personal vs household split; “any / all” is a logic word people must learn</td></tr>
+  <tr><td>SmartThings</td><td>Routines</td><td>If → Then; “Manually run” is just another “If”</td><td>One list for manual and automatic</td><td>“Precondition” — the community keeps asking what it means</td></tr>
+  <tr><td>Tuya / Smart Life</td><td>Tap-to-Run · Automation</td><td>Weather, location, schedule, device status → tasks; “effective period” only on automations</td><td>Clear split: tap vs automatic</td><td>Two separate lists; the time window is hidden in a task step</td></tr>
+  <tr><td>Alexa</td><td>Routines</td><td>Name → “When this happens” → actions; Wait up to 4 h; drag to reorder</td><td>Wait as an action; voice phrase as a start</td><td>Long action list; no clear “why didn’t it run”</td></tr>
+  <tr><td>Aqara, Mi Home</td><td>Scenes · Automations</td><td>If → Then, ready-made templates per device</td><td>Templates already filled with your device</td><td>Many technical options on one screen (from our own use of the apps, not re-checked for this study)</td></tr>
+</table></div>
+
+<h2><span class="k">02</span>What research says about people making rules</h2>
+<div class="grid">
+  <div class="card"><b>Beginners can do it</b><p>In a 226-person test, people with no programming background quickly made rules with several starts and actions. “If this, then that” works as a model.</p><div class="from">Ur et al., CHI 2014</div></div>
+  <div class="card"><b>But half the rules had bugs</b><p>In a 153-person study, half of the rules people wrote did not do what they meant — mostly timing (“when” vs “while”), order, and wrong expectations.</p><div class="from">Trace2TAP study</div></div>
+  <div class="card"><b>Conditions and time are the hard part</b><p>Non-programmers struggled most with condition blocks, time-related tasks and debugging — not with picking devices.</p><div class="from">Block-based smart-home study, 2021</div></div>
+  <div class="card"><b>Fixing is harder than making</b><p>Across studies, finding out why a rule misbehaved costs more than writing it. People need to see what happened.</p><div class="from">McCall et al., SOUPS 2023, and the studies it cites</div></div>
+</div>
+
+<h2><span class="k">03</span>What we chose — and why</h2>
+<div class="grid">
+  <div class="card"><b>One tab, two kinds, everyday words</b><p>“Tap to run” (tiles, like device tiles) and “Automatic” (cards with a switch) on one page. One editor with a switch between them — no “scene / routine / precondition” vocabulary.</p><div class="from">Tuya’s clarity without its two lists</div></div>
+  <div class="card"><b>The whole scenario as one sentence</b><p>The editor builds and shows it live: <i>“When Front door opens, only at night, turn on Hall for 5 min.”</i> The same sentence is the card on the list. People check logic in words, not in boxes.</p><div class="from">Answers the “rules with bugs” problem</div></div>
+  <div class="card"><b>Starts when · Only if · Do</b><p>Three sections that read top to bottom. “Any one starts it”, “all must be true” are said in a short line under the list — never as an Any/All switch.</p><div class="from">Google’s structure, without its logic words</div></div>
+  <div class="card"><b>“For X min” inside the action</b><p>Turn on → “then turn it off after 2 / 5 / 10 min”. The most common automation (light on motion or door) needs no second rule — the classic source of bugs.</p><div class="from">Apple Home</div></div>
+  <div class="card"><b>Ideas filled with your own devices</b><p>Good night, I’m leaving, Light when I come in at night, Door left open, Laundry is done, Too warm… Only ideas this home can actually run are shown; tap → it opens already complete → Add.</p><div class="from">Aqara / Alexa templates, made personal</div></div>
+  <div class="card"><b>“What happened” — and why it didn’t</b><p>Each card says when it last ran and what started it. A skipped run says why in words: <i>“Skipped — not at night”</i>. The editor keeps the last runs.</p><div class="from">Research: debugging is the hard part</div></div>
+  <div class="card"><b>Try it now</b><p>Runs the actions once so people see what will happen, without waiting for the night or for a door to open.</p><div class="from">SmartThings “test”</div></div>
+  <div class="card"><b>Safety rules built in</b><p>Unlock is only in Tap to run (a door never opens on its own). Two automations that fight over the same light, or one that switches itself back and forth, get a warning before saving. A scenario can’t restart itself within 3 s.</p><div class="from">Apple’s unlock confirmation; loop bugs from research</div></div>
+  <div class="card"><b>Nothing hidden</b><p>Automations that live in device settings (lights on motion, close the water on a leak, smoke actions…) are counted on the Scenarios page and listed in one sheet, so people know they exist.</p><div class="from">Our own device pages</div></div>
+  <div class="card"><b>Reliable by design</b><p>Device starts run on the hub (works when phones are off). Sunrise / sunset move with the seasons by themselves. Location is the only phone-dependent start — and it is labelled so.</p><div class="from">Apple’s location trouble after iOS 26</div></div>
+</div>
+
+<h2><span class="k">04</span>What is in the prototype</h2>
+<ul>
+  <li><b>Scenarios tab</b> — Tap to run tiles (tap runs it, pen edits), Automatic cards (sentence, last run, switch), Ideas carousel, Built into your devices.</li>
+  <li><b>Starts</b>: at a time (days), sunrise / sunset ± minutes, a device (door opens / closes / <b>stays open for X min</b>, motion, someone comes in / room empty, water, smoke, gas, lock / unlock, warmer / colder than, air gets worse, washer starts / finishes / is shaken, power above X kW, any light / relay / plug / curtain / valve on or off), people leave / arrive.</li>
+  <li><b>Only if</b>: at night / in the daytime / between two times, days of the week, a device is in a state.</li>
+  <li><b>Do</b>: control a device (with “for X min”), send a notification (or an urgent alert), wait, run a scene.</li>
+  <li><b>Real engine</b>: scenarios really switch the prototype’s devices. Sensor events from each device page’s test panel start them; waits and “for X min” survive a page change.</li>
+</ul>
+<div class="sent">Try it: open <a href="../device.html?id=d-contact">Front door</a>, open the door in the test panel → “Light when I come in” runs at night, or is skipped in the daytime and says why on the Scenarios page.</div>
+
+<h2><span class="k">05</span>Test — tasks run on the real prototype</h2>
+<p class="note"><b>Honest scope:</b> this is not a test with real people yet. It is (1) a script that does each user task on the prototype the way a person would tap, checks the result in the device model and counts taps, and (2) a walkthrough of the same tasks as three typical users. It finds broken flows and friction; it can’t tell how real people feel. A plan for a real test is in section 07.</p>
+<div class="tw"><table>
+  <tr><th>Task</th><th>Result</th><th>Taps</th><th>Notes</th></tr>
+  <tr><td>Open Scenarios from the tab bar</td><td class="ok">Pass</td><td>1</td><td></td></tr>
+  <tr><td>Run “Good night”</td><td class="ok">Pass</td><td>1</td><td>Lamp that was on turned off; toast “Good night · done”</td></tr>
+  <tr><td>Add an idea as it is (“Laundry is done”)</td><td class="ok">Pass</td><td>2</td><td>The idea disappears from Ideas once added</td></tr>
+  <tr><td>Build from zero: motion at night → lamp on for 2 min</td><td class="ok">Pass</td><td>12</td><td>Was 14 in the first round (see fixes)</td></tr>
+  <tr><td>Door opens in the daytime</td><td class="ok">Pass</td><td>0</td><td>Logged “Skipped — not at night”</td></tr>
+  <tr><td>Time start at this minute fires once</td><td class="ok">Pass</td><td>0</td><td>No double run</td></tr>
+  <tr><td>Pause an automation</td><td class="ok">Pass</td><td>2</td><td>Pause and turn back on</td></tr>
+  <tr><td>Two automations fight over one light</td><td class="ok">Pass</td><td>0</td><td>Warning shown in the editor</td></tr>
+  <tr><td>Unlock in an automation</td><td class="ok">Pass</td><td>2</td><td>Not offered; a line says why</td></tr>
+  <tr><td>Edit, then delete</td><td class="ok">Pass</td><td>3</td><td>With a confirm</td></tr>
+  <tr><td>“For 2 min” turns the lamp back off</td><td class="ok">Pass</td><td>0</td><td>Timer forced to run out</td></tr>
+</table></div>
+<h3>Walkthrough as three users</h3>
+<div class="grid">
+  <div class="card"><b>Dilnoza, 34 — wants light when she comes home late</b><p>Sees “Light when I come in at night” in Ideas → Add. Done in 2 taps; the sentence tells her exactly what it does. <span class="ok">Easy.</span></p></div>
+  <div class="card"><b>Akmal, 58 — “turn everything off when we leave”</b><p>Finds “I’m leaving” and adds it — but expects it to happen by itself when the family leaves, while it is a tap scene. <span class="warn">Open question</span>: offer “or run it when everyone leaves” right on that idea.</p></div>
+  <div class="card"><b>Jasur, 27 — motion light only at night, 2 min</b><p>Builds it from zero in 12 taps and checks it with Try it now. Likely friction: the device list is sorted by room in the home’s order, not starting with the room he is in. <span class="ok">Works</span>, small polish left.</p></div>
+</div>
+<h3>Fixed during the test</h3>
+<ol>
+  <li><b>“Built into your devices” was 10 rows long</b> and pushed everything down → one row with a count, the list opens in a sheet.</li>
+  <li><b>“When” said twice</b> (“Starts when / When Front door opens”) → the row now reads “Front door opens”.</li>
+  <li><b>14 taps to build from zero</b> → 12: devices are listed in the first sheet, no extra “choose a type” step.</li>
+  <li><b>Single-choice sheets had a Done button</b> → they close as soon as you pick (our sheet rule); Done stays only where you set a value (time, minutes).</li>
+  <li><b>Channel names alone (“Light”, “Boiler”)</b> were unclear in pickers → the device name is shown under them.</li>
+  <li><b>An unfinished scenario read “When …, do nothing yet.”</b> → it now says what to add next.</li>
+</ol>
+<h3>Still open</h3>
+<ul>
+  <li>Sentences use channel names as they are (“turn on Hall”) — clear only if channels are named well.</li>
+  <li>An automation’s own action doesn’t start another automation (stops loops). Some people may expect chains — decide.</li>
+  <li>In the prototype, time starts run while a page is open; on the real hub they always run.</li>
+  <li>Location (leave / arrive) is simulated from the desktop test panel.</li>
+</ul>
+
+<h2><span class="k">06</span>Rules for the real app</h2>
+<ul>
+  <li>Words: Scenarios · Tap to run · Automatic · Starts when · Only if · Do. Never: trigger, condition, precondition, routine, any/all.</li>
+  <li>Every scenario is shown as its sentence. If something can’t be said in a short sentence, it doesn’t belong in the simple editor.</li>
+  <li>Every run is logged with its cause; every skip with its reason.</li>
+  <li>Safety: no automatic unlock; urgent alerts only for leaks, smoke, gas, break-ins.</li>
+</ul>
+
+<h2><span class="k">07</span>Next: a real test with 5 people</h2>
+<p>Five people from the target group (not designers), 20 minutes each, on a phone with the live prototype, thinking aloud:</p>
+<ol>
+  <li>“Make the hall light come on when you come home at night.” (success = via Ideas or from zero; time; errors)</li>
+  <li>“Before bed you want everything off and the door locked with one tap.”</li>
+  <li>“The lamp came on yesterday at noon — find out why it didn’t / did.” (tests the log)</li>
+  <li>“Get a message when the washing machine finishes.”</li>
+  <li>“Stop the morning curtains for the holidays, but don’t delete them.”</li>
+</ol>
+<p>Measure: done without help, taps, time, and one question after each task — “what will this scenario do?” (they read it back in their own words; it should match the sentence).</p>
+
+<h2><span class="k">08</span>Sources</h2>
+<ul class="src">
+  <li><a href="https://support.google.com/googlehome/answer/15684394">Google Home — supported automation starters, conditions &amp; actions</a> · <a href="https://support.google.com/googlenest/answer/16214649">Manage smart home automations</a> · <a href="https://9to5google.com/2026/01/12/google-home-update-automations/">9to5Google, Jan 2026 update</a> · <a href="https://9to5google.com/2026/05/05/google-home-update-delivers-huge-automation-expansion-nest-cam-upgrades-for-all/">May 2026 update</a></li>
+  <li><a href="https://9to5mac.com/2025/09/16/ios-26-gives-apples-home-app-new-automation-features/">9to5Mac — iOS 26 Home automation features</a> · <a href="https://www.matteralpha.com/how-to/how-to-automate-your-matter-devices-with-apple-home">Matter Alpha — automations in Apple Home</a> · <a href="https://discussions.apple.com/thread/256164892">Apple Community — location automations after iOS 26</a></li>
+  <li><a href="https://support.smartthings.com/hc/en-us/articles/360051931952-Routines-in-SmartThings">SmartThings — Routines</a> · <a href="https://developer.smartthings.com/docs/automations/rules">SmartThings rules (preconditions)</a> · <a href="https://community.smartthings.com/t/what-is-precondition/269612.md">Community — “What is precondition?”</a></li>
+  <li><a href="https://support.tuya.com/en/help/_detail/K9hutfnqcnby1">Tuya help — Tap-to-Run and Automation</a></li>
+  <li><a href="https://www.techadvisor.com/article/743299/how-to-create-alexa-routines-automate-your-smart-home.html">Tech Advisor — Alexa routines</a> · <a href="https://www.howtogeek.com/732897/the-5-most-useful-actions-for-alexa-routines/">How-To Geek — Alexa routine actions</a></li>
+  <li><a href="https://typeset.io/pdf/practical-trigger-action-programming-in-the-smart-home-3k8docpusg.pdf">Ur et al., Practical trigger-action programming in the smart home (CHI 2014)</a> · <a href="https://usenix.org/conference/soups2023/presentation/mccall">McCall et al., SOUPS 2023</a> · <a href="https://par.nsf.gov/biblio/10189821">Trace2TAP</a> · <a href="https://www.x-mol.com/paper/1389673494699073536">Block-based smart-home rules study (2021)</a></li>
+</ul>
+</main>
+</body>
+</html>

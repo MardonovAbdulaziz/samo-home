@@ -1899,6 +1899,92 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 @media (prefers-reduced-motion: reduce) { .aq-dust { display: none; } }
 
 /* ==========================================================================
+   Scenarios (js/scenarios.js, js/pages/scenarios.js, js/pages/scenario-edit.js)
+   List page = the home page's look (flat fills/tertiary cards, white tile while a scene runs).
+   Editor = the device-settings look: grouped lists, the live sentence on top.
+   ========================================================================== */
+.scn-h1 { font: var(--h2); letter-spacing: var(--h2-ls); margin: 0; }
+.scn-empty { margin: 8px var(--screen-pad) 0; padding: 16px; border-radius: var(--radius-lg); background: var(--blue-soft); display: grid; gap: 4px; }
+.scn-empty b { font: var(--body-lg-accent); } .scn-empty span { font: var(--body-md); color: var(--label-secondary); }
+.scn-tile .tile-power { color: var(--label-secondary); }
+.scn-tile .tile-power .icon { width: 16px; height: 16px; }
+.scn-tile.on .tile-power { color: var(--tile-on-label); }
+
+.scn-cards { display: grid; gap: 10px; padding: 0 var(--screen-pad); }
+.scn-card { display: flex; align-items: flex-start; gap: 12px; padding: 14px 14px 14px 12px; border-radius: var(--radius-lg); background: var(--fill-tertiary); text-align: left; width: 100%;
+  transition: opacity var(--dur), transform var(--dur-fast); }
+.scn-card .switch { margin-top: 2px; }
+.scn-card.paused .scn-card-main { opacity: .55; }
+.scn-card-main { flex: 1; min-width: 0; display: flex; gap: 12px; text-align: left; }
+.scn-card-main:active { transform: scale(.98); }
+.scn-ic { width: 36px; height: 36px; border-radius: 50%; background: var(--fill-tertiary); display: grid; place-items: center; flex-shrink: 0; color: var(--label-primary); }
+.scn-ic .icon { width: 20px; height: 20px; }
+.scn-txt { min-width: 0; display: grid; gap: 3px; }
+.scn-txt b { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }
+.scn-sent { font: var(--body-sm); color: var(--label-secondary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.scn-last { display: inline-flex; align-items: center; gap: 4px; font: var(--body-xs); letter-spacing: var(--body-xs-ls); color: var(--label-tertiary); margin-top: 3px; }
+.scn-last .icon { width: 14px; height: 14px; }
+.scn-last.warn { color: var(--orange); }
+.scn-add { align-items: center; }
+.scn-add .plus { width: 36px; height: 36px; border-radius: 50%; background: var(--fill-tertiary); display: grid; place-items: center; flex-shrink: 0; }
+.scn-add > span:last-child { display: grid; gap: 2px; } .scn-add b { font: var(--body-md-accent); }
+
+.scn-ideas { display: flex; gap: 10px; overflow-x: auto; padding: 0 var(--screen-pad) 4px; scroll-snap-type: x mandatory; scroll-padding: 0 var(--screen-pad); scrollbar-width: none; }
+.scn-ideas::-webkit-scrollbar { display: none; }
+.scn-idea { flex: 0 0 200px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border-radius: var(--radius-lg); background: var(--fill-tertiary); text-align: left; transition: transform var(--dur-fast); }
+.scn-idea:active { transform: scale(.97); }
+.scn-idea .scn-ic { margin-bottom: 8px; }
+.scn-idea b { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }
+.scn-idea > span:not(.scn-ic):not(.scn-idea-add) { font: var(--body-sm); color: var(--label-secondary); flex: 1; }
+.scn-idea-add { margin-top: 10px; display: inline-flex; align-items: center; gap: 2px; height: 28px; padding: 0 12px 0 8px; border-radius: var(--radius-pill); background: var(--primary); color: #fff; font: var(--body-sm-accent); }
+.scn-idea-add .icon { width: 16px; height: 16px; }
+.scn-built .cell-icon .icon { width: 22px; height: 22px; }
+
+/* editor */
+.toolbar .tb-text { height: 44px; padding: 0 4px; font: var(--body-lg-accent); color: var(--primary); }
+.toolbar .tb-text.muted { font: var(--body-lg); color: var(--label-primary); }
+.scn-head { display: flex; align-items: center; gap: 14px; padding: 12px var(--screen-pad) 0; }
+.scn-avatar { position: relative; width: 64px; height: 64px; border-radius: 50%; background: var(--fill-quaternary); display: grid; place-items: center; flex-shrink: 0; color: var(--label-primary); }
+.scn-avatar > .icon { width: 30px; height: 30px; }
+.scn-avatar .pen { position: absolute; right: -4px; bottom: -4px; width: 26px; height: 26px; border-radius: 50%; background: var(--fill-tertiary); display: grid; place-items: center; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.scn-avatar .pen .icon { width: 14px; height: 14px; }
+.scn-name { flex: 1; min-width: 0; text-align: left; border-radius: var(--radius-md); background: var(--bg-elevation-1); padding: 10px 16px; }
+.scn-name .field-label { font: var(--body-sm); color: var(--label-secondary); display: block; }
+.scn-name b { font: var(--body-lg); letter-spacing: var(--body-lg-ls); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scn-plain { margin: 16px var(--screen-pad) 0; padding: 14px 16px; border-radius: var(--radius-md); background: var(--blue-soft); }
+.scn-plain-k { font: var(--body-xs); letter-spacing: var(--body-xs-ls); color: var(--primary); text-transform: uppercase; font-weight: 600; }
+.scn-plain p { margin: 4px 0 0; font: var(--body-md); letter-spacing: var(--body-md-ls); }
+.scn-mode { margin-top: 20px; }
+.scn-mode button { height: 32px; font: var(--body-md-accent); }
+.scn-mode-note { font: var(--body-sm); color: var(--label-tertiary); padding: 8px 4px 0; }
+.scn-lh { display: flex; align-items: baseline; gap: 6px; font: var(--body-md-accent); color: var(--label-primary); }
+.scn-opt { font: var(--body-sm); color: var(--label-tertiary); }
+.scn-row .cell-icon .icon, .scn-add-row .cell-icon .icon { width: 22px; height: 22px; }
+.scn-add-row .cell-title { color: var(--primary); }
+.scn-plus { width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; }
+.scn-plus .icon { width: 18px !important; height: 18px !important; }
+.scn-foot { display: grid; gap: 10px; margin-top: 28px; }
+.scn-log .cell-icon.ok { color: var(--green); } .scn-log .cell-icon.warn { color: var(--orange); }
+.scn-log .cell-icon .icon { width: 20px; height: 20px; }
+
+/* editor sheets */
+.scn-sheet-foot { display: flex; gap: 10px; } .scn-sheet-foot .btn { flex: 1; }
+.scn-none { color: var(--label-secondary); padding-top: 8px; padding-bottom: 16px; }
+.scn-time-wrap { display: block; }
+.scn-time { width: 100%; height: 72px; border: 0; border-radius: var(--radius-md); background: var(--bg-elevation-2); color: var(--label-primary); font: 300 44px/1 var(--font); text-align: center; font-variant-numeric: tabular-nums; color-scheme: dark; }
+.scn-time.sm { height: 48px; font: 400 22px/1 var(--font); }
+.scn-time::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .5; }
+.scn-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 16px; }
+.scn-days .chip { justify-content: center; padding: 0; height: 40px; }
+.scn-presets { display: flex; gap: 8px; margin-top: 12px; }
+.scn-presets .btn-sm[aria-pressed="true"] { background: var(--primary-soft); color: var(--primary); }
+.scn-between { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.scn-between label { display: grid; gap: 6px; font: var(--body-sm); color: var(--label-secondary); }
+.scn-backs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--screen-pad); }
+.scn-sheet-k { font: var(--body-sm); color: var(--label-secondary); padding: 24px calc(var(--screen-pad) + 16px) 0; }
+.sheet .sheet-group:first-child > .group-title:empty { display: none; }
+
+/* ==========================================================================
    VARIANT "glass" — only in dist/samo-home-glass.html (tools/bundle.py --variant glass); the main build does not load it.
    Every surface on the device view page takes the look of the user's Figma remote
    (HUB Tidied › Wi-fi remote › TV - Remote - Default, 5767:16508):
@@ -1927,7 +2013,7 @@ html.vg-device .glass-btn { box-shadow: var(--vg-edge); }
 
 /* ---- single-file router: #/page.html?query ---- */
 (() => {
-  const PAGES = ["index.html", "device.html", "device-settings.html", "about-device.html", "add-device.html"];
+  const PAGES = ["index.html", "device.html", "device-settings.html", "about-device.html", "add-device.html", "scenarios.html", "scenario.html"];
   // the route lives in the hash (#/device.html?id=…) and, as a backup, in window.name: hosts that run the
   // page in a sandboxed frame may drop a #/path hash on reload, window.name survives it
   const bag = () => { try { const o = JSON.parse(window.name || '{}'); if (o && o.samo) return o; } catch (e) {} return { samo: 1, local: {}, session: {} }; };
@@ -9975,6 +10061,399 @@ const Store = (() => {
   };
 })();
 
+;
+/* ===== js/scenarios.js ===== */
+/* Scenarios — catalog, plain-language sentences, ideas and the engine that runs them.
+   Loaded on every page (after store.js) so automations fire wherever the user is.
+
+   Scenario = {
+     id, name, icon, manual: bool,                 // manual = "Tap to run" (a scene); otherwise automatic
+     on: bool,                                     // automatic ones can be paused
+     when: [Trigger],                              // automatic: ANY of these starts it
+     only: [Condition],                            // ALL must be true, or the run is skipped (and the log says why)
+     do:   [Action],                               // run top to bottom
+     log:  [{ at, ok, cause, text }],              // last runs, newest first
+   }
+   Trigger   = { k:'time', at:'07:30', days:[1..7] } | { k:'sun', ev:'sunset'|'sunrise', off:min }
+             | { k:'dev', id, ch, ev, v? }         | { k:'leave' } | { k:'arrive' }
+   Condition = { k:'between', from:'sunset'|'HH:MM', to:'sunrise'|'HH:MM' } | { k:'days', days:[1..7] } | { k:'state', id, ch, is }
+   Action    = { k:'dev', id, ch, to, back? (min) } | { k:'notify', text, critical? } | { k:'wait', min } | { k:'run', sid }
+   Days are 1 = Monday … 7 = Sunday. */
+const Scenarios = (() => {
+  const esc = (s) => UI.esc(s);
+  const S = () => Store.state;
+  const SUN = { sunrise: '07:12', sunset: '17:04' };   // Tashkent, mid-November (the hub would compute it from the home's location)
+  const DAY = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const ALL = [1, 2, 3, 4, 5, 6, 7];
+
+  /* ---------- Devices: what each type can start, check and do ---------- */
+  const tilesOf = (d) => { try { return DeviceAPI(d).homeTiles(); } catch (e) { return []; } };
+  const tileOf = (d, ch) => tilesOf(d).find((t) => t.ch === ch) || tilesOf(d)[0] || {};
+  const dev = (id) => Store.device(id);
+  /** Name of one controllable channel: "Ceiling" for a 2-gang relay, the device name otherwise. */
+  const nameOf = (id, ch = 0) => { const d = dev(id); if (!d) return 'a removed device'; const t = tileOf(d, ch); return t.name || d.name; };
+  const iconOf = (id, ch = 0) => { const d = dev(id); return d ? tileOf(d, ch).icon || DeviceAPI(d).icon(ch) : 'round-info'; };
+  const kwOf = (s) => { const m = String(s || '').match(/([\d.]+)\s*(k?W)\b/); return m ? (+m[1]) / (m[2] === 'W' ? 1000 : 1) : 0; };
+
+  // Words for on/off-like devices: [event on, event off, state on, state off, do on, do off]
+  const WORDS = {
+    curtain: ['Opens', 'Closes', 'is open', 'is closed', 'Open', 'Close'],
+    valve: ['Opens', 'Closes', 'is open', 'is closed', 'Open', 'Close'],
+    _: ['Turns on', 'Turns off', 'is on', 'is off', 'Turn on', 'Turn off'],
+  };
+  const words = (d) => WORDS[d.type] || WORDS._;
+
+  /** Current signals of one device channel (read from the live device model). */
+  function sig(d, ch = 0) {
+    const t = tileOf(d, ch), st = d.st || {}, live = d.online !== false;
+    switch (d.type) {
+      case 'contact': return { open: !!st.open };
+      case 'motion': return { motion: live && !!st.occ };
+      case 'presence': return { someone: live && !!st.occ };
+      case 'leak': return { leak: live && t.tone === 'danger' && t.status !== 'Offline' };
+      case 'smoke': case 'gas': return { alarm: live && t.tone === 'danger' && t.status !== 'Offline' };
+      case 'lock': return { locked: st.bolt === 'locked' };
+      case 'climate': return { t: typeof st.t === 'number' ? st.t : null };
+      case 'air': return { bad: /^(Moderate|Poor|Unhealthy)/.test(t.status || '') };
+      case 'vibration': return { running: !!st.shaking, shaken: !!st.alarmAt };
+      case 'meter': return { kw: kwOf(t.status) };
+      default: return t.controllable ? { on: !!t.on } : {};
+    }
+  }
+  const rise = (k) => (a, b) => !a[k] && !!b[k];
+  const fall = (k) => (a, b) => !!a[k] && !b[k];
+  /** Per type: ev = triggers, st = conditions, act = actions. label = what the user picks, s = how the sentence says it. */
+  const CAP = {
+    contact: {
+      ev: [{ k: 'open', label: 'Opens', s: 'opens', test: rise('open') }, { k: 'close', label: 'Closes', s: 'closes', test: fall('open') },
+        { k: 'openFor', label: 'Stays open', s: (v) => `stays open for ${v} min`, num: { def: 5, min: 1, max: 60, step: 1, unit: 'min', hint: 'Starts once, when the time is up' }, hold: 'open' }],
+      st: [{ k: 'open', label: 'Is open', s: 'is open', test: (c) => c.open }, { k: 'closed', label: 'Is closed', s: 'is closed', test: (c) => !c.open }],
+    },
+    motion: {
+      ev: [{ k: 'motion', label: 'Detects motion', s: 'detects motion', test: rise('motion') }, { k: 'clear', label: 'Motion stops', s: 'stops seeing motion', test: fall('motion') }],
+      st: [{ k: 'motion', label: 'Sees motion', s: 'sees motion', test: (c) => c.motion }, { k: 'clear', label: 'Sees no motion', s: 'sees no motion', test: (c) => !c.motion }],
+    },
+    presence: {
+      ev: [{ k: 'someone', label: 'Someone comes in', s: 'sees someone come in', test: rise('someone') }, { k: 'empty', label: 'Room becomes empty', s: 'sees the room empty', test: fall('someone') }],
+      st: [{ k: 'someone', label: 'Someone is here', s: 'sees someone', test: (c) => c.someone }, { k: 'empty', label: 'Nobody is here', s: 'sees nobody', test: (c) => !c.someone }],
+    },
+    leak: { ev: [{ k: 'leak', label: 'Detects water', s: 'detects water', test: rise('leak') }], st: [{ k: 'dry', label: 'Is dry', s: 'is dry', test: (c) => !c.leak }] },
+    smoke: { ev: [{ k: 'alarm', label: 'Smoke or fire alarm', s: 'sounds the smoke alarm', test: rise('alarm') }], st: [] },
+    gas: { ev: [{ k: 'alarm', label: 'Gas or CO alarm', s: 'sounds the gas alarm', test: rise('alarm') }], st: [] },
+    lock: {
+      ev: [{ k: 'unlock', label: 'Unlocks', s: 'unlocks', test: fall('locked') }, { k: 'lock', label: 'Locks', s: 'locks', test: rise('locked') }],
+      st: [{ k: 'locked', label: 'Is locked', s: 'is locked', test: (c) => c.locked }, { k: 'unlocked', label: 'Is unlocked', s: 'is unlocked', test: (c) => !c.locked }],
+      act: [{ k: 'lock', label: 'Lock', s: 'lock' }, { k: 'unlock', label: 'Unlock', s: 'unlock', manualOnly: true }],
+    },
+    climate: {
+      ev: [{ k: 'above', label: 'Gets warmer than', s: (v) => `gets warmer than ${v} °C`, num: { def: 27, min: 10, max: 40, step: 1, unit: '°C' }, test: (a, b, v) => a.t != null && b.t != null && a.t <= v && b.t > v },
+        { k: 'below', label: 'Gets colder than', s: (v) => `gets colder than ${v} °C`, num: { def: 18, min: 0, max: 30, step: 1, unit: '°C' }, test: (a, b, v) => a.t != null && b.t != null && a.t >= v && b.t < v }],
+      st: [{ k: 'warm', label: 'Warmer than 25 °C', s: 'shows more than 25 °C', test: (c) => c.t > 25 }, { k: 'cold', label: 'Colder than 18 °C', s: 'shows less than 18 °C', test: (c) => c.t < 18 }],
+    },
+    air: { ev: [{ k: 'bad', label: 'Air gets worse', s: 'says the air got worse', test: rise('bad') }, { k: 'good', label: 'Air is good again', s: 'says the air is good again', test: fall('bad') }],
+      st: [{ k: 'good', label: 'Air is good', s: 'says the air is good', test: (c) => !c.bad }, { k: 'bad', label: 'Air is not good', s: 'says the air is not good', test: (c) => c.bad }] },
+    vibration: {
+      ev: [{ k: 'running', label: 'Starts running', s: 'starts running', test: rise('running') }, { k: 'finished', label: 'Finishes', s: 'finishes', test: fall('running') },
+        { k: 'shaken', label: 'Is shaken or hit', s: 'is shaken', test: rise('shaken') }],
+      st: [{ k: 'running', label: 'Is running', s: 'is running', test: (c) => c.running }, { k: 'idle', label: 'Is not running', s: 'is not running', test: (c) => !c.running }],
+    },
+    meter: { ev: [{ k: 'above', label: 'Uses more than', s: (v) => `uses more than ${v} kW`, num: { def: 3, min: 0.5, max: 15, step: 0.5, unit: 'kW' }, test: (a, b, v) => a.kw <= v && b.kw > v }], st: [] },
+  };
+  /** Capabilities of one device channel, with the on/off family filled in from its words. */
+  function cap(d) {
+    if (!d) return { ev: [], st: [], act: [] };
+    const c = CAP[d.type] || {};
+    const t = tilesOf(d)[0] || {};
+    const switchable = !CAP[d.type] && t.controllable;
+    const w = words(d);
+    const onoff = switchable ? {
+      ev: [{ k: 'on', label: w[0], s: w[0].toLowerCase(), test: rise('on') }, { k: 'off', label: w[1], s: w[1].toLowerCase(), test: fall('on') }],
+      st: [{ k: 'on', label: w[2][0].toUpperCase() + w[2].slice(1), s: w[2], test: (x) => x.on }, { k: 'off', label: w[3][0].toUpperCase() + w[3].slice(1), s: w[3], test: (x) => !x.on }],
+      act: [{ k: 'on', label: w[4], s: w[4].toLowerCase(), back: true }, { k: 'off', label: w[5], s: w[5].toLowerCase() }],
+    } : {};
+    return { ev: c.ev || onoff.ev || [], st: c.st || onoff.st || [], act: c.act || onoff.act || [] };
+  }
+  /** Every device channel the user can pick for a role: 'ev' | 'st' | 'act'. */
+  function pickable(role) {
+    const out = [];
+    for (const d of S().devices) {
+      if (d.type === 'hub') continue;
+      const c = cap(d); if (!c[role].length) continue;
+      const tiles = tilesOf(d);
+      const chs = !CAP[d.type] && tiles.length > 1 ? tiles : [tiles[0] || { ch: 0 }];
+      chs.forEach((t) => out.push({ id: d.id, ch: t.ch || 0, name: chs.length > 1 ? t.name : d.name, sub: chs.length > 1 ? d.name.replace(/ [rs]$/, '') : '', room: Store.roomName(d.roomId), icon: t.icon || DeviceAPI(d).icon(0), offline: d.online === false }));
+    }
+    return out;
+  }
+  const findIn = (list, k) => list.find((x) => x.k === k);
+
+  /* ---------- Plain-language sentences ---------- */
+  const listJoin = (a, last = 'and') => (a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} ${last} ${a[a.length - 1]}`);
+  function daysText(days) {
+    const s = [...(days || ALL)].sort().join('');
+    if (s === '1234567') return 'every day';
+    if (s === '12345') return 'on weekdays';
+    if (s === '67') return 'on weekends';
+    return 'on ' + listJoin(days.slice().sort().map((x) => DAY[x]));
+  }
+  const timeWord = (x) => (x === 'sunset' || x === 'sunrise' ? x : x);
+  function sunText(t) { const o = +t.off || 0; return o === 0 ? `at ${t.ev}` : `${Math.abs(o)} min ${o < 0 ? 'before' : 'after'} ${t.ev}`; }
+  function evOf(t) { const d = dev(t.id); return findIn(cap(d).ev, t.ev); }
+  function triggerText(t) {
+    if (t.k === 'time') return `at ${t.at} ${daysText(t.days)}`;
+    if (t.k === 'sun') return sunText(t);
+    if (t.k === 'leave') return 'when everyone leaves home';
+    if (t.k === 'arrive') return 'when someone comes home';
+    if (t.k === 'dev') { const e = evOf(t); const s = e ? (typeof e.s === 'function' ? e.s(t.v) : e.s) : 'changes'; return `when ${nameOf(t.id, t.ch)} ${s}`; }
+    return '';
+  }
+  function condText(c) {
+    if (c.k === 'between') {
+      if (c.from === 'sunset' && c.to === 'sunrise') return 'only at night';
+      if (c.from === 'sunrise' && c.to === 'sunset') return 'only in the daytime';
+      return `only between ${timeWord(c.from)} and ${timeWord(c.to)}`;
+    }
+    if (c.k === 'days') return 'only ' + daysText(c.days);
+    if (c.k === 'state') { const d = dev(c.id); const s = findIn(cap(d).st, c.is); return `only if ${nameOf(c.id, c.ch)} ${s ? s.s : 'is as set'}`; }
+    return '';
+  }
+  function actionText(a) {
+    if (a.k === 'dev') {
+      const d = dev(a.id); const x = findIn(cap(d).act, a.to);
+      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${a.back ? ` for ${a.back} min` : ''}`;
+    }
+    if (a.k === 'notify') return a.critical ? 'send everyone an urgent alert' : 'send you a notification';
+    if (a.k === 'wait') return `wait ${a.min} min`;
+    if (a.k === 'run') { const s = get(a.sid); return `run “${s ? s.name : 'a removed scenario'}”`; }
+    return '';
+  }
+  /** The whole scenario as one sentence — shown on the card and live at the top of the editor. */
+  function sentence(s) {
+    const acts = s.do.map(actionText).filter(Boolean);
+    if (s.manual) return acts.length ? cap1(`${listJoin(acts)}.`) : 'Add what it should do — one tap will do all of it.';
+    if (!s.when.length && !acts.length) return 'Choose when it starts and what it does.';
+    const doPart = acts.length ? listJoin(acts) : '… (add what it should do)';
+    const whenPart = s.when.length ? listJoin(s.when.map(triggerText), 'or') : 'when … (add a start)';
+    const onlyPart = s.only.length ? ', ' + listJoin(s.only.map(condText)) : '';
+    return cap1(`${whenPart}${onlyPart}, ${doPart}.`);
+  }
+  const cap1 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+  /* ---------- Storage ---------- */
+  function seedList() {
+    const out = [];
+    const ideaById = (k) => ideas(true).find((x) => x.key === k);
+    ['goodnight', 'nightdoor'].forEach((k) => { const i = ideaById(k); if (i) out.push(Object.assign(i.make(), { id: Store.uid('s'), log: [], idea: k })); });
+    return out;
+  }
+  function list() {
+    const st = S();
+    if (!st.scenarios) { st.scenarios = seedList(); Store.save(); }
+    return st.scenarios;
+  }
+  const get = (id) => list().find((s) => s.id === id);
+  function upsert(s) { const l = list(); const i = l.findIndex((x) => x.id === s.id); if (i >= 0) l[i] = s; else l.push(s); Store.save(); return s; }
+  function remove(id) { S().scenarios = list().filter((s) => s.id !== id); Store.save(); }
+
+  /* ---------- Ideas (templates filled with the user's own devices) ---------- */
+  const firstOf = (pred) => S().devices.find(pred);
+  const lightsAll = () => S().devices.filter((d) => ['light', 'relay'].includes(d.type) && d.online !== false)
+    .flatMap((d) => tilesOf(d).filter((t) => t.controllable && /bulb|lamp|led|chandelier/.test(t.icon || '')).map((t) => ({ id: d.id, ch: t.ch })));
+  function ideas(all = false) {
+    const door = firstOf((d) => d.type === 'contact'), lock = firstOf((d) => d.type === 'lock'), curtain = firstOf((d) => d.type === 'curtain');
+    const lamp = lightsAll()[0], lights = lightsAll(), dryer = firstOf((d) => d.type === 'vibration'), climate = firstOf((d) => d.type === 'climate');
+    const motion = firstOf((d) => d.type === 'motion'), heater = S().devices.find((d) => d.type === 'relay' && /heater/i.test(d.name)), air = firstOf((d) => d.type === 'air');
+    const hall = lights.find((l) => /hall/i.test(nameOf(l.id, l.ch))) || lamp;
+    const base = (o) => Object.assign({ manual: false, on: true, when: [], only: [], do: [] }, o);
+    const L = [
+      lights.length && { key: 'goodnight', title: 'Good night', sub: 'One tap: lights off, door locked, curtains closed', icon: 'moon',
+        make: () => base({ name: 'Good night', icon: 'moon', manual: true, do: [...lights.map((l) => ({ k: 'dev', id: l.id, ch: l.ch, to: 'off' })), lock && { k: 'dev', id: lock.id, ch: 0, to: 'lock' }, curtain && { k: 'dev', id: curtain.id, ch: 0, to: 'off' }].filter(Boolean) }) },
+      lights.length && { key: 'leaving', title: 'I’m leaving', sub: 'Everything off and the door locked as you go', icon: 'tab-home',
+        make: () => base({ name: 'I’m leaving', icon: 'tab-home', manual: true, do: [...lights.map((l) => ({ k: 'dev', id: l.id, ch: l.ch, to: 'off' })), lock && { k: 'dev', id: lock.id, ch: 0, to: 'lock' }].filter(Boolean) }) },
+      door && hall && { key: 'nightdoor', title: 'Light when I come in at night', sub: `${door.name} opens after dark → ${nameOf(hall.id, hall.ch)} on for 5 min`, icon: 'dev-door-02',
+        make: () => base({ name: 'Light when I come in', icon: 'dev-door-02', when: [{ k: 'dev', id: door.id, ch: 0, ev: 'open' }], only: [{ k: 'between', from: 'sunset', to: 'sunrise' }], do: [{ k: 'dev', id: hall.id, ch: hall.ch, to: 'on', back: 5 }] }) },
+      curtain && { key: 'morning', title: 'Curtains open in the morning', sub: 'Weekdays at 07:30', icon: 'sunrise',
+        make: () => base({ name: 'Morning curtains', icon: 'sunrise', when: [{ k: 'time', at: '07:30', days: [1, 2, 3, 4, 5] }], do: [{ k: 'dev', id: curtain.id, ch: 0, to: 'on' }] }) },
+      lamp && { key: 'sunset', title: 'Lamp on at sunset', sub: `${nameOf(lamp.id, lamp.ch)} turns on when it gets dark`, icon: 'sun',
+        make: () => base({ name: 'Lamp at sunset', icon: 'sun', when: [{ k: 'sun', ev: 'sunset', off: 0 }], do: [{ k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on' }] }) },
+      door && { key: 'leftopen', title: 'Door left open', sub: `Tell me if ${door.name} stays open for 5 min`, icon: 'bell',
+        make: () => base({ name: 'Door left open', icon: 'bell', when: [{ k: 'dev', id: door.id, ch: 0, ev: 'openFor', v: 5 }], do: [{ k: 'notify', text: `${door.name} has been open for 5 min` }] }) },
+      dryer && { key: 'laundry', title: 'Laundry is done', sub: `A notification when ${dryer.name} finishes`, icon: 'dev-washing',
+        make: () => base({ name: 'Laundry is done', icon: 'dev-washing', when: [{ k: 'dev', id: dryer.id, ch: 0, ev: 'finished' }], do: [{ k: 'notify', text: `${dryer.name} has finished` }] }) },
+      climate && { key: 'hot', title: 'Too warm in the bedroom', sub: `Tell me when ${climate.name} goes above 27 °C`, icon: 'temperature',
+        make: () => base({ name: 'Too warm', icon: 'temperature', when: [{ k: 'dev', id: climate.id, ch: 0, ev: 'above', v: 27 }], do: [{ k: 'notify', text: `${climate.name}: above 27 °C` }] }) },
+      heater && { key: 'heater', title: 'Hot water by morning', sub: `${heater.name} on at 05:30 for 90 min`, icon: 'dev-radiator',
+        make: () => base({ name: 'Hot water by morning', icon: 'dev-radiator', when: [{ k: 'time', at: '05:30', days: ALL }], do: [{ k: 'dev', id: heater.id, ch: 0, to: 'on', back: 90 }] }) },
+      motion && lamp && { key: 'nightwalk', title: 'Soft light for night walks', sub: `${motion.name} sees motion at night → light for 2 min`, icon: 'dev-motion',
+        make: () => base({ name: 'Night walk', icon: 'dev-motion', when: [{ k: 'dev', id: motion.id, ch: 0, ev: 'motion' }], only: [{ k: 'between', from: '23:00', to: '06:00' }], do: [{ k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on', back: 2 }] }) },
+      air && { key: 'air', title: 'Stuffy air', sub: `Tell me when ${air.name} says the air got worse`, icon: 'dev-air',
+        make: () => base({ name: 'Stuffy air', icon: 'dev-air', when: [{ k: 'dev', id: air.id, ch: 0, ev: 'bad' }], do: [{ k: 'notify', text: `${air.name}: open a window` }] }) },
+    ].filter(Boolean);
+    if (all) return L;
+    const used = new Set(list().map((s) => s.idea).filter(Boolean));
+    return L.filter((i) => !used.has(i.key));
+  }
+
+  /* ---------- Built into devices (their own automations, shown here so everything is in one place) ---------- */
+  function builtIn() {
+    const out = [];
+    for (const d of S().devices) {
+      const T = Devices[d.type]; if (!T || !T.F || !d.settings) continue;
+      for (const [k, f] of Object.entries(T.F)) {
+        if (f.grp !== 'Automation' || f.type === 'event' || (d.features && !d.features.includes(k))) continue;
+        const v = d.settings[k];
+        const on = v === true || (v && typeof v === 'object' && v.on !== false && (k !== 'motionLight' || v.target)) || (Array.isArray(v) && v.length);
+        if (!on) continue;
+        out.push({ id: d.id, name: f.name, device: d.name, icon: DeviceAPI(d).icon(0) });
+      }
+    }
+    return out;
+  }
+
+  /* ---------- Conditions ---------- */
+  const toMin = (x) => { const v = SUN[x] || x; const [h, m] = v.split(':').map(Number); return h * 60 + m; };
+  const nowMin = (d = new Date()) => d.getHours() * 60 + d.getMinutes();
+  const weekday = (d = new Date()) => ((d.getDay() + 6) % 7) + 1;
+  function condOk(c, at = new Date()) {
+    if (c.k === 'between') { const a = toMin(c.from), b = toMin(c.to), n = nowMin(at); return a <= b ? n >= a && n < b : n >= a || n < b; }
+    if (c.k === 'days') return (c.days || ALL).includes(weekday(at));
+    if (c.k === 'state') { const d = dev(c.id); if (!d) return false; const s = findIn(cap(d).st, c.is); return !!(s && s.test(sig(d, c.ch || 0))); }
+    return true;
+  }
+  /** Why a run was skipped, in words ("not at night", "Front door lock is unlocked"). */
+  function whyNot(c) {
+    if (c.k === 'between') return condText(c).replace(/^only /, 'not ');
+    if (c.k === 'days') return 'not ' + daysText(c.days);
+    if (c.k === 'state') { const d = dev(c.id); const s = findIn(cap(d).st, c.is); return `${nameOf(c.id, c.ch)} ${s ? s.s.replace(/^is /, 'is not ').replace(/^sees /, 'does not see ').replace(/^says /, 'does not say ').replace(/^shows /, 'does not show ') : 'is different'}`; }
+    return 'a condition was not met';
+  }
+
+  /* ---------- Running ---------- */
+  function applyDev(a) {
+    const d = dev(a.id); if (!d || d.online === false) return `${nameOf(a.id, a.ch)} is offline`;
+    if (d.type === 'lock') { Devices.lock.remote(d, a.to === 'lock', 'Scenario', 'scenario'); return null; }
+    const t = tileOf(d, a.ch || 0);
+    if (!t.controllable) return `${nameOf(a.id, a.ch)} can’t be switched`;
+    const want = a.to === 'on';
+    if (!!t.on !== want) DeviceAPI(d).toggle(a.ch || 0);
+    return null;
+  }
+  const pending = () => (S().scnPending = S().scnPending || []);
+  /** Run the actions. Waits and "for X min" are kept in the store, so they still happen after a page change. */
+  function runActions(s, from = 0, depth = 0) {
+    const problems = [];
+    for (let i = from; i < s.do.length; i++) {
+      const a = s.do[i];
+      if (a.k === 'wait') { pending().push({ at: Date.now() + a.min * 60000, sid: s.id, from: i + 1 }); break; }
+      if (a.k === 'dev') {
+        const p = applyDev(a); if (p) problems.push(p);
+        else if (a.back) pending().push({ at: Date.now() + a.back * 60000, id: a.id, ch: a.ch || 0, to: a.to === 'on' ? 'off' : 'on' });
+      }
+      if (a.k === 'notify') UI.push({ title: s.name, body: a.text || sentence(s), tone: a.critical ? 'danger' : '' });
+      if (a.k === 'run' && depth < 3) { const o = get(a.sid); if (o && o.id !== s.id) { runActions(o, 0, depth + 1); log(o, { ok: true, cause: `From “${s.name}”` }); } }
+    }
+    return problems;
+  }
+  function log(s, e) { s.log = [Object.assign({ at: Date.now() }, e), ...(s.log || [])].slice(0, 20); }
+  /** Start a scenario. cause = what started it (words). test = "Try it now" (conditions are shown but not enforced). */
+  function fire(s, cause, { test = false } = {}) {
+    const failed = s.only.find((c) => !condOk(c));
+    if (failed && !test) { log(s, { ok: false, cause, text: 'Skipped — ' + whyNot(failed) }); Store.save(); return { skipped: whyNot(failed) }; }
+    const problems = runActions(s);
+    log(s, { ok: !problems.length, cause, text: problems.length ? problems.join(' · ') : (test ? 'Tried now' : '') });
+    Store.save();
+    return { problems, note: failed && test ? whyNot(failed) : '' };
+  }
+
+  /* ---------- The engine: watch devices and the clock ---------- */
+  let prev = null, since = {}, busy = false, last = {};
+  const keyOf = (d, ch) => d.id + ':' + ch;
+  function snapshot() {
+    const m = {};
+    for (const d of S().devices) { if (d.type === 'hub') continue; const n = Math.max(1, tilesOf(d).length); for (let ch = 0; ch < n; ch++) m[keyOf(d, ch)] = sig(d, ch); }
+    return m;
+  }
+  function autos() { return (S().scenarios || []).filter((s) => !s.manual && s.on !== false); }
+  function scan() {
+    if (busy) return;
+    const cur = snapshot();
+    if (!prev) { prev = cur; return; }
+    const was = prev; prev = cur;
+    if (document.hidden) return;                       // another tab: just follow the state, don't run twice
+    busy = true;
+    try {
+      const now = Date.now();
+      for (const [k, v] of Object.entries(cur)) { if (v.open && !(was[k] || {}).open) since[k] = now; if (!v.open) delete since[k]; }
+      for (const s of autos()) {
+        for (const t of s.when) {
+          if (t.k !== 'dev') continue;
+          const d = dev(t.id); if (!d) continue;
+          const k = keyOf(d, t.ch || 0), e = evOf(t); if (!e || !e.test || !was[k]) continue;
+          if (e.test(was[k], cur[k], t.v) && guard(s)) fire(s, cap1(triggerText(t)).replace(/^When /, ''));
+        }
+      }
+    } finally { busy = false; prev = snapshot(); }
+  }
+  // the same scenario can't run again within 3 s (stops two scenarios switching a light back and forth)
+  const guard = (s) => { const n = Date.now(); if (last[s.id] && n - last[s.id] < 3000) return false; last[s.id] = n; return true; };
+  function clock() {
+    const st = S(); if (!st.scenarios || document.hidden) return;
+    const now = new Date(), n = nowMin(now), key = now.toDateString() + ' ' + n;
+    // waits and "for X min" that are due
+    const due = pending().filter((p) => p.at <= Date.now());
+    if (due.length) {
+      st.scnPending = pending().filter((p) => p.at > Date.now());
+      due.forEach((p) => { if (p.sid) { const s = get(p.sid); if (s) runActions(s, p.from); } else applyDev({ k: 'dev', id: p.id, ch: p.ch, to: p.to }); });
+      Store.save();
+    }
+    for (const s of autos()) {
+      for (const t of s.when) {
+        let hit = false;
+        if (t.k === 'time') hit = toMin(t.at) === n && (t.days || ALL).includes(weekday(now));
+        if (t.k === 'sun') hit = toMin(t.ev) + (+t.off || 0) === n;
+        if (t.k === 'dev' && t.ev === 'openFor') { const d = dev(t.id); const k = d && keyOf(d, t.ch || 0); hit = !!(k && since[k] && Date.now() - since[k] >= t.v * 60000); if (hit) delete since[k]; }
+        if (!hit) continue;
+        const fk = s.id + '|' + key + '|' + JSON.stringify(t);
+        if (t.k !== 'dev' && (st.scnFired || {})[s.id] === fk) continue;
+        st.scnFired = Object.assign({}, st.scnFired, { [s.id]: fk });
+        fire(s, cap1(triggerText(t)));
+      }
+    }
+  }
+  /** "I'm leaving / I'm back" — the phone's location in the real app; a test button in the prototype. */
+  function presence(k) { autos().filter((s) => s.when.some((t) => t.k === k)).forEach((s) => fire(s, k === 'leave' ? 'Everyone left home' : 'Someone came home')); }
+
+  function start() {
+    list();
+    prev = snapshot();
+    Store.subscribe(() => scan());
+    setInterval(() => { scan(); clock(); }, 5000);   // also catches device changes made by ticks on pages that don't save
+    clock();
+  }
+
+  /* ---------- Checks for the editor ---------- */
+  /** Problems a person would not see coming: two scenarios fighting, a scenario that undoes itself. */
+  function warnings(s) {
+    const out = [];
+    const sameStart = (a, b) => a.k === b.k && (a.k === 'dev' ? a.id === b.id && (a.ch || 0) === (b.ch || 0) && a.ev === b.ev : a.k === 'time' ? a.at === b.at : a.k === 'sun' ? a.ev === b.ev && (+a.off || 0) === (+b.off || 0) : true);
+    for (const o of list()) {
+      if (o.id === s.id || o.manual || o.on === false || s.manual) continue;
+      if (!o.when.some((a) => s.when.some((b) => sameStart(a, b)))) continue;
+      for (const a of s.do) for (const b of o.do) {
+        if (a.k === 'dev' && b.k === 'dev' && a.id === b.id && (a.ch || 0) === (b.ch || 0) && a.to !== b.to) out.push(`“${o.name}” starts at the same moment and does the opposite with ${nameOf(a.id, a.ch)}.`);
+      }
+    }
+    for (const t of s.when) for (const a of s.do) {
+      if (t.k === 'dev' && a.k === 'dev' && t.id === a.id && (t.ch || 0) === (a.ch || 0)) out.push(`${nameOf(a.id, a.ch)} starts this scenario and is changed by it — it could switch itself back and forth.`);
+    }
+    return [...new Set(out)];
+  }
+
+  return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
+    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, presence, warnings, start, condOk, whyNot };
+})();
+if (typeof Store !== 'undefined') Scenarios.start();
+
 </script>
 <script>
 (() => {
@@ -10051,7 +10530,7 @@ const Store = (() => {
   tb.className = 'tabbar';
   tb.innerHTML = `<button class="ai" data-action="soon" aria-label="Assistant">${icon('ai-stars')}</button>
     <div class="tabs"><a class="tab on" href="index.html">${icon('tab-home')}My Home</a>
-    <button class="tab" data-action="soon">${icon('tab-scenarios')}Scenarios</button>
+    <a class="tab" href="scenarios.html">${icon('tab-scenarios')}Scenarios</a>
     <button class="tab" data-action="soon">${icon('tab-more')}More</button></div>`;
   UI.phone.appendChild(tb);
 
@@ -10425,6 +10904,393 @@ const Store = (() => {
 
   render();
   startSearch();
+})();
+
+},
+"scenarios.html": function () {
+/* Scenarios page — the second tab. Three things, in the order people use them:
+   1. Tap to run — big tiles, one tap runs the scene (like a device tile).
+   2. Automatic — cards that say in one sentence what happens, with a switch and what happened last time.
+   3. Ideas — ready-made scenarios already filled in with this home's devices.
+   Then "Built into your devices": automations that live in a device's own settings, so nothing is hidden. */
+(() => {
+  UI.mount({ variant: 'ambient', panel: true });
+  const esc = UI.esc;
+  const ago = (t) => {
+    const m = Math.round((Date.now() - t) / 60000);
+    const d = new Date(t), hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    if (m < 1) return 'just now'; if (m < 60) return `${m} min ago`;
+    return new Date().toDateString() === d.toDateString() ? `today ${hm}` : `${d.getDate()} ${d.toLocaleString('en', { month: 'short' })}, ${hm}`;
+  };
+  let flash = {};   // tile id → time it was run (tile shows "Done")
+
+  function sceneTile(s) {
+    const done = flash[s.id] && Date.now() - flash[s.id] < 1600;
+    const n = s.do.length;
+    return `<div class="tile scn-tile ${done ? 'on' : ''}" role="button" tabindex="0" data-key="sc-${s.id}" data-action="run" data-id="${s.id}" aria-label="Run ${esc(s.name)}">
+      <span class="tile-icon" style="${done ? 'color:var(--primary)' : ''}">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:28px;height:28px"')}</span>
+      <button class="tile-power scn-more" data-action="edit" data-id="${s.id}" aria-label="Edit ${esc(s.name)}">${icon('pen', 'icon icon-xs')}</button>
+      <span class="tile-name">${esc(s.name)}</span>
+      <span class="tile-status">${done ? 'Done' : n ? `${n} action${n > 1 ? 's' : ''}` : 'Nothing to do yet'}</span></div>`;
+  }
+  function lastLine(s) {
+    const l = (s.log || [])[0];
+    if (s.on === false) return '<span class="scn-last">Paused</span>';
+    if (!l) return '<span class="scn-last">Hasn’t run yet</span>';
+    if (!l.ok) return `<span class="scn-last warn">${icon('round-info', 'icon')}${esc(l.text || 'Didn’t finish')} · ${ago(l.at)}</span>`;
+    return `<span class="scn-last">${icon('check', 'icon')}Ran ${ago(l.at)}${l.cause ? ` · ${esc(l.cause)}` : ''}</span>`;
+  }
+  function autoCard(s) {
+    return `<div class="scn-card ${s.on === false ? 'paused' : ''}" data-key="sa-${s.id}">
+      <button class="scn-card-main" data-action="edit" data-id="${s.id}">
+        <span class="scn-ic">${icon(s.icon || 'tab-scenarios', 'icon')}</span>
+        <span class="scn-txt"><b>${esc(s.name)}</b><span class="scn-sent">${esc(Scenarios.sentence(s))}</span>${lastLine(s)}</span>
+      </button>
+      <button class="switch" role="switch" aria-checked="${s.on !== false}" data-action="toggle" data-id="${s.id}" aria-label="${s.on === false ? 'Turn on' : 'Pause'} ${esc(s.name)}"></button>
+    </div>`;
+  }
+  function ideaCard(i) {
+    return `<button class="scn-idea" data-key="si-${i.key}" data-action="idea" data-k="${i.key}">
+      <span class="scn-ic">${icon(i.icon, 'icon')}</span><b>${esc(i.title)}</b><span>${esc(i.sub)}</span>
+      <span class="scn-idea-add">${icon('plus-small', 'icon')}Add</span></button>`;
+  }
+
+  function render() {
+    const L = Scenarios.list(), scenes = L.filter((s) => s.manual), autos = L.filter((s) => !s.manual), ideas = Scenarios.ideas(), built = Scenarios.builtIn();
+    let h = `<header class="home-header"><h1 class="scn-h1">Scenarios</h1>
+        <button class="icon-btn" data-action="new" aria-label="New scenario">${icon('plus')}</button></header>`;
+    if (!L.length) h += `<div class="scn-empty"><b>Make your home work on its own</b><span>A scenario does several things at once — with one tap, at a set time, or when a sensor notices something. Start from an idea below.</span></div>`;
+    h += `<div class="section-title">Tap to run</div>
+      <div class="tile-grid">${scenes.map(sceneTile).join('')}
+        <button class="tile add" data-action="new" data-manual="1"><span class="plus">${icon('plus', 'icon icon-sm')}</span><span>New scene</span></button></div>`;
+    h += `<div class="section-title">Automatic</div>`;
+    h += autos.length ? `<div class="scn-cards">${autos.map(autoCard).join('')}</div>`
+      : `<div class="pad"><button class="scn-card scn-add" data-action="new"><span class="plus">${icon('plus', 'icon icon-sm')}</span><span><b>New automation</b><span class="scn-sent">At a time, at sunset, or when a sensor notices something</span></span></button></div>`;
+    if (ideas.length) h += `<div class="section-title">Ideas for your home</div><div class="scn-ideas">${ideas.map(ideaCard).join('')}</div>`;
+    if (built.length) h += `<div class="section-title">Built into your devices</div>
+      <div class="list scn-built"><button class="cell" data-action="built"><span class="cell-icon">${icon('shield-check', 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${built.length} automation${built.length > 1 ? 's' : ''} in device settings</span><span class="cell-sub" style="display:block">${UI.esc([...new Set(built.map((x) => x.name))].slice(0, 2).join(', '))}${built.length > 2 ? '…' : ''}</span></span>${icon('chevron-right', 'chev')}</button></div>`;
+    UI.patch(UI.screen, h);
+    UI.screen.classList.add('with-tabbar');
+    const panel = document.getElementById('protoPanel');
+    if (panel) UI.patch(panel, protoPanel());
+  }
+
+  /* Desktop test panel: things a phone would report (location) + quick time checks */
+  function protoPanel() {
+    return `<div class="pp-title">Scenarios prototype</div>
+      <p class="pp-note">Not part of the app. Play what the phones would report.</p>
+      <h3>Phone location</h3>
+      <button class="pp-btn" data-action="pp-leave">Everyone leaves home</button>
+      <button class="pp-btn" data-action="pp-arrive">Someone comes home</button>
+      <h3>Sensors</h3>
+      <p class="pp-note">Sensor events (door opens, motion, leak…) are on each device page’s test panel — automations run there too. Sunrise ${Scenarios.SUN.sunrise} · sunset ${Scenarios.SUN.sunset} (Tashkent).</p>`;
+  }
+
+  // Tab bar (same as home)
+  const tb = document.createElement('nav');
+  tb.className = 'tabbar';
+  tb.innerHTML = `<button class="ai" data-action="soon" aria-label="Assistant">${icon('ai-stars')}</button>
+    <div class="tabs"><a class="tab" href="index.html">${icon('tab-home')}My Home</a>
+    <a class="tab on" href="scenarios.html" aria-current="page">${icon('tab-scenarios')}Scenarios</a>
+    <button class="tab" data-action="soon">${icon('tab-more')}More</button></div>`;
+  UI.phone.appendChild(tb);
+
+  UI.on({
+    run: ({ id }, el, e) => {
+      if (e && e.target.closest('.scn-more')) return;
+      const s = Scenarios.get(id); if (!s) return;
+      if (!s.do.length) { UI.go(`scenario.html?id=${id}`); return; }
+      const r = Scenarios.fire(s, 'Tapped');
+      flash[id] = Date.now(); render(); UI.pulse(UI.screen.querySelector(`[data-key="sc-${id}"]`), 'just-toggled');
+      setTimeout(render, 1700);
+      UI.toast(r.problems && r.problems.length ? `${s.name} · ${r.problems[0]}` : `${s.name} · done`);
+    },
+    edit: ({ id }) => UI.go(`scenario.html?id=${id}`),
+    new: ({ manual }) => UI.go(`scenario.html?new=${manual ? 'scene' : 'auto'}`),
+    idea: ({ k }) => UI.go(`scenario.html?idea=${k}`),
+    toggle: ({ id }) => { const s = Scenarios.get(id); if (!s) return; s.on = s.on === false; Store.save(); render(); UI.toast(s.on ? `${s.name} is on` : `${s.name} is paused`); },
+    'pp-leave': () => { Scenarios.presence('leave'); render(); UI.toast('Location: everyone left'); },
+    'pp-arrive': () => { Scenarios.presence('arrive'); render(); UI.toast('Location: someone is home'); },
+    built: () => {
+      const L = Scenarios.builtIn(), devs = [...new Set(L.map((x) => x.id))];
+      UI.sheet({ title: 'Built into your devices', sub: 'Each device has its own automations — they are set up in the device’s settings.',
+        render: () => devs.map((id) => { const rows = L.filter((x) => x.id === id); return UI.group(rows[0].device, rows.map((b) => `<a class="cell" href="device-settings.html?id=${b.id}"><span class="cell-icon">${icon(b.icon, 'icon')}</span><span class="cell-main cell-title">${esc(b.name)}</span>${icon('chevron-right', 'chev')}</a>`).join('')); }).join('') });
+    },
+    soon: () => UI.toast('Coming soon'),
+  });
+
+  render();
+  Store.subscribe(() => render());
+  startDeviceClock(() => {});
+  setInterval(render, 30000);   // "5 min ago" stays true
+})();
+
+},
+"scenario.html": function () {
+/* Scenario editor — one screen for scenes (tap to run) and automations.
+   Reads top to bottom like the sentence it builds: Starts when … · Only if … · Do …
+   The sentence itself is always visible at the top, so the user can check the logic in words. */
+(() => {
+  UI.mount({ variant: 'elevated' });
+  const esc = UI.esc, P = UI.param, SC = Scenarios;
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  const cap1 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+  let s, isNew = false, dirty = false, renamed = false;
+  if (P('id')) { const o = SC.get(P('id')); if (!o) { UI.go('scenarios.html'); return; } s = clone(o); renamed = true; }
+  else if (P('idea')) { const i = SC.ideas(true).find((x) => x.key === P('idea')); s = Object.assign(i ? i.make() : {}, { idea: P('idea') }); isNew = true; renamed = true; }
+  else { isNew = true; const scene = P('new') === 'scene'; s = { name: scene ? 'New scene' : 'New automation', icon: scene ? 'tab-scenarios' : 'clock', manual: scene, on: true, when: [], only: [], do: [] }; }
+  s = Object.assign({ when: [], only: [], do: [], on: true, log: [] }, s);
+  if (isNew) { s.id = Store.uid('s'); s.log = []; }
+  const touch = () => { dirty = true; render(); };
+
+  /* ---------- rows ---------- */
+  const tIcon = (t) => (t.k === 'time' ? 'clock' : t.k === 'sun' ? (t.ev === 'sunrise' ? 'sunrise' : 'moon') : t.k === 'dev' ? SC.iconOf(t.id, t.ch) : 'my-location');
+  const cIcon = (c) => (c.k === 'between' ? (c.from === 'sunrise' ? 'sun' : 'moon') : c.k === 'days' ? 'clock' : SC.iconOf(c.id, c.ch));
+  const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'bell' : a.k === 'wait' ? 'hourglass' : 'tab-scenarios');
+  const row = (act, i, ic, text, sub = '') => `<button class="cell scn-row" data-action="${act}" data-i="${i}">
+      <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(text)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
+  const addRow = (act, text) => `<button class="cell scn-add-row" data-action="${act}"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">${esc(text)}</span></button>`;
+  const condLabel = (c) => cap1(SC.condText(c).replace(/^only (if )?/, (m, f) => (f ? 'if ' : '')));
+  const actSub = (a) => (a.k === 'notify' ? `“${a.text}”` : '');
+
+  function render() {
+    const auto = !s.manual, warn = SC.warnings(s);
+    const title = isNew ? (s.manual ? 'New scene' : 'New automation') : 'Edit scenario';
+    let h = UI.toolbar({ title, back: '', plain: true, right: `<button class="tb-text" data-action="save">${isNew ? 'Add' : 'Save'}</button>` })
+      .replace('<span class="spacer"></span>', `<button class="tb-text muted" data-action="cancel">Cancel</button>`);
+    h += `<div class="scn-head">
+        <button class="scn-avatar" data-action="pick-icon" aria-label="Change icon">${icon(s.icon || 'tab-scenarios', 'icon')}<span class="pen">${icon('pen', 'icon')}</span></button>
+        <button class="scn-name" data-action="rename"><span class="field-label">Name</span><b>${esc(s.name)}</b></button>
+      </div>
+      <div class="scn-plain" data-key="plain"><span class="scn-plain-k">In plain words</span><p>${esc(SC.sentence(s))}</p></div>
+      <div class="pad"><div class="segmented scn-mode" role="tablist">
+        <button class="${s.manual ? 'on' : ''}" data-action="mode" data-v="scene" role="tab" aria-selected="${s.manual}">Tap to run</button>
+        <button class="${auto ? 'on' : ''}" data-action="mode" data-v="auto" role="tab" aria-selected="${auto}">Automatic</button></div>
+        <div class="scn-mode-note">${s.manual ? 'Runs when you tap it on the Scenarios page.' : 'Runs on its own — the hub keeps working even when your phone is off.'}</div></div>`;
+    if (auto) {
+      h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>
+        <div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}${addRow('trig-add', s.when.length ? 'Or when…' : 'Add a start')}</div>
+        ${s.when.length > 1 ? '<div class="list-footer" data-key="f-when">Any one of these starts it.</div>' : ''}
+        <div class="list-header scn-lh" data-key="h-only">Only if <span class="scn-opt">optional</span></div>
+        <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}${addRow('cond-add', s.only.length ? 'And only if…' : 'Add a condition')}</div>
+        <div class="list-footer" data-key="f-only">${s.only.length ? 'All of these must be true — otherwise it skips this time, and says why.' : 'For example: only at night, only on weekdays, only if the door is locked.'}</div>`;
+    }
+    h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
+      <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', s.do.length ? 'Then…' : 'Add an action')}</div>
+      ${s.do.length > 1 ? '<div class="list-footer" data-key="f-do">Done from top to bottom.</div>' : ''}`;
+    if (warn.length) h += `<div class="pad" data-key="warn" style="margin-top:20px">${warn.map((w) => `<div class="banner warn" style="margin-top:8px">${icon('round-info')}<div>${esc(w)}</div></div>`).join('')}</div>`;
+    h += `<div class="pad scn-foot" data-key="foot"><button class="btn btn-glass btn-block" data-action="try" ${s.do.length ? '' : 'disabled'}>Try it now</button>
+      ${isNew ? '' : '<button class="btn btn-danger btn-block" data-action="delete">Delete scenario</button>'}</div>`;
+    if (!isNew && (s.log || []).length) {
+      h += `<div class="list-header" data-key="h-log">What happened</div><div class="list scn-log" data-key="l-log">${s.log.slice(0, 6).map((l) => `<div class="cell"><span class="cell-icon ${l.ok ? 'ok' : 'warn'}">${icon(l.ok ? 'check' : 'round-info', 'icon')}</span>
+        <span class="cell-main"><span class="cell-title" style="display:block">${esc(l.ok ? (l.text || 'Ran') : l.text)}</span><span class="cell-sub" style="display:block">${esc(when(l.at))}${l.cause ? ' · ' + esc(l.cause) : ''}</span></span></div>`).join('')}</div>`;
+    }
+    h += '<div style="height:40px"></div>';
+    UI.patch(UI.screen, h);
+  }
+  function when(t) { const d = new Date(t), hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; return new Date().toDateString() === d.toDateString() ? `Today ${hm}` : `${d.getDate()} ${d.toLocaleString('en', { month: 'short' })} ${hm}`; }
+
+  /* ---------- sheet helpers ---------- */
+  const card = (inner) => `<div class="sheet-group"><div class="group-card">${inner}</div></div>`;
+  const choice = (act, ic, title, sub, data = '') => `<button class="cell" data-action="${act}" ${data}><span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(title)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
+  const done = (act, removable, needDone = true) => (!removable && !needDone ? '' : `<div class="scn-sheet-foot">${removable ? `<button class="btn btn-danger" data-action="${act}-remove">Remove</button>` : ''}${needDone ? `<button class="btn btn-primary" data-action="${act}-done">Done</button>` : ''}</div>`);
+  const deviceList = (role, act) => {
+    const L = SC.pickable(role);
+    if (!L.length) return '<div class="pad scn-none">No devices for this yet.</div>';
+    const rooms = [...new Set(L.map((x) => x.room))];
+    return rooms.map((r) => UI.group(r, L.filter((x) => x.room === r).map((x) => `<button class="cell" data-action="${act}" data-id="${x.id}" data-ch="${x.ch}"><span class="cell-icon">${icon(x.icon, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(x.name)}${x.offline ? ' <span class="cell-tag">Offline</span>' : ''}</span>${x.sub ? `<span class="cell-sub" style="display:block">${esc(x.sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`).join(''))).join('');
+  };
+  const daysChips = (days) => `<div class="scn-days" role="group" aria-label="Days">${[1, 2, 3, 4, 5, 6, 7].map((d) => `<button class="chip" data-action="day" data-d="${d}" aria-pressed="${days.includes(d)}">${SC.DAY[d].slice(0, 2)}</button>`).join('')}</div>
+    <div class="scn-presets">${[['Every day', '1234567'], ['Weekdays', '12345'], ['Weekends', '67']].map(([l, v]) => `<button class="btn-sm" data-action="days-preset" data-v="${v}" aria-pressed="${[...days].sort().join('') === v}">${l}</button>`).join('')}</div>`;
+  let sh = null;   // the open sheet's draft: { kind, i, x }
+  const reopen = () => sh && sh.open && sh.open();
+
+  /* ---------- Starts when ---------- */
+  function trigChooser() {
+    UI.sheet({ title: 'Starts when', render: () => UI.group('', 
+      choice('t-time', 'clock', 'At a time', 'e.g. 07:30 on weekdays') +
+      choice('t-sun', 'sunrise', 'At sunrise or sunset', 'Moves with the seasons by itself') +
+      choice('t-people', 'my-location', 'People come or go', 'Uses your phone’s location')) + `<div class="scn-sheet-k">Or when a device notices something</div>` + deviceList('ev', 't-dev-pick') });
+  }
+  function trigTime(i) {
+    const t = i != null ? clone(s.when[i]) : { k: 'time', at: '07:30', days: [1, 2, 3, 4, 5] };
+    sh = { kind: 'trig', i, x: t, open: () => UI.sheet({ title: 'At a time', render: () => `<div class="pad"><label class="scn-time-wrap"><input type="time" class="scn-time" value="${t.at}" data-f="at" aria-label="Time"></label>${daysChips(t.days)}</div>`, footer: done('trig', i != null), onMount: bindTime }) };
+    reopen();
+  }
+  function trigSun(i) {
+    const t = i != null ? clone(s.when[i]) : { k: 'sun', ev: 'sunset', off: 0 };
+    sh = { kind: 'trig', i, x: t, open: () => UI.sheet({ title: 'Sunrise or sunset', render: () => `<div class="list">${Kit.radio('sun-ev', t.ev, [['sunrise', 'Sunrise', `Today ${SC.SUN.sunrise}`], ['sunset', 'Sunset', `Today ${SC.SUN.sunset}`]])}</div>
+        <div class="list" style="margin-top:16px"><div class="cell"><span class="cell-main cell-title">${t.off ? `${Math.abs(t.off)} min ${t.off < 0 ? 'before' : 'after'}` : 'Exactly at it'}</span>${Kit.stepper('sun-off', 'off', t.off ? `${t.off > 0 ? '+' : '−'}${Math.abs(t.off)}` : '0', t.off <= -60, t.off >= 60)}</div></div>`, footer: done('trig', i != null) }) };
+    reopen();
+  }
+  function trigDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('ev', 't-dev-pick') }); }
+  function trigDeviceEvent(id, ch, i) {
+    const d = Store.device(id), evs = SC.cap(d).ev;
+    const t = i != null ? clone(s.when[i]) : { k: 'dev', id, ch, ev: evs[0].k };
+    const e = () => SC.findIn(evs, t.ev);
+    if (e() && e().num && t.v == null) t.v = e().num.def;
+    sh = { kind: 'trig', i, x: t, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => {
+      const n = e() && e().num;
+      return `<div class="list">${Kit.radio('ev-pick', t.ev, evs.map((x) => [x.k, x.label + (x.num ? '…' : ''), '']))}</div>
+        ${n ? `<div class="list" style="margin-top:16px"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">${esc(e().label)}</span>${n.hint ? `<span class="cell-sub" style="display:block">${esc(n.hint)}</span>` : ''}</span>${Kit.stepper('ev-v', 'v', `${t.v} ${n.unit}`, t.v <= n.min, t.v >= n.max)}</div></div>` : ''}`;
+    }, footer: () => done('trig', i != null, !!(e() && e().num)) }) };
+    reopen();
+  }
+  function trigPeople(i) {
+    const t = i != null ? clone(s.when[i]) : { k: 'leave' };
+    sh = { kind: 'trig', i, x: t, open: () => UI.sheet({ title: 'People come or go', render: () => `<div class="list">${Kit.radio('people', t.k, [['leave', 'Everyone leaves home', 'The last phone leaves'], ['arrive', 'Someone comes home', 'The first phone arrives']])}</div>
+      <div class="list-footer">Works with the Samo Home app on your family’s phones, with location turned on.</div>`, footer: done('trig', i != null, false) }) };
+    reopen();
+  }
+  function openTrig(i) { const t = s.when[i]; if (t.k === 'time') trigTime(i); else if (t.k === 'sun') trigSun(i); else if (t.k === 'dev') trigDeviceEvent(t.id, t.ch, i); else trigPeople(i); }
+
+  /* ---------- Only if ---------- */
+  function condChooser() {
+    UI.sheet({ title: 'Only if', render: () => UI.group('',
+      choice('c-time', 'moon', 'Time of day', 'At night, in the daytime, or between two times') +
+      choice('c-days', 'clock', 'Days of the week', 'e.g. only on weekdays')) + `<div class="scn-sheet-k">Or only if a device…</div>` + deviceList('st', 'c-dev-pick') });
+  }
+  function condTime(i) {
+    const c = i != null ? clone(s.only[i]) : { k: 'between', from: 'sunset', to: 'sunrise' };
+    const mode = () => (c.from === 'sunset' && c.to === 'sunrise' ? 'night' : c.from === 'sunrise' && c.to === 'sunset' ? 'day' : 'custom');
+    sh = { kind: 'cond', i, x: c, open: () => UI.sheet({ title: 'Time of day', render: () => `<div class="list">${Kit.radio('ct-mode', mode(), [['night', 'At night', `From sunset to sunrise · ${SC.SUN.sunset}–${SC.SUN.sunrise} today`], ['day', 'In the daytime', `From sunrise to sunset · ${SC.SUN.sunrise}–${SC.SUN.sunset} today`], ['custom', 'Between two times', '']])}</div>
+      ${mode() === 'custom' ? `<div class="pad scn-between"><label>From<input type="time" class="scn-time sm" data-f="from" value="${c.from}"></label><label>To<input type="time" class="scn-time sm" data-f="to" value="${c.to}"></label></div>` : ''}`, footer: () => done('cond', i != null, mode() === 'custom'), onMount: bindTime }) };
+    reopen();
+  }
+  function condDays(i) {
+    const c = i != null ? clone(s.only[i]) : { k: 'days', days: [1, 2, 3, 4, 5] };
+    sh = { kind: 'cond', i, x: c, open: () => UI.sheet({ title: 'Days of the week', render: () => `<div class="pad">${daysChips(c.days)}</div>`, footer: done('cond', i != null) }) };
+    reopen();
+  }
+  function condDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('st', 'c-dev-pick') }); }
+  function condDeviceState(id, ch, i) {
+    const sts = SC.cap(Store.device(id)).st;
+    const c = i != null ? clone(s.only[i]) : { k: 'state', id, ch, is: sts[0].k };
+    sh = { kind: 'cond', i, x: c, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => `<div class="list">${Kit.radio('st-pick', c.is, sts.map((x) => [x.k, x.label, '']))}</div>`, footer: done('cond', i != null, false) }) };
+    reopen();
+  }
+  function openCond(i) { const c = s.only[i]; if (c.k === 'between') condTime(i); else if (c.k === 'days') condDays(i); else condDeviceState(c.id, c.ch, i); }
+
+  /* ---------- Do ---------- */
+  function actChooser() {
+    const scenes = SC.list().filter((x) => x.manual && x.id !== s.id);
+    UI.sheet({ title: 'Do', render: () => UI.group('',
+      choice('a-notify', 'bell', 'Send a notification', 'To your phone or the whole family') +
+      choice('a-wait', 'hourglass', 'Wait', 'Pause before the next action') +
+      (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '')) + `<div class="scn-sheet-k">Or control a device</div>` + deviceList('act', 'a-dev-pick') });
+  }
+  function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
+  const BACKS = [0, 1, 2, 5, 10, 30, 60, 90];
+  function actDeviceDo(id, ch, i) {
+    const acts = SC.cap(Store.device(id)).act;
+    const a = i != null ? clone(s.do[i]) : { k: 'dev', id, ch, to: acts[0].k };
+    sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => {
+      const cur = SC.findIn(acts, a.to);
+      const blocked = acts.filter((x) => x.manualOnly && !s.manual);
+      return `<div class="list">${Kit.radio('do-pick', a.to, acts.filter((x) => !(x.manualOnly && !s.manual)).map((x) => [x.k, x.label, '']))}</div>
+        ${blocked.length ? `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>` : ''}
+        ${cur && cur.back ? `<div class="list-header">Then ${esc(cur.label === 'Open' ? 'close it' : 'turn it off')}</div><div class="scn-backs">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${(a.back || 0) === b}">${b ? (b >= 60 ? `${b / 60 === 1.5 ? '1.5' : b / 60} h` : `${b} min`) : 'Never'}</button>`).join('')}</div>
+          <div class="list-footer">${a.back ? `Goes back after ${a.back} min — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>` : ''}`;
+    }, footer: () => done('act', i != null, !!(SC.findIn(acts, a.to) || {}).back) }) };
+    reopen();
+  }
+  function actNotify(i) {
+    const a = i != null ? clone(s.do[i]) : { k: 'notify', text: s.manual ? `${s.name} is done` : '', critical: false };
+    sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Send a notification', render: () => `<label class="field"><span class="field-label">Message</span><input data-f="text" value="${esc(a.text)}" maxlength="80" placeholder="e.g. The front door is open" autocomplete="off"></label>
+      <div class="list" style="margin-top:16px">${Kit.sw('nt-crit', 'c', 'Urgent alert to everyone', 'Rings even on silent phones — for leaks, smoke, break-ins', a.critical)}</div>`, footer: done('act', i != null), onMount: (el) => { const inp = el.querySelector('[data-f="text"]'); inp.addEventListener('input', () => { a.text = inp.value; }); } }) };
+    reopen();
+  }
+  function actWait(i) {
+    const a = i != null ? clone(s.do[i]) : { k: 'wait', min: 5 };
+    sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Wait', render: () => `<div class="list"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Wait</span><span class="cell-sub" style="display:block">Then the next action</span></span>${Kit.stepper('wait-v', 'v', `${a.min} min`, a.min <= 1, a.min >= 120)}</div></div>`, footer: done('act', i != null) }) };
+    reopen();
+  }
+  function actRun(i) {
+    const scenes = SC.list().filter((x) => x.manual && x.id !== s.id);
+    const a = i != null ? clone(s.do[i]) : { k: 'run', sid: (scenes[0] || {}).id };
+    sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Run a scene', render: () => `<div class="list">${Kit.radio('run-pick', a.sid, scenes.map((x) => [x.id, x.name, `${x.do.length} actions`]))}</div>`, footer: done('act', i != null, false) }) };
+    reopen();
+  }
+  function openAct(i) { const a = s.do[i]; if (a.k === 'dev') actDeviceDo(a.id, a.ch, i); else if (a.k === 'notify') actNotify(i); else if (a.k === 'wait') actWait(i); else actRun(i); }
+
+  function bindTime(el) {
+    el.querySelectorAll('input[type="time"]').forEach((inp) => inp.addEventListener('change', () => { if (inp.value) { sh.x[inp.dataset.f] = inp.value; } }));
+  }
+  const listOf = (kind) => (kind === 'trig' ? s.when : kind === 'cond' ? s.only : s.do);
+  function commit(kind) {
+    const L = listOf(kind);
+    if (sh.i != null) L[sh.i] = sh.x; else L.push(sh.x);
+    sh = null; UI.closeSheet(); touch();
+  }
+  function removeItem(kind) { listOf(kind).splice(sh.i, 1); sh = null; UI.closeSheet(); touch(); }
+
+  /* ---------- actions ---------- */
+  const SCN_ICONS = [
+    ['Scenarios', ['tab-scenarios', 'moon', 'sun', 'sunrise', 'tab-home', 'lock', 'bell', 'clock', 'power', 'shield-check', 'temperature', 'my-location']],
+    ['Devices', ['dev-bulb', 'dev-lamp', 'dev-curtains', 'dev-door-02', 'dev-tv-1', 'dev-washing', 'dev-radiator', 'dev-drop', 'dev-motion', 'dev-fan', 'dev-ac', 'dev-kettle']],
+  ];
+  function leave() { UI.go('scenarios.html'); }
+  UI.on({
+    cancel: () => (dirty ? UI.confirm({ title: 'Discard changes?', text: 'What you changed in this scenario will be lost.', ok: 'Discard', onOk: leave }) : leave()),
+    save: () => {
+      if (!s.do.length) { UI.toast('Add at least one action'); return; }
+      if (!s.manual && !s.when.length) { UI.toast('Add when it should start'); return; }
+      const out = clone(s);
+      if (out.manual) { out.when = []; out.only = []; }
+      out.do = out.do.filter((a) => !(a.k === 'dev' && a.to === 'unlock' && !out.manual));
+      SC.upsert(out);
+      SafeStorage.session.setItem('samo-flash', isNew ? `“${out.name}” added` : 'Saved');
+      leave();
+    },
+    delete: () => UI.confirm({ title: `Delete “${s.name}”?`, text: 'The devices stay as they are. This can’t be undone.', onOk: () => { SC.remove(s.id); SafeStorage.session.setItem('samo-flash', 'Scenario deleted'); leave(); } }),
+    try: () => {
+      const saved = !isNew && !dirty && SC.get(s.id);   // unsaved edits are tried on a copy, the log stays clean
+      const r = SC.fire(saved || Object.assign(clone(s), { log: [] }), 'Try it now', { test: true });
+      if (saved) s.log = clone(saved.log);
+      render();
+      UI.toast(r.problems && r.problems.length ? r.problems[0] : r.note ? `Done · normally it would skip now: ${r.note}` : 'Done — check your devices');
+    },
+    rename: () => UI.prompt({ title: 'Name', label: 'Scenario name', value: s.name, onOk: (v) => { s.name = v; renamed = true; touch(); } }),
+    'pick-icon': () => { UI.sheet({ title: 'Select an icon', render: () => iconPickerHTML(SCN_ICONS, s.icon, 'sc-icon'), footer: ICON_DONE }); },
+    'sc-icon': ({ n }) => { s.icon = n; dirty = true; UI.closeSheet(); render(); },
+    mode: ({ v }) => { const m = v === 'scene'; if (m === s.manual) return; s.manual = m; if (!renamed) s.name = m ? 'New scene' : 'New automation'; touch(); },
+
+    'trig-add': trigChooser, trig: ({ i }) => openTrig(+i),
+    't-time': () => trigTime(), 't-sun': () => trigSun(), 't-dev': trigDevice, 't-people': () => trigPeople(),
+    't-dev-pick': ({ id, ch }) => trigDeviceEvent(id, +ch),
+    'sun-ev': ({ v }) => { sh.x.ev = v; reopen(); },
+    'sun-off': ({ d }) => { sh.x.off = Math.max(-60, Math.min(60, (+sh.x.off || 0) + 15 * +d)); reopen(); },
+    'ev-pick': ({ v }) => { sh.x.ev = v; const e = SC.evOf(sh.x); if (e && e.num) { sh.x.v = sh.x.v != null && sh.x.v >= e.num.min && sh.x.v <= e.num.max ? sh.x.v : e.num.def; reopen(); } else { delete sh.x.v; commit('trig'); } },
+    'ev-v': ({ d }) => { const n = SC.evOf(sh.x).num; sh.x.v = Math.round(Math.max(n.min, Math.min(n.max, sh.x.v + n.step * +d)) * 10) / 10; reopen(); },
+    people: ({ v }) => { sh.x.k = v; commit('trig'); },
+    'trig-done': () => commit('trig'), 'trig-remove': () => removeItem('trig'),
+
+    'cond-add': condChooser, cond: ({ i }) => openCond(+i),
+    'c-time': () => condTime(), 'c-days': () => condDays(), 'c-dev': condDevice,
+    'c-dev-pick': ({ id, ch }) => condDeviceState(id, +ch),
+    'ct-mode': ({ v }) => { const c = sh.x; if (v === 'night') { c.from = 'sunset'; c.to = 'sunrise'; } else if (v === 'day') { c.from = 'sunrise'; c.to = 'sunset'; } else { if (/sun/.test(c.from)) { c.from = '22:00'; c.to = '07:00'; } return reopen(); } commit('cond'); },
+    'st-pick': ({ v }) => { sh.x.is = v; commit('cond'); },
+    'cond-done': () => commit('cond'), 'cond-remove': () => removeItem('cond'),
+
+    day: ({ d }) => { const L = sh.x.days; const n = +d; const i = L.indexOf(n); if (i >= 0) { if (L.length > 1) L.splice(i, 1); } else L.push(n); reopen(); },
+    'days-preset': ({ v }) => { sh.x.days = v.split('').map(Number); reopen(); },
+
+    'act-add': actChooser, act: ({ i }) => openAct(+i),
+    'a-dev': actDevice, 'a-notify': () => actNotify(), 'a-wait': () => actWait(), 'a-run': () => actRun(),
+    'a-dev-pick': ({ id, ch }) => actDeviceDo(id, +ch),
+    'do-pick': ({ v }) => { sh.x.to = v; const c = SC.findIn(SC.cap(Store.device(sh.x.id)).act, v); if (!c || !c.back) { delete sh.x.back; commit('act'); } else reopen(); },
+    'do-back': ({ v }) => { if (+v) sh.x.back = +v; else delete sh.x.back; reopen(); },
+    'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
+    'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },
+    'run-pick': ({ v }) => { sh.x.sid = v; commit('act'); },
+    'act-done': () => { if (sh.x.k === 'notify' && !String(sh.x.text || '').trim()) { UI.toast('Write the message'); return; } commit('act'); },
+    'act-remove': () => removeItem('act'),
+  });
+
+  render();
+  // a device can change while the editor is open (its name, offline) — keep the words true
+  Store.subscribe(() => { if (!UI.sheetOpen) render(); });
 })();
 
 }

@@ -43,6 +43,8 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Vibration sensor page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-vibration |
 | Energy meter page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-meter |
 | IR remote page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-ir |
+| Scenarios tab (prototype) | https://mardonovabdulaziz.github.io/samo-home/scenarios.html |
+| Design lab · Scenarios research, decisions & test | https://mardonovabdulaziz.github.io/samo-home/design/scenarios-research.html |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 | Design lab · Aura for every sensor state (gas, smoke, leak, vibration, air) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-aura.html |
 | Design lab · contact “Other” open / closed (5 ideas) | https://mardonovabdulaziz.github.io/samo-home/design/other-open.html |
