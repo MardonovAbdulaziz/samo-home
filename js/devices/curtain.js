@@ -958,7 +958,7 @@ Devices.curtain = (() => {
       title: F.reverse.name, sub: esc(F.reverse.short),
       render: () => `${UI.group('Try it', `<div class="group-pad"><p class="dir-hint">Tap Open and watch the real ${noun(d)}. Did it ${roller(d) ? 'go up' : 'open'}?</p>
             <div class="dir-test">${[['open', openGlyph(d), 'Open'], ['stop', 'stop', 'Stop'], ['close', closeGlyph(d), 'Close']].map(([c, g, t]) => `<button class="btn btn-secondary" data-action="dir-cmd" data-c="${c}" ${d.online ? '' : 'disabled'}>${glyph(g, 'cg sm')}<span>${t}</span></button>`).join('')}</div></div>`)}
-        ${UI.group('Direction', opt(false, 'Normal', `“Open” ${word[0]} the ${noun(d)}`) + opt(true, 'Reversed', `For a motor installed the other way round — use it if “Open” ${word[1]} the ${noun(d)}`))}
+        ${UI.group('', opt(false, 'Normal', `“Open” ${word[0]} the ${noun(d)}`) + opt(true, 'Reversed', `For a motor installed the other way round — use it if “Open” ${word[1]} the ${noun(d)}`))}
         ${has(d, 'calibration') ? '<div class="list-footer">Changing the direction deletes the learned ends: calibrate again afterwards.</div>' : ''}`,
     });
     UI.on({
@@ -1076,5 +1076,7 @@ Devices.curtain = (() => {
     homeTiles, toggle, page, bindPage, live, settings, bindSettings, about, tick, busy, protoPanel, bindProto,
     presetName: (id) => (PRESETS.find((p) => p.id === id) || {}).name,
     _sim: () => V,   // read-only view of the live curtain simulation (used by tools/checks)
+    /** Scenarios: move to a position, given as "% open" like the curtain page shows it. false = not set up yet. */
+    goToOpen: (d, i, pct) => (d.curtains[i] && d.curtains[i].calibrated ? goTo(d, i, phys(d, pct)) : false),
   };
 })();

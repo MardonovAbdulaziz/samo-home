@@ -46,7 +46,7 @@ Devices.climate = (() => {
 
     display: { name: 'Screen', grp: 'Screen', def: { unit: 'celsius', on: true },
       short: 'Only the sensor’s own screen — the app keeps your unit',
-      fields: [{ id: 'on', kind: 'tog', label: 'Screen on' }, { id: 'unit', kind: 'sel', label: 'Unit on the screen', opts: [['celsius', '°C', ''], ['fahrenheit', '°F', '']] }],
+      fields: [{ id: 'on', kind: 'tog', label: 'Screen on' }, { id: 'unit', kind: 'sel', label: 'Unit', opts: [['celsius', '°C', ''], ['fahrenheit', '°F', '']] }],
       foot: 'Turning the screen off saves battery.' },
     comfort: { name: 'Smiley on the screen', grp: 'Screen', def: { smile: true, tmin: 20, tmax: 25, hmin: 40, hmax: 60 },
       short: 'The sensor shows 🙂 inside this range and 😟 outside it, on its own screen',
@@ -382,7 +382,7 @@ Devices.climate = (() => {
         const day = startOfDay();
         const rows = d.log.slice(0, 20).map((e) => `<div class="cell has-icon"><span class="cell-icon">${icon(EVT[e.k] || 'round-info')}</span><span class="cell-main cell-title">${esc(e.text)}</span><span class="cell-value">${e.t >= day ? UI.fmtTime(e.t) : 'Yesterday ' + UI.fmtTime(e.t)}</span></div>`).join('');
         return `<div class="pad">${chart(d, cur)}</div>` + UI.group('Today', stat(sr.hi, ex.hi) + stat(sr.lo, ex.lo))
-          + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">No alarms or alerts today</span></div>')
+          + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">No alarms or alerts today</span></div>')
           + '<div class="list-footer">The sensor only sends its current value. Our server keeps every report and draws this chart.</div>';
       },
     });

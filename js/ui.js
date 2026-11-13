@@ -328,7 +328,12 @@ const UI = (() => {
     if (first && cfg.focus) setTimeout(() => first.focus(), 300);
     return { close: closeSheet, refresh: drawSheet };
   }
-  const footerHTML = (c) => (typeof c.footer === 'function' ? c.footer() : c.footer) || '';
+  /* Done rule (Figma sheets, user 2026-11-12/13): a sheet where you set values — several switches, a stepper,
+     a slider or a text field — gets a Done button; a single-choice list closes on the tap. A sheet can still pass
+     its own footer (or footer: '' for none). */
+  const DONE_BTN = '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>';
+  const needsDone = (body) => (body.match(/class="switch"/g) || []).length > 1 || /class="stepper"/.test(body) || /class="range\b/.test(body) || /<input(?![^>]*type="(?:hidden|checkbox|radio)")/.test(body);
+  const footerHTML = (c, body = '') => { const f = typeof c.footer === 'function' ? c.footer() : c.footer; return f != null ? f : needsDone(body) ? DONE_BTN : ''; };
   function drawSheet() {
     const c = sheetState; if (!c) return;
     const scroll = sheetEl.querySelector('.sheet-body')?.scrollTop || 0;
@@ -339,15 +344,16 @@ const UI = (() => {
     const x = c.closeBtn === false ? '' : `<button class="icon-btn sheet-x" data-action="sheet-close" aria-label="Close">${icon('close-circle')}</button>`;
     sheetEl.classList.toggle('sheet-full', !!c.full);
     // full: Figma "Edit" layout — close top-right, large title + description, pinned footer
+    const body = c.render ? c.render() : '', foot = footerHTML(c, body);
     const sheetHTML = c.full
       ? `<div class="grabber"></div><div class="sheet-top">${x}</div>
         <div class="sheet-big-title">${esc(c.title)}</div>${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}
-        <div class="sheet-body">${c.render ? c.render() : ''}</div>${footerHTML(c) ? `<div class="sheet-footer">${footerHTML(c)}</div>` : ''}`
+        <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`
       : `<div class="grabber"></div>
       <div class="sheet-head"><div class="sheet-title">${esc(c.title)}</div>${x}</div>
       ${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}
       ${c.tabs ? `<div class="sheet-tabs">${c.tabs()}</div>` : ''}
-      <div class="sheet-body">${c.render ? c.render() : ''}</div>${footerHTML(c) ? `<div class="sheet-footer">${footerHTML(c)}</div>` : ''}`;
+      <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`;
     const wasOpen = sheetEl.classList.contains('open');
     const h0 = wasOpen ? sheetEl.getBoundingClientRect().height : 0;
     patch(sheetEl, sheetHTML, { animate: false });   // the sheet glides its own height (below)

@@ -258,7 +258,7 @@ Devices.leak = (() => {
       title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 20).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(EV[e.k] || e.k)}${e.test ? ' · test' : ''}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
-        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
+        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself keeps no history.</div>';
       },
     });

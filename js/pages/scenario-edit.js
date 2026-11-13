@@ -84,7 +84,7 @@
     UI.sheet({ title: 'Starts when', render: () => UI.group('', 
       choice('t-time', 'clock', 'At a time', 'e.g. 07:30 on weekdays') +
       choice('t-sun', 'sunrise', 'At sunrise or sunset', 'Moves with the seasons by itself') +
-      choice('t-people', 'my-location', 'People come or go', 'Uses your phone’s location')) + `<div class="scn-sheet-k">Or when a device notices something</div>` + deviceList('ev', 't-dev-pick') });
+      choice('t-people', 'my-location', 'People come or go', 'Uses your phone’s location')) + deviceList('ev', 't-dev-pick') });
   }
   function trigTime(i) {
     const t = i != null ? clone(s.when[i]) : { k: 'time', at: '07:30', days: [1, 2, 3, 4, 5] };
@@ -122,7 +122,7 @@
   function condChooser() {
     UI.sheet({ title: 'Only if', render: () => UI.group('',
       choice('c-time', 'moon', 'Time of day', 'At night, in the daytime, or between two times') +
-      choice('c-days', 'clock', 'Days of the week', 'e.g. only on weekdays')) + `<div class="scn-sheet-k">Or only if a device…</div>` + deviceList('st', 'c-dev-pick') });
+      choice('c-days', 'clock', 'Days of the week', 'e.g. only on weekdays')) + deviceList('st', 'c-dev-pick') });
   }
   function condTime(i) {
     const c = i != null ? clone(s.only[i]) : { k: 'between', from: 'sunset', to: 'sunrise' };
@@ -152,21 +152,35 @@
       choice('a-notify', 'bell', 'Send a notification', 'To your phone or the whole family') +
       choice('a-wait', 'hourglass', 'Wait', 'Pause before the next action') +
       (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '') +
-      (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + `<div class="scn-sheet-k">Or control a device</div>` + deviceList('act', 'a-dev-pick') });
+      (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + deviceList('act', 'a-dev-pick') });
   }
   function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
   const BACKS = [0, 1, 2, 5, 10, 30, 60, 90];
   function actDeviceDo(id, ch, i) {
-    const acts = SC.cap(Store.device(id)).act;
+    const d = Store.device(id), acts = SC.cap(d).act;
+    const lc = d.type === 'light' ? Devices.light.sceneCaps(d) : {};
     const a = i != null ? clone(s.do[i]) : { k: 'dev', id, ch, to: acts[0].k };
+    const needDone = () => { const c = SC.findIn(acts, a.to) || {}; return !!(c.back || c.pos || c.light); };
     sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => {
-      const cur = SC.findIn(acts, a.to);
+      const cur = SC.findIn(acts, a.to) || {};
       const blocked = acts.filter((x) => x.manualOnly && !s.manual);
-      return `<div class="list">${Kit.radio('do-pick', a.to, acts.filter((x) => !(x.manualOnly && !s.manual)).map((x) => [x.k, x.label, '']))}</div>
-        ${blocked.length ? `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>` : ''}
-        ${cur && cur.back ? `<div class="list-header">Then ${esc(cur.label === 'Open' ? 'close it' : 'turn it off')}</div><div class="scn-backs">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${(a.back || 0) === b}">${b ? (b >= 60 ? `${b / 60 === 1.5 ? '1.5' : b / 60} h` : `${b} min`) : 'Never'}</button>`).join('')}</div>
-          <div class="list-footer">${a.back ? `Goes back after ${a.back} min — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>` : ''}`;
-    }, footer: () => done('act', i != null, !!(SC.findIn(acts, a.to) || {}).back) }) };
+      let h = `<div class="list">${Kit.radio('do-pick', a.to, acts.filter((x) => !(x.manualOnly && !s.manual)).map((x) => [x.k, x.label, '']))}</div>`;
+      if (blocked.length) h += `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>`;
+      // light: brightness and colour, set together with "Turn on"
+      if (cur.light && (lc.br || lc.color || lc.ct)) {
+        const dots = Devices.light.SWATCH.filter((x) => lc.color || x.n === 'white');
+        h += `<div class="list-header">When it turns on</div><div class="list">
+          ${lc.br ? `<div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Brightness</span><span class="cell-sub" style="display:block">${a.br ? 'Set when it turns on' : 'Stays as it was last time'}</span></span>${Kit.stepper('do-br', 'br', a.br ? `${a.br} %` : 'As is', !a.br, a.br >= 100)}</div>` : ''}
+          ${lc.color || lc.ct ? `<div class="cell scn-colour-row"><span class="cell-main"><span class="cell-title" style="display:block">Colour</span>
+            <span class="scn-dots" role="radiogroup" aria-label="Colour"><button class="scn-dot keep" data-action="do-col" data-v="" aria-checked="${!a.col}" role="radio">As is</button>
+            ${dots.map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.n}" role="radio" aria-checked="${a.col === x.n}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</span></span></div>` : ''}</div>`;
+      }
+      // curtain: an exact position
+      if (cur.pos) h += `<div class="list-header">Position</div><div class="list"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Open</span><span class="cell-sub" style="display:block">${a.pos === 0 ? 'Fully closed' : a.pos === 100 ? 'Fully open' : `${100 - a.pos} % closed`}</span></span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
+      if (cur.back) h += `<div class="list-header">Then ${esc(cur.label === 'Open' ? 'close it' : 'turn it off')}</div><div class="scn-backs">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${(a.back || 0) === b}">${b ? (b >= 60 ? `${b / 60 === 1.5 ? '1.5' : b / 60} h` : `${b} min`) : 'Never'}</button>`).join('')}</div>
+          <div class="list-footer">${a.back ? `Goes back after ${a.back} min — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>`;
+      return h;
+    }, footer: () => done('act', i != null, needDone()) }) };
     reopen();
   }
   function actNotify(i) {
@@ -263,7 +277,14 @@
     'act-add': actChooser, act: ({ i }) => openAct(+i),
     'a-dev': actDevice, 'a-notify': () => actNotify(), 'a-wait': () => actWait(), 'a-run': () => actRun(),
     'a-dev-pick': ({ id, ch }) => actDeviceDo(id, +ch),
-    'do-pick': ({ v }) => { sh.x.to = v; const c = SC.findIn(SC.cap(Store.device(sh.x.id)).act, v); if (!c || !c.back) { delete sh.x.back; commit('act'); } else reopen(); },
+    'do-pick': ({ v }) => {
+      const x = sh.x; x.to = v; const c = SC.findIn(SC.cap(Store.device(x.id)).act, v) || {};
+      if (!c.back) delete x.back; if (!c.light) { delete x.br; delete x.col; } if (c.pos) { if (x.pos == null) x.pos = 10; } else delete x.pos;
+      if (c.back || c.pos || c.light) reopen(); else commit('act');
+    },
+    'do-br': ({ d }) => { const x = sh.x; const v = (x.br || 0) + 10 * +d; if (v <= 0) delete x.br; else x.br = Math.min(100, v); reopen(); },
+    'do-col': ({ v }) => { if (v) sh.x.col = v; else delete sh.x.col; reopen(); },
+    'do-pos': ({ d }) => { sh.x.pos = Math.max(0, Math.min(100, (sh.x.pos || 0) + 10 * +d)); reopen(); },
     'do-back': ({ v }) => { if (+v) sh.x.back = +v; else delete sh.x.back; reopen(); },
     'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
     'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },

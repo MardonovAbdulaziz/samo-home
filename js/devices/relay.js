@@ -683,7 +683,7 @@ function makeSwitch(K) {
         const week = days.reduce((a, v) => a + v, 0);
         const rows = (d.log || []).slice(0, 12).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.text)}</span><span class="cell-value">${UI.fmtTime(e.t)}</span></div>`).join('');
         return UI.group('Last 7 days, kWh', `<div class="group-pad">${bars}</div>`) + UI.group('', `<div class="cell"><span class="cell-main cell-title">This week</span><span class="cell-value">${week.toFixed(2)} kWh</span></div><div class="cell"><span class="cell-main cell-title">Total on the plug</span><span class="cell-value">${d.energy.toFixed(2)} kWh</span></div>`)
-          + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">No safety events</span></div>');
+          + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">No safety events</span></div>');
       },
     });
   }

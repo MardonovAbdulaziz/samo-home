@@ -40,6 +40,7 @@ const Scenarios = (() => {
     _: ['Turns on', 'Turns off', 'is on', 'is off', 'Turn on', 'Turn off'],
   };
   const words = (d) => WORDS[d.type] || WORDS._;
+  const COLOUR_WORD = { white: 'white light', blue: 'blue', mint: 'mint', red: 'red', purple: 'purple' };
 
   /** Current signals of one device channel (read from the live device model). */
   function sig(d, ch = 0) {
@@ -107,7 +108,8 @@ const Scenarios = (() => {
     const onoff = switchable ? {
       ev: [{ k: 'on', label: w[0], s: w[0].toLowerCase(), test: rise('on') }, { k: 'off', label: w[1], s: w[1].toLowerCase(), test: fall('on') }],
       st: [{ k: 'on', label: w[2][0].toUpperCase() + w[2].slice(1), s: w[2], test: (x) => x.on }, { k: 'off', label: w[3][0].toUpperCase() + w[3].slice(1), s: w[3], test: (x) => !x.on }],
-      act: [{ k: 'on', label: w[4], s: w[4].toLowerCase(), back: true }, { k: 'off', label: w[5], s: w[5].toLowerCase() }],
+      act: [{ k: 'on', label: w[4], s: w[4].toLowerCase(), back: true, light: d.type === 'light' }, { k: 'off', label: w[5], s: w[5].toLowerCase() },
+        ...(d.type === 'curtain' ? [{ k: 'pos', label: 'Set a position', s: 'set', pos: true }] : [])],
     } : {};
     return { ev: c.ev || onoff.ev || [], st: c.st || onoff.st || [], act: c.act || onoff.act || [] };
   }
@@ -158,7 +160,9 @@ const Scenarios = (() => {
   function actionText(a) {
     if (a.k === 'dev') {
       const d = dev(a.id); const x = findIn(cap(d).act, a.to);
-      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${a.back ? ` for ${a.back} min` : ''}`;
+      if (a.to === 'pos') return `set ${nameOf(a.id, a.ch)} to ${a.pos} % open`;
+      const extra = [a.br ? `${a.br} %` : '', a.col ? COLOUR_WORD[a.col] || a.col : ''].filter(Boolean).join(', ');
+      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${extra ? ` at ${extra}` : ''}${a.back ? ` for ${a.back} min` : ''}`;
     }
     if (a.k === 'notify') return a.critical ? 'send everyone an urgent alert' : 'send you a notification';
     if (a.k === 'wait') return `wait ${a.min} min`;
@@ -200,9 +204,10 @@ const Scenarios = (() => {
     .flatMap((d) => tilesOf(d).filter((t) => t.controllable && /bulb|lamp|led|chandelier/.test(t.icon || '')).map((t) => ({ id: d.id, ch: t.ch })));
   function ideas(all = false) {
     const door = firstOf((d) => d.type === 'contact'), lock = firstOf((d) => d.type === 'lock'), curtain = firstOf((d) => d.type === 'curtain');
-    const lamp = lightsAll()[0], lights = lightsAll(), dryer = firstOf((d) => d.type === 'vibration'), climate = firstOf((d) => d.type === 'climate');
+    const lights = lightsAll(), lamp = lights.find((l) => (dev(l.id) || {}).type === 'light') || lights[0], dryer = firstOf((d) => d.type === 'vibration'), climate = firstOf((d) => d.type === 'climate');
     const motion = firstOf((d) => d.type === 'motion'), heater = S().devices.find((d) => d.type === 'relay' && /heater/i.test(d.name)), air = firstOf((d) => d.type === 'air');
     const hall = lights.find((l) => /hall/i.test(nameOf(l.id, l.ch))) || lamp;
+    const lampIsLight = (l) => { const d = dev(l.id); return d && d.type === 'light' && Devices.light.sceneCaps(d).color; };
     const base = (o) => Object.assign({ manual: false, on: true, when: [], only: [], do: [] }, o);
     const L = [
       lights.length && { key: 'goodnight', title: 'Good night', sub: 'One tap: lights off, door locked, curtains closed', icon: 'moon',
@@ -213,6 +218,10 @@ const Scenarios = (() => {
         make: () => base({ name: 'Light when I come in', icon: 'dev-door-02', when: [{ k: 'dev', id: door.id, ch: 0, ev: 'open' }], only: [{ k: 'between', from: 'sunset', to: 'sunrise' }], do: [{ k: 'dev', id: hall.id, ch: hall.ch, to: 'on', back: 5 }] }) },
       curtain && { key: 'morning', title: 'Curtains open in the morning', sub: 'Weekdays at 07:30', icon: 'sunrise',
         make: () => base({ name: 'Morning curtains', icon: 'sunrise', when: [{ k: 'time', at: '07:30', days: [1, 2, 3, 4, 5] }], do: [{ k: 'dev', id: curtain.id, ch: 0, to: 'on' }] }) },
+      curtain && lamp && { key: 'movie', title: 'Movie time', sub: `Curtains 90 % closed, ${nameOf(lamp.id, lamp.ch)} red at 20 %, other lights off`, icon: 'dev-tv-1',
+        make: () => base({ name: 'Movie time', icon: 'dev-tv-1', manual: true, do: [{ k: 'dev', id: curtain.id, ch: 0, to: 'pos', pos: 10 },
+          lampIsLight(lamp) ? { k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on', br: 20, col: 'red' } : { k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on' },
+          ...lights.filter((l) => l.id !== lamp.id || l.ch !== lamp.ch).map((l) => ({ k: 'dev', id: l.id, ch: l.ch, to: 'off' }))] }) },
       lamp && { key: 'sunset', title: 'Lamp on at sunset', sub: `${nameOf(lamp.id, lamp.ch)} turns on when it gets dark`, icon: 'sun',
         make: () => base({ name: 'Lamp at sunset', icon: 'sun', when: [{ k: 'sun', ev: 'sunset', off: 0 }], do: [{ k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on' }] }) },
       door && { key: 'leftopen', title: 'Door left open', sub: `Tell me if ${door.name} stays open for 5 min`, icon: 'bell',
@@ -271,6 +280,8 @@ const Scenarios = (() => {
   function applyDev(a) {
     const d = dev(a.id); if (!d || d.online === false) return `${nameOf(a.id, a.ch)} is offline`;
     if (d.type === 'lock') { Devices.lock.remote(d, a.to === 'lock', 'Scenario', 'scenario'); return null; }
+    if (a.to === 'pos') return Devices.curtain.goToOpen(d, a.ch || 0, a.pos) === false ? `${nameOf(a.id, a.ch)} isn’t set up yet` : null;
+    if (d.type === 'light' && a.to === 'on' && (a.br || a.col)) return Devices.light.applyScene(d, a.ch || 0, { br: a.br, col: a.col });
     const t = tileOf(d, a.ch || 0);
     if (!t.controllable) return `${nameOf(a.id, a.ch)} can’t be switched`;
     const want = a.to === 'on';
@@ -402,13 +413,14 @@ const Scenarios = (() => {
   }
   /* Chains: which device events an action makes, and which automations they start */
   const EV_OF = { on: 'on', off: 'off', lock: 'lock', unlock: 'unlock' };
+  const evOfAct = (x) => (x.to === 'pos' ? (x.pos > 2 ? 'on' : 'off') : EV_OF[x.to]);
   /** Does scenario a (by its device actions or "run a scene") start automation b? */
   function starts(a, b) {
     if (b.manual || b.on === false) return false;
-    return a.do.some((x) => (x.k === 'dev' && b.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === EV_OF[x.to]))
+    return a.do.some((x) => (x.k === 'dev' && b.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === evOfAct(x)))
       || (x.k === 'run' && x.sid !== a.id && (() => { const o = get(x.sid); return o && starts(o, b); })()));
   }
-  function selfDev(s) { const x = s.do.find((x) => x.k === 'dev' && s.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === EV_OF[x.to])); return [x.id, x.ch]; }
+  function selfDev(s) { const x = s.do.find((x) => x.k === 'dev' && s.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === evOfAct(x))); return [x.id, x.ch]; }
   /** Automations this one starts right after it runs (shown under "Do" in the editor). */
   function next(s) { return autos().filter((o) => o.id !== s.id && starts(s, o)); }
   /** A path s → … → s through other automations, or null. */

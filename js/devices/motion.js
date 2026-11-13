@@ -325,7 +325,7 @@ Devices.motion = (() => {
           const list = ts.length ? ts.map((t) => `<button class="option" role="radio" aria-checked="${cur === `${t.id}:${t.ch}`}" data-action="mo-target" data-v="${t.id}:${t.ch}"><span class="cell-icon" style="color:var(--label-secondary)">${icon(t.icon)}</span><span class="option-main"><span class="option-title" style="display:block">${esc(t.name)}</span><span class="option-sub" style="display:block">${esc(t.room)}</span></span><span class="radio">${icon('radio-on')}</span></button>`).join('')
             : '<div class="cell"><span class="cell-main cell-sub">No lights or relays in this home yet</span></div>';
           return `<div class="list"><button class="cell" data-action="mo-ml-tog"><span class="cell-main cell-title">Turn a light on with motion</span><span class="switch" role="switch" aria-checked="${v.on}"></span></button></div>`
-            + UI.collapse(v.on, UI.group('Light', list)
+            + UI.collapse(v.on, UI.group('Which light', list)
               + UI.group('When', `<div class="cell"><span class="cell-main cell-title">Only when darker than</span>${stepper('mo-lux', v.lux, 'lx', 0, 1000)}</div><div class="cell"><span class="cell-main cell-title">Off after no motion for</span>${stepper('mo-off', v.off, 'min', 1, 60)}</div>`))
             + '<div class="list-footer">Night is about 10 lx, a lit room about 200 lx, daylight 300 lx and more.</div>';
         }
@@ -360,7 +360,7 @@ Devices.motion = (() => {
       title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 24).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(EV[e.k] || e.k)}${e.name ? ` · ${esc(e.name)}` : ''}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
-        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
+        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself only knows “motion” or “no motion” right now.</div>';
       },
     });

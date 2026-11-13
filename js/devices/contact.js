@@ -437,7 +437,7 @@ Devices.contact = (() => {
           const title = e.k === 'long' ? `Still open after ${e.min} min` : EV[e.k] || e.k;
           return `<div class="cell"><span class="cell-main cell-title">${esc(title)}</span><span class="cell-value">${when}</span></div>`;
         }).join('');
-        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
+        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself keeps no history.</div>';
       },
     });

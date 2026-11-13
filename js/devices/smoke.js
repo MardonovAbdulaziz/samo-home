@@ -301,7 +301,7 @@ Devices.smoke = (() => {
       title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 24).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.k === 'scene' ? 'Safety scenario: ' + e.text : EV[e.k] || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
-        return UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">The detector keeps no history.</div>';
+        return UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">The detector keeps no history.</div>';
       },
     });
   }

@@ -1987,6 +1987,68 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-next .icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--primary); }
 .scn-next b { color: var(--label-primary); font-weight: 500; }
 
+/* ==========================================================================
+   Bottom sheets = Figma (Samo-home 6014:56, Gas & CO sheets 6830:16015 / 16690 / 17390 / 17693)
+   grabber 36×5 in a 15 px strip · nav 48 (title 24/32 bold, × 24 label/tertiary)
+   description 15/18 label/secondary, 20 below · no description → 20 between the title row and the content
+   content: 8 / 16 / 20 · groups 24 apart · group title 15/18 label/primary, 12 above its card
+   card: fills/quaternary, radius 20, 4 / 16 inside · rows 64 (one line) / 72 (two lines), text 17/22,
+   1 px separator under every row but the last — straight, edge to edge of the card's content
+   note under a card: 13/16 label/tertiary, 12 above. Every radio list sits in a card too.
+   ========================================================================== */
+.sheet .grabber { width: 36px; height: 5px; border-radius: 20px; background: var(--separator); margin: 10px auto 0; }
+.sheet .sheet-head { min-height: 48px; padding: 8px var(--screen-pad) 8px; align-items: flex-start; }
+.sheet .sheet-head .sheet-title { padding-top: 0; }
+.sheet .sheet-head .sheet-x { margin: 4px -4px 0 0; }
+.sheet .sheet-sub { font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-secondary); padding: 0 var(--screen-pad) 20px; }
+.sheet .sheet-head + .sheet-body { padding-top: 20px; }
+.sheet .sheet-sub + .sheet-body, .sheet .sheet-tabs + .sheet-body { padding-top: 8px; }
+.sheet .sheet-body { padding-bottom: 20px; }
+
+/* cards */
+.sheet .list, .sheet .group-card { margin: 0 var(--screen-pad); background: var(--fill-quaternary); border-radius: 20px; padding: 4px 16px; box-shadow: none; overflow: visible; }
+.sheet .sheet-group .group-card { margin: 0; }
+.sheet .list:has(> .option) { background: var(--fill-quaternary) !important; border-radius: 20px; padding: 4px 16px; overflow: visible; }
+.sheet .list + .list { margin-top: 24px; }
+
+/* rows inside sheet cards */
+.sheet .list > .cell, .sheet .list > .option, .sheet .group-card > .cell, .sheet .group-card > .option {
+  min-height: 64px; padding: 11px 0; border-radius: 0; border-bottom: 1px solid var(--separator); gap: 12px; }
+.sheet .list > .option, .sheet .group-card > .option { gap: 16px; }
+.sheet .list > :is(.cell, .option):has(.cell-sub, .option-sub), .sheet .group-card > :is(.cell, .option):has(.cell-sub, .option-sub) { min-height: 72px; }
+.sheet .list > :is(.cell, .option):last-child, .sheet .group-card > :is(.cell, .option):last-child { border-bottom: 0; }
+.sheet :is(.list, .group-card) > :is(.cell, .option) .cell-title,
+.sheet :is(.list, .group-card) > .option .option-title { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+.sheet :is(.list, .group-card) > :is(.cell, .option) :is(.cell-sub, .option-sub) { font: var(--body-sm); letter-spacing: var(--body-sm-ls); color: var(--label-secondary); margin-top: 2px; }
+.sheet :is(.list, .group-card) > .option .radio { margin: 0; }
+/* press highlight keeps its own rounded shape; the row and its separator stay straight */
+.sheet :is(.list, .group-card) > :is(button.cell, a.cell, .option)::after { content: ""; position: absolute; inset: 3px -10px; border-radius: 12px; background: rgba(255, 255, 255, 0.06); opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); pointer-events: none; }
+.sheet :is(.list, .group-card) > :is(button.cell, a.cell, .option):active::after { opacity: 1; }
+.sheet :is(.list, .group-card) > :is(.cell, .option) { position: relative; }
+.sheet :is(.list, .group-card) > .option:active { background: transparent; }
+
+/* group titles and notes */
+.sheet .sheet-group { padding: 0 var(--screen-pad); }
+.sheet .sheet-group .group-title, .sheet .list-header { font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-primary); padding: 0 16px; margin: 0 0 12px; }
+.sheet .list-header { padding: 0 calc(var(--screen-pad) + 16px); margin-top: 24px; }
+.sheet .sheet-body > .list-header:first-child { margin-top: 0; }
+.sheet .sheet-body > * + .sheet-group, .sheet .sheet-group + .sheet-group { margin-top: 24px; }
+.sheet .list-footer { font: var(--body-sm); letter-spacing: var(--body-sm-ls); color: var(--label-tertiary); padding: 12px calc(var(--screen-pad) + 16px) 0; }
+/* scenario action sheet: colour dots (Figma light colour block dots, in a row) and the "turn it off after" chips */
+.scn-colours { padding: 14px 16px !important; }
+.scn-dots { display: flex; align-items: center; gap: 12px; }
+.scn-dot { width: 36px; height: 36px; border-radius: 50%; background: var(--dot); box-shadow: inset 0 0 0 1px var(--separator); position: relative; flex-shrink: 0; transition: transform var(--dur-fast) var(--ease-out); }
+.scn-dot:active { transform: scale(.92); }
+.scn-dot[aria-checked="true"]::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.scn-dot.keep { width: auto; height: 36px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); font: var(--body-sm-accent); color: var(--label-primary); box-shadow: none; }
+.scn-dot.keep[aria-checked="true"] { background: var(--primary); color: #fff; }
+.scn-dot.keep[aria-checked="true"]::after { content: none; }
+.sheet .scn-backs { padding: 0 var(--screen-pad); }
+.scn-colour-row .cell-main { display: grid; gap: 12px; }
+.scn-colour-row .scn-dots { gap: 10px; }
+/* rows with a trailing value (Event History, info rows) = Figma "Settings row": title 15/18 medium, value 13/16 */
+.sheet :is(.list, .group-card) > .cell:has(> .cell-value) .cell-title { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }
+
 </style>
 </head>
 <body>
@@ -2386,7 +2448,12 @@ const UI = (() => {
     if (first && cfg.focus) setTimeout(() => first.focus(), 300);
     return { close: closeSheet, refresh: drawSheet };
   }
-  const footerHTML = (c) => (typeof c.footer === 'function' ? c.footer() : c.footer) || '';
+  /* Done rule (Figma sheets, user 2026-11-12/13): a sheet where you set values — several switches, a stepper,
+     a slider or a text field — gets a Done button; a single-choice list closes on the tap. A sheet can still pass
+     its own footer (or footer: '' for none). */
+  const DONE_BTN = '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>';
+  const needsDone = (body) => (body.match(/class="switch"/g) || []).length > 1 || /class="stepper"/.test(body) || /class="range\b/.test(body) || /<input(?![^>]*type="(?:hidden|checkbox|radio)")/.test(body);
+  const footerHTML = (c, body = '') => { const f = typeof c.footer === 'function' ? c.footer() : c.footer; return f != null ? f : needsDone(body) ? DONE_BTN : ''; };
   function drawSheet() {
     const c = sheetState; if (!c) return;
     const scroll = sheetEl.querySelector('.sheet-body')?.scrollTop || 0;
@@ -2397,15 +2464,16 @@ const UI = (() => {
     const x = c.closeBtn === false ? '' : `<button class="icon-btn sheet-x" data-action="sheet-close" aria-label="Close">${icon('close-circle')}</button>`;
     sheetEl.classList.toggle('sheet-full', !!c.full);
     // full: Figma "Edit" layout — close top-right, large title + description, pinned footer
+    const body = c.render ? c.render() : '', foot = footerHTML(c, body);
     const sheetHTML = c.full
       ? `<div class="grabber"></div><div class="sheet-top">${x}</div>
         <div class="sheet-big-title">${esc(c.title)}</div>${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}
-        <div class="sheet-body">${c.render ? c.render() : ''}</div>${footerHTML(c) ? `<div class="sheet-footer">${footerHTML(c)}</div>` : ''}`
+        <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`
       : `<div class="grabber"></div>
       <div class="sheet-head"><div class="sheet-title">${esc(c.title)}</div>${x}</div>
       ${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}
       ${c.tabs ? `<div class="sheet-tabs">${c.tabs()}</div>` : ''}
-      <div class="sheet-body">${c.render ? c.render() : ''}</div>${footerHTML(c) ? `<div class="sheet-footer">${footerHTML(c)}</div>` : ''}`;
+      <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`;
     const wasOpen = sheetEl.classList.contains('open');
     const h0 = wasOpen ? sheetEl.getBoundingClientRect().height : 0;
     patch(sheetEl, sheetHTML, { animate: false });   // the sheet glides its own height (below)
@@ -3436,7 +3504,7 @@ function makeSwitch(K) {
         const week = days.reduce((a, v) => a + v, 0);
         const rows = (d.log || []).slice(0, 12).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.text)}</span><span class="cell-value">${UI.fmtTime(e.t)}</span></div>`).join('');
         return UI.group('Last 7 days, kWh', `<div class="group-pad">${bars}</div>`) + UI.group('', `<div class="cell"><span class="cell-main cell-title">This week</span><span class="cell-value">${week.toFixed(2)} kWh</span></div><div class="cell"><span class="cell-main cell-title">Total on the plug</span><span class="cell-value">${d.energy.toFixed(2)} kWh</span></div>`)
-          + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">No safety events</span></div>');
+          + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">No safety events</span></div>');
       },
     });
   }
@@ -4650,7 +4718,7 @@ Devices.curtain = (() => {
       title: F.reverse.name, sub: esc(F.reverse.short),
       render: () => `${UI.group('Try it', `<div class="group-pad"><p class="dir-hint">Tap Open and watch the real ${noun(d)}. Did it ${roller(d) ? 'go up' : 'open'}?</p>
             <div class="dir-test">${[['open', openGlyph(d), 'Open'], ['stop', 'stop', 'Stop'], ['close', closeGlyph(d), 'Close']].map(([c, g, t]) => `<button class="btn btn-secondary" data-action="dir-cmd" data-c="${c}" ${d.online ? '' : 'disabled'}>${glyph(g, 'cg sm')}<span>${t}</span></button>`).join('')}</div></div>`)}
-        ${UI.group('Direction', opt(false, 'Normal', `“Open” ${word[0]} the ${noun(d)}`) + opt(true, 'Reversed', `For a motor installed the other way round — use it if “Open” ${word[1]} the ${noun(d)}`))}
+        ${UI.group('', opt(false, 'Normal', `“Open” ${word[0]} the ${noun(d)}`) + opt(true, 'Reversed', `For a motor installed the other way round — use it if “Open” ${word[1]} the ${noun(d)}`))}
         ${has(d, 'calibration') ? '<div class="list-footer">Changing the direction deletes the learned ends: calibrate again afterwards.</div>' : ''}`,
     });
     UI.on({
@@ -4768,6 +4836,8 @@ Devices.curtain = (() => {
     homeTiles, toggle, page, bindPage, live, settings, bindSettings, about, tick, busy, protoPanel, bindProto,
     presetName: (id) => (PRESETS.find((p) => p.id === id) || {}).name,
     _sim: () => V,   // read-only view of the live curtain simulation (used by tools/checks)
+    /** Scenarios: move to a position, given as "% open" like the curtain page shows it. false = not set up yet. */
+    goToOpen: (d, i, pct) => (d.curtains[i] && d.curtains[i].calibrated ? goTo(d, i, phys(d, pct)) : false),
   };
 })();
 
@@ -5212,7 +5282,7 @@ Devices.contact = (() => {
           const title = e.k === 'long' ? `Still open after ${e.min} min` : EV[e.k] || e.k;
           return `<div class="cell"><span class="cell-main cell-title">${esc(title)}</span><span class="cell-value">${when}</span></div>`;
         }).join('');
-        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
+        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself keeps no history.</div>';
       },
     });
@@ -5915,6 +5985,17 @@ Devices.light = (() => {
     protoPanel, bindProto,
     presetName: (id) => (PRESETS.find((p) => p.id === id) || {}).name,
     _k2rgb: k2rgb,
+    /* Scenarios: what this light can be set to, and setting it in one go (on + brightness + colour) */
+    sceneCaps: (d) => ({ br: has(d, 'brightness'), color: has(d, 'color'), ct: has(d, 'colorTemp') }),
+    SWATCH: SWATCH.map(([n, hex]) => ({ n, hex: hex || '#fffdf5' })),
+    applyScene(d, i, o = {}) {
+      const w = why(d, i); if (w) return w;
+      const c = d.channels[i]; c.on = true; c.timer = null; c.fx = null;
+      if (o.br && has(d, 'brightness')) c.br = clamp(Math.round(o.br), 1, 100);
+      if (o.col === 'white') c.mode = 'ct';
+      else if (o.col && has(d, 'color')) { const s = SWATCH.find((x) => x[0] === o.col); if (s) { setColour(c, s[1], s[2] || undefined); Object.assign(c, { h: s[3][0], s: s[3][1] }); } }
+      return null;
+    },
   };
 })();
 
@@ -5968,7 +6049,7 @@ Devices.climate = (() => {
 
     display: { name: 'Screen', grp: 'Screen', def: { unit: 'celsius', on: true },
       short: 'Only the sensor’s own screen — the app keeps your unit',
-      fields: [{ id: 'on', kind: 'tog', label: 'Screen on' }, { id: 'unit', kind: 'sel', label: 'Unit on the screen', opts: [['celsius', '°C', ''], ['fahrenheit', '°F', '']] }],
+      fields: [{ id: 'on', kind: 'tog', label: 'Screen on' }, { id: 'unit', kind: 'sel', label: 'Unit', opts: [['celsius', '°C', ''], ['fahrenheit', '°F', '']] }],
       foot: 'Turning the screen off saves battery.' },
     comfort: { name: 'Smiley on the screen', grp: 'Screen', def: { smile: true, tmin: 20, tmax: 25, hmin: 40, hmax: 60 },
       short: 'The sensor shows 🙂 inside this range and 😟 outside it, on its own screen',
@@ -6304,7 +6385,7 @@ Devices.climate = (() => {
         const day = startOfDay();
         const rows = d.log.slice(0, 20).map((e) => `<div class="cell has-icon"><span class="cell-icon">${icon(EVT[e.k] || 'round-info')}</span><span class="cell-main cell-title">${esc(e.text)}</span><span class="cell-value">${e.t >= day ? UI.fmtTime(e.t) : 'Yesterday ' + UI.fmtTime(e.t)}</span></div>`).join('');
         return `<div class="pad">${chart(d, cur)}</div>` + UI.group('Today', stat(sr.hi, ex.hi) + stat(sr.lo, ex.lo))
-          + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">No alarms or alerts today</span></div>')
+          + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">No alarms or alerts today</span></div>')
           + '<div class="list-footer">The sensor only sends its current value. Our server keeps every report and draws this chart.</div>';
       },
     });
@@ -6734,7 +6815,7 @@ Devices.motion = (() => {
           const list = ts.length ? ts.map((t) => `<button class="option" role="radio" aria-checked="${cur === `${t.id}:${t.ch}`}" data-action="mo-target" data-v="${t.id}:${t.ch}"><span class="cell-icon" style="color:var(--label-secondary)">${icon(t.icon)}</span><span class="option-main"><span class="option-title" style="display:block">${esc(t.name)}</span><span class="option-sub" style="display:block">${esc(t.room)}</span></span><span class="radio">${icon('radio-on')}</span></button>`).join('')
             : '<div class="cell"><span class="cell-main cell-sub">No lights or relays in this home yet</span></div>';
           return `<div class="list"><button class="cell" data-action="mo-ml-tog"><span class="cell-main cell-title">Turn a light on with motion</span><span class="switch" role="switch" aria-checked="${v.on}"></span></button></div>`
-            + UI.collapse(v.on, UI.group('Light', list)
+            + UI.collapse(v.on, UI.group('Which light', list)
               + UI.group('When', `<div class="cell"><span class="cell-main cell-title">Only when darker than</span>${stepper('mo-lux', v.lux, 'lx', 0, 1000)}</div><div class="cell"><span class="cell-main cell-title">Off after no motion for</span>${stepper('mo-off', v.off, 'min', 1, 60)}</div>`))
             + '<div class="list-footer">Night is about 10 lx, a lit room about 200 lx, daylight 300 lx and more.</div>';
         }
@@ -6769,7 +6850,7 @@ Devices.motion = (() => {
       title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 24).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(EV[e.k] || e.k)}${e.name ? ` · ${esc(e.name)}` : ''}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
-        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
+        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself only knows “motion” or “no motion” right now.</div>';
       },
     });
@@ -7140,7 +7221,7 @@ Devices.leak = (() => {
       title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 20).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(EV[e.k] || e.k)}${e.test ? ' · test' : ''}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
-        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
+        return UI.group('Today', `<div class="group-pad">${strip(d)}</div>`) + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>')
           + '<div class="list-footer">Stored by our server. The sensor itself keeps no history.</div>';
       },
     });
@@ -7548,7 +7629,7 @@ Devices.smoke = (() => {
       title: 'Event History',
       render: () => {
         const rows = d.log.slice(0, 24).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.k === 'scene' ? 'Safety scenario: ' + e.text : EV[e.k] || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
-        return UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">The detector keeps no history.</div>';
+        return UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">The detector keeps no history.</div>';
       },
     });
   }
@@ -7801,7 +7882,7 @@ const Kit = (() => {
       title: 'Event History',   // no sub-line under the title on log sheets (user, 2026-11-12)
       render: () => {
         const rows = d.log.slice(0, 30).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.text || (typeof EV[e.k] === 'function' ? EV[e.k](e) : EV[e.k]) || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
-        return (chart ? chart() : '') + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">Stored by our server — the device keeps no history.</div>';
+        return (chart ? chart() : '') + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">Stored by our server — the device keeps no history.</div>';
       },
     });
   }
@@ -10093,6 +10174,7 @@ const Scenarios = (() => {
     _: ['Turns on', 'Turns off', 'is on', 'is off', 'Turn on', 'Turn off'],
   };
   const words = (d) => WORDS[d.type] || WORDS._;
+  const COLOUR_WORD = { white: 'white light', blue: 'blue', mint: 'mint', red: 'red', purple: 'purple' };
 
   /** Current signals of one device channel (read from the live device model). */
   function sig(d, ch = 0) {
@@ -10160,7 +10242,8 @@ const Scenarios = (() => {
     const onoff = switchable ? {
       ev: [{ k: 'on', label: w[0], s: w[0].toLowerCase(), test: rise('on') }, { k: 'off', label: w[1], s: w[1].toLowerCase(), test: fall('on') }],
       st: [{ k: 'on', label: w[2][0].toUpperCase() + w[2].slice(1), s: w[2], test: (x) => x.on }, { k: 'off', label: w[3][0].toUpperCase() + w[3].slice(1), s: w[3], test: (x) => !x.on }],
-      act: [{ k: 'on', label: w[4], s: w[4].toLowerCase(), back: true }, { k: 'off', label: w[5], s: w[5].toLowerCase() }],
+      act: [{ k: 'on', label: w[4], s: w[4].toLowerCase(), back: true, light: d.type === 'light' }, { k: 'off', label: w[5], s: w[5].toLowerCase() },
+        ...(d.type === 'curtain' ? [{ k: 'pos', label: 'Set a position', s: 'set', pos: true }] : [])],
     } : {};
     return { ev: c.ev || onoff.ev || [], st: c.st || onoff.st || [], act: c.act || onoff.act || [] };
   }
@@ -10211,7 +10294,9 @@ const Scenarios = (() => {
   function actionText(a) {
     if (a.k === 'dev') {
       const d = dev(a.id); const x = findIn(cap(d).act, a.to);
-      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${a.back ? ` for ${a.back} min` : ''}`;
+      if (a.to === 'pos') return `set ${nameOf(a.id, a.ch)} to ${a.pos} % open`;
+      const extra = [a.br ? `${a.br} %` : '', a.col ? COLOUR_WORD[a.col] || a.col : ''].filter(Boolean).join(', ');
+      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${extra ? ` at ${extra}` : ''}${a.back ? ` for ${a.back} min` : ''}`;
     }
     if (a.k === 'notify') return a.critical ? 'send everyone an urgent alert' : 'send you a notification';
     if (a.k === 'wait') return `wait ${a.min} min`;
@@ -10253,9 +10338,10 @@ const Scenarios = (() => {
     .flatMap((d) => tilesOf(d).filter((t) => t.controllable && /bulb|lamp|led|chandelier/.test(t.icon || '')).map((t) => ({ id: d.id, ch: t.ch })));
   function ideas(all = false) {
     const door = firstOf((d) => d.type === 'contact'), lock = firstOf((d) => d.type === 'lock'), curtain = firstOf((d) => d.type === 'curtain');
-    const lamp = lightsAll()[0], lights = lightsAll(), dryer = firstOf((d) => d.type === 'vibration'), climate = firstOf((d) => d.type === 'climate');
+    const lights = lightsAll(), lamp = lights.find((l) => (dev(l.id) || {}).type === 'light') || lights[0], dryer = firstOf((d) => d.type === 'vibration'), climate = firstOf((d) => d.type === 'climate');
     const motion = firstOf((d) => d.type === 'motion'), heater = S().devices.find((d) => d.type === 'relay' && /heater/i.test(d.name)), air = firstOf((d) => d.type === 'air');
     const hall = lights.find((l) => /hall/i.test(nameOf(l.id, l.ch))) || lamp;
+    const lampIsLight = (l) => { const d = dev(l.id); return d && d.type === 'light' && Devices.light.sceneCaps(d).color; };
     const base = (o) => Object.assign({ manual: false, on: true, when: [], only: [], do: [] }, o);
     const L = [
       lights.length && { key: 'goodnight', title: 'Good night', sub: 'One tap: lights off, door locked, curtains closed', icon: 'moon',
@@ -10266,6 +10352,10 @@ const Scenarios = (() => {
         make: () => base({ name: 'Light when I come in', icon: 'dev-door-02', when: [{ k: 'dev', id: door.id, ch: 0, ev: 'open' }], only: [{ k: 'between', from: 'sunset', to: 'sunrise' }], do: [{ k: 'dev', id: hall.id, ch: hall.ch, to: 'on', back: 5 }] }) },
       curtain && { key: 'morning', title: 'Curtains open in the morning', sub: 'Weekdays at 07:30', icon: 'sunrise',
         make: () => base({ name: 'Morning curtains', icon: 'sunrise', when: [{ k: 'time', at: '07:30', days: [1, 2, 3, 4, 5] }], do: [{ k: 'dev', id: curtain.id, ch: 0, to: 'on' }] }) },
+      curtain && lamp && { key: 'movie', title: 'Movie time', sub: `Curtains 90 % closed, ${nameOf(lamp.id, lamp.ch)} red at 20 %, other lights off`, icon: 'dev-tv-1',
+        make: () => base({ name: 'Movie time', icon: 'dev-tv-1', manual: true, do: [{ k: 'dev', id: curtain.id, ch: 0, to: 'pos', pos: 10 },
+          lampIsLight(lamp) ? { k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on', br: 20, col: 'red' } : { k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on' },
+          ...lights.filter((l) => l.id !== lamp.id || l.ch !== lamp.ch).map((l) => ({ k: 'dev', id: l.id, ch: l.ch, to: 'off' }))] }) },
       lamp && { key: 'sunset', title: 'Lamp on at sunset', sub: `${nameOf(lamp.id, lamp.ch)} turns on when it gets dark`, icon: 'sun',
         make: () => base({ name: 'Lamp at sunset', icon: 'sun', when: [{ k: 'sun', ev: 'sunset', off: 0 }], do: [{ k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on' }] }) },
       door && { key: 'leftopen', title: 'Door left open', sub: `Tell me if ${door.name} stays open for 5 min`, icon: 'bell',
@@ -10324,6 +10414,8 @@ const Scenarios = (() => {
   function applyDev(a) {
     const d = dev(a.id); if (!d || d.online === false) return `${nameOf(a.id, a.ch)} is offline`;
     if (d.type === 'lock') { Devices.lock.remote(d, a.to === 'lock', 'Scenario', 'scenario'); return null; }
+    if (a.to === 'pos') return Devices.curtain.goToOpen(d, a.ch || 0, a.pos) === false ? `${nameOf(a.id, a.ch)} isn’t set up yet` : null;
+    if (d.type === 'light' && a.to === 'on' && (a.br || a.col)) return Devices.light.applyScene(d, a.ch || 0, { br: a.br, col: a.col });
     const t = tileOf(d, a.ch || 0);
     if (!t.controllable) return `${nameOf(a.id, a.ch)} can’t be switched`;
     const want = a.to === 'on';
@@ -10455,13 +10547,14 @@ const Scenarios = (() => {
   }
   /* Chains: which device events an action makes, and which automations they start */
   const EV_OF = { on: 'on', off: 'off', lock: 'lock', unlock: 'unlock' };
+  const evOfAct = (x) => (x.to === 'pos' ? (x.pos > 2 ? 'on' : 'off') : EV_OF[x.to]);
   /** Does scenario a (by its device actions or "run a scene") start automation b? */
   function starts(a, b) {
     if (b.manual || b.on === false) return false;
-    return a.do.some((x) => (x.k === 'dev' && b.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === EV_OF[x.to]))
+    return a.do.some((x) => (x.k === 'dev' && b.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === evOfAct(x)))
       || (x.k === 'run' && x.sid !== a.id && (() => { const o = get(x.sid); return o && starts(o, b); })()));
   }
-  function selfDev(s) { const x = s.do.find((x) => x.k === 'dev' && s.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === EV_OF[x.to])); return [x.id, x.ch]; }
+  function selfDev(s) { const x = s.do.find((x) => x.k === 'dev' && s.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === evOfAct(x))); return [x.id, x.ch]; }
   /** Automations this one starts right after it runs (shown under "Do" in the editor). */
   function next(s) { return autos().filter((o) => o.id !== s.id && starts(s, o)); }
   /** A path s → … → s through other automations, or null. */
@@ -11145,7 +11238,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
     UI.sheet({ title: 'Starts when', render: () => UI.group('', 
       choice('t-time', 'clock', 'At a time', 'e.g. 07:30 on weekdays') +
       choice('t-sun', 'sunrise', 'At sunrise or sunset', 'Moves with the seasons by itself') +
-      choice('t-people', 'my-location', 'People come or go', 'Uses your phone’s location')) + `<div class="scn-sheet-k">Or when a device notices something</div>` + deviceList('ev', 't-dev-pick') });
+      choice('t-people', 'my-location', 'People come or go', 'Uses your phone’s location')) + deviceList('ev', 't-dev-pick') });
   }
   function trigTime(i) {
     const t = i != null ? clone(s.when[i]) : { k: 'time', at: '07:30', days: [1, 2, 3, 4, 5] };
@@ -11183,7 +11276,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
   function condChooser() {
     UI.sheet({ title: 'Only if', render: () => UI.group('',
       choice('c-time', 'moon', 'Time of day', 'At night, in the daytime, or between two times') +
-      choice('c-days', 'clock', 'Days of the week', 'e.g. only on weekdays')) + `<div class="scn-sheet-k">Or only if a device…</div>` + deviceList('st', 'c-dev-pick') });
+      choice('c-days', 'clock', 'Days of the week', 'e.g. only on weekdays')) + deviceList('st', 'c-dev-pick') });
   }
   function condTime(i) {
     const c = i != null ? clone(s.only[i]) : { k: 'between', from: 'sunset', to: 'sunrise' };
@@ -11213,21 +11306,35 @@ if (typeof Store !== 'undefined') Scenarios.start();
       choice('a-notify', 'bell', 'Send a notification', 'To your phone or the whole family') +
       choice('a-wait', 'hourglass', 'Wait', 'Pause before the next action') +
       (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '') +
-      (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + `<div class="scn-sheet-k">Or control a device</div>` + deviceList('act', 'a-dev-pick') });
+      (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + deviceList('act', 'a-dev-pick') });
   }
   function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
   const BACKS = [0, 1, 2, 5, 10, 30, 60, 90];
   function actDeviceDo(id, ch, i) {
-    const acts = SC.cap(Store.device(id)).act;
+    const d = Store.device(id), acts = SC.cap(d).act;
+    const lc = d.type === 'light' ? Devices.light.sceneCaps(d) : {};
     const a = i != null ? clone(s.do[i]) : { k: 'dev', id, ch, to: acts[0].k };
+    const needDone = () => { const c = SC.findIn(acts, a.to) || {}; return !!(c.back || c.pos || c.light); };
     sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => {
-      const cur = SC.findIn(acts, a.to);
+      const cur = SC.findIn(acts, a.to) || {};
       const blocked = acts.filter((x) => x.manualOnly && !s.manual);
-      return `<div class="list">${Kit.radio('do-pick', a.to, acts.filter((x) => !(x.manualOnly && !s.manual)).map((x) => [x.k, x.label, '']))}</div>
-        ${blocked.length ? `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>` : ''}
-        ${cur && cur.back ? `<div class="list-header">Then ${esc(cur.label === 'Open' ? 'close it' : 'turn it off')}</div><div class="scn-backs">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${(a.back || 0) === b}">${b ? (b >= 60 ? `${b / 60 === 1.5 ? '1.5' : b / 60} h` : `${b} min`) : 'Never'}</button>`).join('')}</div>
-          <div class="list-footer">${a.back ? `Goes back after ${a.back} min — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>` : ''}`;
-    }, footer: () => done('act', i != null, !!(SC.findIn(acts, a.to) || {}).back) }) };
+      let h = `<div class="list">${Kit.radio('do-pick', a.to, acts.filter((x) => !(x.manualOnly && !s.manual)).map((x) => [x.k, x.label, '']))}</div>`;
+      if (blocked.length) h += `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>`;
+      // light: brightness and colour, set together with "Turn on"
+      if (cur.light && (lc.br || lc.color || lc.ct)) {
+        const dots = Devices.light.SWATCH.filter((x) => lc.color || x.n === 'white');
+        h += `<div class="list-header">When it turns on</div><div class="list">
+          ${lc.br ? `<div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Brightness</span><span class="cell-sub" style="display:block">${a.br ? 'Set when it turns on' : 'Stays as it was last time'}</span></span>${Kit.stepper('do-br', 'br', a.br ? `${a.br} %` : 'As is', !a.br, a.br >= 100)}</div>` : ''}
+          ${lc.color || lc.ct ? `<div class="cell scn-colour-row"><span class="cell-main"><span class="cell-title" style="display:block">Colour</span>
+            <span class="scn-dots" role="radiogroup" aria-label="Colour"><button class="scn-dot keep" data-action="do-col" data-v="" aria-checked="${!a.col}" role="radio">As is</button>
+            ${dots.map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.n}" role="radio" aria-checked="${a.col === x.n}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</span></span></div>` : ''}</div>`;
+      }
+      // curtain: an exact position
+      if (cur.pos) h += `<div class="list-header">Position</div><div class="list"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Open</span><span class="cell-sub" style="display:block">${a.pos === 0 ? 'Fully closed' : a.pos === 100 ? 'Fully open' : `${100 - a.pos} % closed`}</span></span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
+      if (cur.back) h += `<div class="list-header">Then ${esc(cur.label === 'Open' ? 'close it' : 'turn it off')}</div><div class="scn-backs">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${(a.back || 0) === b}">${b ? (b >= 60 ? `${b / 60 === 1.5 ? '1.5' : b / 60} h` : `${b} min`) : 'Never'}</button>`).join('')}</div>
+          <div class="list-footer">${a.back ? `Goes back after ${a.back} min — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>`;
+      return h;
+    }, footer: () => done('act', i != null, needDone()) }) };
     reopen();
   }
   function actNotify(i) {
@@ -11324,7 +11431,14 @@ if (typeof Store !== 'undefined') Scenarios.start();
     'act-add': actChooser, act: ({ i }) => openAct(+i),
     'a-dev': actDevice, 'a-notify': () => actNotify(), 'a-wait': () => actWait(), 'a-run': () => actRun(),
     'a-dev-pick': ({ id, ch }) => actDeviceDo(id, +ch),
-    'do-pick': ({ v }) => { sh.x.to = v; const c = SC.findIn(SC.cap(Store.device(sh.x.id)).act, v); if (!c || !c.back) { delete sh.x.back; commit('act'); } else reopen(); },
+    'do-pick': ({ v }) => {
+      const x = sh.x; x.to = v; const c = SC.findIn(SC.cap(Store.device(x.id)).act, v) || {};
+      if (!c.back) delete x.back; if (!c.light) { delete x.br; delete x.col; } if (c.pos) { if (x.pos == null) x.pos = 10; } else delete x.pos;
+      if (c.back || c.pos || c.light) reopen(); else commit('act');
+    },
+    'do-br': ({ d }) => { const x = sh.x; const v = (x.br || 0) + 10 * +d; if (v <= 0) delete x.br; else x.br = Math.min(100, v); reopen(); },
+    'do-col': ({ v }) => { if (v) sh.x.col = v; else delete sh.x.col; reopen(); },
+    'do-pos': ({ d }) => { sh.x.pos = Math.max(0, Math.min(100, (sh.x.pos || 0) + 10 * +d)); reopen(); },
     'do-back': ({ v }) => { if (+v) sh.x.back = +v; else delete sh.x.back; reopen(); },
     'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
     'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },

@@ -1810,3 +1810,65 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-next { display: flex; gap: 10px; align-items: flex-start; margin: 12px var(--screen-pad) 0; padding: 12px 16px; border-radius: var(--radius-md); background: var(--fill-quaternary); font: var(--body-sm); color: var(--label-secondary); }
 .scn-next .icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--primary); }
 .scn-next b { color: var(--label-primary); font-weight: 500; }
+
+/* ==========================================================================
+   Bottom sheets = Figma (Samo-home 6014:56, Gas & CO sheets 6830:16015 / 16690 / 17390 / 17693)
+   grabber 36×5 in a 15 px strip · nav 48 (title 24/32 bold, × 24 label/tertiary)
+   description 15/18 label/secondary, 20 below · no description → 20 between the title row and the content
+   content: 8 / 16 / 20 · groups 24 apart · group title 15/18 label/primary, 12 above its card
+   card: fills/quaternary, radius 20, 4 / 16 inside · rows 64 (one line) / 72 (two lines), text 17/22,
+   1 px separator under every row but the last — straight, edge to edge of the card's content
+   note under a card: 13/16 label/tertiary, 12 above. Every radio list sits in a card too.
+   ========================================================================== */
+.sheet .grabber { width: 36px; height: 5px; border-radius: 20px; background: var(--separator); margin: 10px auto 0; }
+.sheet .sheet-head { min-height: 48px; padding: 8px var(--screen-pad) 8px; align-items: flex-start; }
+.sheet .sheet-head .sheet-title { padding-top: 0; }
+.sheet .sheet-head .sheet-x { margin: 4px -4px 0 0; }
+.sheet .sheet-sub { font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-secondary); padding: 0 var(--screen-pad) 20px; }
+.sheet .sheet-head + .sheet-body { padding-top: 20px; }
+.sheet .sheet-sub + .sheet-body, .sheet .sheet-tabs + .sheet-body { padding-top: 8px; }
+.sheet .sheet-body { padding-bottom: 20px; }
+
+/* cards */
+.sheet .list, .sheet .group-card { margin: 0 var(--screen-pad); background: var(--fill-quaternary); border-radius: 20px; padding: 4px 16px; box-shadow: none; overflow: visible; }
+.sheet .sheet-group .group-card { margin: 0; }
+.sheet .list:has(> .option) { background: var(--fill-quaternary) !important; border-radius: 20px; padding: 4px 16px; overflow: visible; }
+.sheet .list + .list { margin-top: 24px; }
+
+/* rows inside sheet cards */
+.sheet .list > .cell, .sheet .list > .option, .sheet .group-card > .cell, .sheet .group-card > .option {
+  min-height: 64px; padding: 11px 0; border-radius: 0; border-bottom: 1px solid var(--separator); gap: 12px; }
+.sheet .list > .option, .sheet .group-card > .option { gap: 16px; }
+.sheet .list > :is(.cell, .option):has(.cell-sub, .option-sub), .sheet .group-card > :is(.cell, .option):has(.cell-sub, .option-sub) { min-height: 72px; }
+.sheet .list > :is(.cell, .option):last-child, .sheet .group-card > :is(.cell, .option):last-child { border-bottom: 0; }
+.sheet :is(.list, .group-card) > :is(.cell, .option) .cell-title,
+.sheet :is(.list, .group-card) > .option .option-title { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+.sheet :is(.list, .group-card) > :is(.cell, .option) :is(.cell-sub, .option-sub) { font: var(--body-sm); letter-spacing: var(--body-sm-ls); color: var(--label-secondary); margin-top: 2px; }
+.sheet :is(.list, .group-card) > .option .radio { margin: 0; }
+/* press highlight keeps its own rounded shape; the row and its separator stay straight */
+.sheet :is(.list, .group-card) > :is(button.cell, a.cell, .option)::after { content: ""; position: absolute; inset: 3px -10px; border-radius: 12px; background: rgba(255, 255, 255, 0.06); opacity: 0; transition: opacity var(--dur-fast) var(--ease-out); pointer-events: none; }
+.sheet :is(.list, .group-card) > :is(button.cell, a.cell, .option):active::after { opacity: 1; }
+.sheet :is(.list, .group-card) > :is(.cell, .option) { position: relative; }
+.sheet :is(.list, .group-card) > .option:active { background: transparent; }
+
+/* group titles and notes */
+.sheet .sheet-group { padding: 0 var(--screen-pad); }
+.sheet .sheet-group .group-title, .sheet .list-header { font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-primary); padding: 0 16px; margin: 0 0 12px; }
+.sheet .list-header { padding: 0 calc(var(--screen-pad) + 16px); margin-top: 24px; }
+.sheet .sheet-body > .list-header:first-child { margin-top: 0; }
+.sheet .sheet-body > * + .sheet-group, .sheet .sheet-group + .sheet-group { margin-top: 24px; }
+.sheet .list-footer { font: var(--body-sm); letter-spacing: var(--body-sm-ls); color: var(--label-tertiary); padding: 12px calc(var(--screen-pad) + 16px) 0; }
+/* scenario action sheet: colour dots (Figma light colour block dots, in a row) and the "turn it off after" chips */
+.scn-colours { padding: 14px 16px !important; }
+.scn-dots { display: flex; align-items: center; gap: 12px; }
+.scn-dot { width: 36px; height: 36px; border-radius: 50%; background: var(--dot); box-shadow: inset 0 0 0 1px var(--separator); position: relative; flex-shrink: 0; transition: transform var(--dur-fast) var(--ease-out); }
+.scn-dot:active { transform: scale(.92); }
+.scn-dot[aria-checked="true"]::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.scn-dot.keep { width: auto; height: 36px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); font: var(--body-sm-accent); color: var(--label-primary); box-shadow: none; }
+.scn-dot.keep[aria-checked="true"] { background: var(--primary); color: #fff; }
+.scn-dot.keep[aria-checked="true"]::after { content: none; }
+.sheet .scn-backs { padding: 0 var(--screen-pad); }
+.scn-colour-row .cell-main { display: grid; gap: 12px; }
+.scn-colour-row .scn-dots { gap: 10px; }
+/* rows with a trailing value (Event History, info rows) = Figma "Settings row": title 15/18 medium, value 13/16 */
+.sheet :is(.list, .group-card) > .cell:has(> .cell-value) .cell-title { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }

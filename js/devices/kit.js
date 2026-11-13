@@ -170,7 +170,7 @@ const Kit = (() => {
       title: 'Event History',   // no sub-line under the title on log sheets (user, 2026-11-12)
       render: () => {
         const rows = d.log.slice(0, 30).map((e) => `<div class="cell"><span class="cell-main cell-title">${esc(e.text || (typeof EV[e.k] === 'function' ? EV[e.k](e) : EV[e.k]) || e.k)}</span><span class="cell-value">${when(e.t)}</span></div>`).join('');
-        return (chart ? chart() : '') + UI.group('Events', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">Stored by our server — the device keeps no history.</div>';
+        return (chart ? chart() : '') + UI.group('', rows || '<div class="cell"><span class="cell-main cell-sub">Nothing yet</span></div>') + '<div class="list-footer">Stored by our server — the device keeps no history.</div>';
       },
     });
   }
