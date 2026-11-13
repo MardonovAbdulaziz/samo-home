@@ -1495,14 +1495,21 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .gs-steps { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--radius-md); background: var(--fill-tertiary); }
 .gs-steps > div { display: flex; gap: 12px; align-items: flex-start; font: var(--body-md); letter-spacing: var(--body-md-ls); }
 .gs-steps i { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font: var(--body-xs-accent); font-style: normal; display: grid; place-items: center; margin-top: -1px; }
-.gs-mount { padding: 4px var(--screen-pad) 16px; }
-.gs-mount svg { display: block; width: 100%; height: auto; max-height: 180px; }
-.gs-mount .w { fill: var(--fill-quaternary); stroke: var(--separator); }
-.gs-mount .c { stroke: var(--label-tertiary); stroke-width: 2; }
-.gs-mount .s { fill: var(--label-tertiary); }
-.gs-mount .dt { fill: var(--primary); transition: y 400ms var(--ease-out); }
-.gs-mount .ar { stroke: var(--primary); stroke-width: 2; stroke-dasharray: 4 4; }
-.gs-mount text { fill: var(--primary); font: var(--body-sm-accent); }
+.gs-mount { padding: 0 var(--screen-pad) 20px; }
+.gs-mount svg { display: block; width: 100%; height: auto; overflow: visible; }
+.gs-mount .gm-line { stroke: var(--label-tertiary); stroke-width: 2; stroke-linecap: round; }
+.gs-mount .gm-g0 { stop-color: var(--primary); stop-opacity: 0.32; }
+.gs-mount .gm-g1 { stop-color: var(--primary); stop-opacity: 0; }
+.gs-mount .gm-even { fill: var(--primary); opacity: 0.08; }
+.gs-mount .gm-card { fill: var(--fill-quaternary); }
+.gs-mount .gm-stove rect { fill: var(--fill-tertiary); }
+.gs-mount .gm-stove .gm-oven { fill: none; stroke: var(--label-quaternary); stroke-width: 1.5; }
+.gs-mount .gm-dim line { stroke: var(--label-secondary); stroke-width: 1.5; stroke-linecap: round; }
+.gs-mount .gm-dim text { fill: var(--label-secondary); font: var(--body-sm); }
+.gs-mount .gm-det { transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1); }
+.gs-mount .gm-det rect { fill: var(--static-white); }
+.gs-mount .gm-det circle { fill: var(--primary); }
+@media (prefers-reduced-motion: reduce) { .gs-mount .gm-det { transition: none; } }
 
 /* ---------- Air quality: Moderate = color/yellow; bars by level ---------- */
 .ct-word.mid { color: var(--yellow); }
@@ -1988,3 +1995,21 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .tr-list .tr-row { transition: transform 200ms var(--ease-out); }
 .tr-list .tr-row.dragging { transition: none; z-index: 2; background: var(--bg-elevation-2); border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
 .tr-list .tr-row.dragging .tr-grip { cursor: grabbing; color: var(--label-primary); }
+
+/* ==========================================================================
+   Segmented control = Hamroh "SegmentedControl" (Figma 6851:21991) — ONE style everywhere:
+   fills/tertiary pill, 2 px inside; segments 32 px, fully round; the chosen one service/segment-active
+   (#636366) with a soft shadow, 15 Medium; the others 15 Regular label/primary with a 1×16 hairline
+   between them (hidden next to the chosen one). Always full width.
+   ========================================================================== */
+.segmented { display: flex; width: 100%; padding: 2px; border-radius: var(--radius-pill); background: var(--fill-tertiary); }
+.segmented button { position: relative; flex: 1 1 0; min-width: 0; height: 32px !important; border-radius: var(--radius-pill); font: var(--body-md) !important; letter-spacing: var(--body-md-ls);
+  color: var(--label-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; transition: background-color 200ms var(--ease-out); }
+.segmented button.on, .segmented button[aria-selected="true"] { background: var(--segment-active); color: var(--label-primary); font: var(--body-md-accent) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04); }
+.segmented button + button::before { content: ""; position: absolute; left: -0.5px; top: 8px; width: 1px; height: 16px; border-radius: 1px; background: var(--separator); transition: opacity 200ms; }
+.segmented button.on::before, .segmented button.on + button::before,
+.segmented button[aria-selected="true"]::before, .segmented button[aria-selected="true"] + button::before { opacity: 0; }
+/* top row chips stay short: a long name or state ends with … (max ~ 140 px of text) */
+.chips-row .quick-chip > span { min-width: 0; max-width: 140px; }
+.chips-row .quick-chip > span b, .chips-row .quick-chip > span > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

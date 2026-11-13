@@ -60,7 +60,7 @@ Devices.climate = (() => {
       fields: [{ id: 'on', kind: 'tog', label: 'Notify outside these limits' },
         { id: 'tlow', label: 'Colder than', unit: '°C', min: -40, max: 60, step: 1, pair: 'thigh', grp: 'Temperature' }, { id: 'thigh', label: 'Hotter than', unit: '°C', min: -40, max: 60, step: 1, pair: 'tlow', grp: 'Temperature' },
         { id: 'hlow', label: 'Drier than', unit: '%', min: 0, max: 100, step: 1, pair: 'hhigh', grp: 'Humidity', hum: true }, { id: 'hhigh', label: 'More humid than', unit: '%', min: 0, max: 100, step: 1, pair: 'hlow', grp: 'Humidity', hum: true }],
-      foot: 'Our server checks every report against these limits — works for every sensor.' },
+      foot: 'Only a message to your phone. To switch something on or off at these limits, make an automation in Scenarios.' },
     history: { name: 'Temperature history', grp: 'Log', app: true, short: 'The 24-hour chart and today’s warmest / coldest, built by our server' },
 
     identify: { name: 'Find this device', grp: 'Device', short: 'Blinks the sensor' },

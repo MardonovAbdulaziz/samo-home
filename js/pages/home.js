@@ -27,11 +27,19 @@
     return st.topRow;
   }
   const chipIcon = (d) => (d.type === 'climate' ? 'chip-temperature' : d.type === 'contact' ? 'chip-door' : DeviceAPI(d).icon(0));
-  const chipName = (d) => (d.type === 'climate' && S().devices.filter((x) => x.type === 'climate').length === 1 ? 'Temperature' : d.name);   // Figma: "Temperature"
+  /* short names in the row: drop the room the device sits in ("Living room motion" → "Motion"),
+     unless two chips would then read the same */
+  const shortName = (d) => { const r = Store.roomName(d.roomId), n = d.name.replace(new RegExp('^' + r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+', 'i'), ''); return n && n !== d.name ? n.charAt(0).toUpperCase() + n.slice(1) : d.name; };
+  const chipName = (d) => {
+    if (d.type === 'climate' && S().devices.filter((x) => x.type === 'climate').length === 1) return 'Temperature';   // Figma: "Temperature"
+    const n = shortName(d);
+    return S().devices.some((x) => x.id !== d.id && SENSOR_TYPES.includes(x.type) && shortName(x) === n) ? d.name : n;
+  };
   /** A sensor chip: its icon, its name, its live state — coloured like its tile when it needs attention */
   function devChip(d) {
     const t = DeviceAPI(d).homeTiles()[0] || {};
-    const text = d.type === 'climate' ? Devices.climate.chipText(d) : t.status;
+    // minimal: only the state itself ("No motion", not "No motion · yesterday 13:00")
+    const text = (d.type === 'climate' ? Devices.climate.chipText(d) : String(t.status || '')).split(' · ')[0];
     return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0" data-key="qc-${d.id}">${icon(chipIcon(d))}<span><b>${UI.esc(chipName(d))}</b><span class="${t.tone ? 'tone-' + t.tone : ''}"><span data-num>${UI.esc(text || '')}</span></span></span></button>`;
   }
   function sceneChip(x) {

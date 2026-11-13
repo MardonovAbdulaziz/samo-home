@@ -1671,14 +1671,21 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .gs-steps { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--radius-md); background: var(--fill-tertiary); }
 .gs-steps > div { display: flex; gap: 12px; align-items: flex-start; font: var(--body-md); letter-spacing: var(--body-md-ls); }
 .gs-steps i { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--red); color: #fff; font: var(--body-xs-accent); font-style: normal; display: grid; place-items: center; margin-top: -1px; }
-.gs-mount { padding: 4px var(--screen-pad) 16px; }
-.gs-mount svg { display: block; width: 100%; height: auto; max-height: 180px; }
-.gs-mount .w { fill: var(--fill-quaternary); stroke: var(--separator); }
-.gs-mount .c { stroke: var(--label-tertiary); stroke-width: 2; }
-.gs-mount .s { fill: var(--label-tertiary); }
-.gs-mount .dt { fill: var(--primary); transition: y 400ms var(--ease-out); }
-.gs-mount .ar { stroke: var(--primary); stroke-width: 2; stroke-dasharray: 4 4; }
-.gs-mount text { fill: var(--primary); font: var(--body-sm-accent); }
+.gs-mount { padding: 0 var(--screen-pad) 20px; }
+.gs-mount svg { display: block; width: 100%; height: auto; overflow: visible; }
+.gs-mount .gm-line { stroke: var(--label-tertiary); stroke-width: 2; stroke-linecap: round; }
+.gs-mount .gm-g0 { stop-color: var(--primary); stop-opacity: 0.32; }
+.gs-mount .gm-g1 { stop-color: var(--primary); stop-opacity: 0; }
+.gs-mount .gm-even { fill: var(--primary); opacity: 0.08; }
+.gs-mount .gm-card { fill: var(--fill-quaternary); }
+.gs-mount .gm-stove rect { fill: var(--fill-tertiary); }
+.gs-mount .gm-stove .gm-oven { fill: none; stroke: var(--label-quaternary); stroke-width: 1.5; }
+.gs-mount .gm-dim line { stroke: var(--label-secondary); stroke-width: 1.5; stroke-linecap: round; }
+.gs-mount .gm-dim text { fill: var(--label-secondary); font: var(--body-sm); }
+.gs-mount .gm-det { transition: transform 420ms cubic-bezier(0.32, 0.72, 0, 1); }
+.gs-mount .gm-det rect { fill: var(--static-white); }
+.gs-mount .gm-det circle { fill: var(--primary); }
+@media (prefers-reduced-motion: reduce) { .gs-mount .gm-det { transition: none; } }
 
 /* ---------- Air quality: Moderate = color/yellow; bars by level ---------- */
 .ct-word.mid { color: var(--yellow); }
@@ -2164,6 +2171,24 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .tr-list .tr-row { transition: transform 200ms var(--ease-out); }
 .tr-list .tr-row.dragging { transition: none; z-index: 2; background: var(--bg-elevation-2); border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
 .tr-list .tr-row.dragging .tr-grip { cursor: grabbing; color: var(--label-primary); }
+
+/* ==========================================================================
+   Segmented control = Hamroh "SegmentedControl" (Figma 6851:21991) — ONE style everywhere:
+   fills/tertiary pill, 2 px inside; segments 32 px, fully round; the chosen one service/segment-active
+   (#636366) with a soft shadow, 15 Medium; the others 15 Regular label/primary with a 1×16 hairline
+   between them (hidden next to the chosen one). Always full width.
+   ========================================================================== */
+.segmented { display: flex; width: 100%; padding: 2px; border-radius: var(--radius-pill); background: var(--fill-tertiary); }
+.segmented button { position: relative; flex: 1 1 0; min-width: 0; height: 32px !important; border-radius: var(--radius-pill); font: var(--body-md) !important; letter-spacing: var(--body-md-ls);
+  color: var(--label-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; transition: background-color 200ms var(--ease-out); }
+.segmented button.on, .segmented button[aria-selected="true"] { background: var(--segment-active); color: var(--label-primary); font: var(--body-md-accent) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04); }
+.segmented button + button::before { content: ""; position: absolute; left: -0.5px; top: 8px; width: 1px; height: 16px; border-radius: 1px; background: var(--separator); transition: opacity 200ms; }
+.segmented button.on::before, .segmented button.on + button::before,
+.segmented button[aria-selected="true"]::before, .segmented button[aria-selected="true"] + button::before { opacity: 0; }
+/* top row chips stay short: a long name or state ends with … (max ~ 140 px of text) */
+.chips-row .quick-chip > span { min-width: 0; max-width: 140px; }
+.chips-row .quick-chip > span b, .chips-row .quick-chip > span > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 </style>
 </head>
@@ -6207,7 +6232,7 @@ Devices.climate = (() => {
       fields: [{ id: 'on', kind: 'tog', label: 'Notify outside these limits' },
         { id: 'tlow', label: 'Colder than', unit: '°C', min: -40, max: 60, step: 1, pair: 'thigh', grp: 'Temperature' }, { id: 'thigh', label: 'Hotter than', unit: '°C', min: -40, max: 60, step: 1, pair: 'tlow', grp: 'Temperature' },
         { id: 'hlow', label: 'Drier than', unit: '%', min: 0, max: 100, step: 1, pair: 'hhigh', grp: 'Humidity', hum: true }, { id: 'hhigh', label: 'More humid than', unit: '%', min: 0, max: 100, step: 1, pair: 'hlow', grp: 'Humidity', hum: true }],
-      foot: 'Our server checks every report against these limits — works for every sensor.' },
+      foot: 'Only a message to your phone. To switch something on or off at these limits, make an automation in Scenarios.' },
     history: { name: 'Temperature history', grp: 'Log', app: true, short: 'The 24-hour chart and today’s warmest / coldest, built by our server' },
 
     identify: { name: 'Find this device', grp: 'Device', short: 'Blinks the sensor' },
@@ -8763,11 +8788,28 @@ Devices.gas = (() => {
   const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: icon0(d), on: false, status: s.text, tone: s.tone, alert: d.online && alarm(d), controllable: false, offline: !d.online }]; };
 
   /* ---------- Device page ---------- */
+  /* "Where to mount it": a plain side view of a kitchen wall — ceiling, floor, the stove — where the gas
+     gathers (a soft band: natural gas at the ceiling, propane at the floor, CO everywhere) and the detector at
+     the right height with its distance. Nothing decorative. Moves smoothly when the choice changes. */
   function mountPic(v) {
-    const y = v === 'natural' ? 26 : v === 'lpg' ? 112 : 68;
-    return `<div class="gs-mount" aria-hidden="true"><svg viewBox="0 0 200 140"><rect x="24" y="10" width="152" height="120" rx="6" class="w"/><line x1="24" y1="10" x2="176" y2="10" class="c"/><line x1="24" y1="130" x2="176" y2="130" class="c"/>
-      <rect x="132" y="98" width="34" height="32" rx="3" class="s"/><circle cx="141" cy="96" r="3" class="s"/><circle cx="157" cy="96" r="3" class="s"/>
-      <rect x="40" y="${y - 7}" width="26" height="14" rx="4" class="dt"/><line x1="72" y1="${y}" x2="110" y2="${y}" class="ar"/><text x="114" y="${y + 4}">${v === 'natural' ? 'high' : v === 'lpg' ? 'low' : 'middle'}</text></svg></div>`;
+    const C = 16, F = 154;                                     // ceiling, floor
+    const DY = { natural: C + 12, lpg: F - 12 - 18, co: 66 }[v] || C + 12, mid = DY + 9;
+    const band = v === 'natural' ? `<rect x="16" y="${C}" width="311" height="54" fill="url(#gmUp)"/>`
+      : v === 'lpg' ? `<rect x="16" y="${F - 54}" width="311" height="54" fill="url(#gmDown)"/>`
+      : `<rect x="16" y="${C}" width="311" height="${F - C}" class="gm-even"/>`;
+    const from = v === 'lpg' ? F : v === 'co' ? F : C, label = v === 'co' ? 'about 1.5 m' : '10–30 cm';
+    const y1 = Math.min(from, mid), y2 = Math.max(from, mid);
+    return `<div class="gs-mount" aria-hidden="true"><svg viewBox="0 0 343 170" preserveAspectRatio="xMidYMid meet">
+      <defs><clipPath id="gmClip"><rect x="0" y="0" width="343" height="170" rx="20"/></clipPath><linearGradient id="gmUp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="gm-g0"/><stop offset="1" class="gm-g1"/></linearGradient>
+        <linearGradient id="gmDown" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="gm-g0"/><stop offset="1" class="gm-g1"/></linearGradient></defs>
+      <rect x="0" y="0" width="343" height="170" rx="20" class="gm-card"/>
+      <g class="gm-band" clip-path="url(#gmClip)">${band}</g>
+      <line x1="16" y1="${C}" x2="327" y2="${C}" class="gm-line"/><line x1="16" y1="${F}" x2="327" y2="${F}" class="gm-line"/>
+      <g class="gm-stove"><rect x="236" y="104" width="68" height="50" rx="6"/><rect x="244" y="98" width="22" height="4" rx="2"/><rect x="274" y="98" width="22" height="4" rx="2"/><rect x="246" y="118" width="48" height="24" rx="3" class="gm-oven"/></g>
+      <g class="gm-dim"><line x1="118" y1="${y1}" x2="118" y2="${y2}"/><line x1="113" y1="${y1}" x2="123" y2="${y1}"/><line x1="113" y1="${y2}" x2="123" y2="${y2}"/>
+        <text x="106" y="${(y1 + y2) / 2 + 4}" text-anchor="end">${label}</text></g>
+      <g class="gm-det" style="transform:translateY(${DY}px)"><rect x="134" y="0" width="40" height="18" rx="9"/><circle cx="154" cy="9" r="2.5"/></g>
+    </svg></div>`;
   }
   function page(d) {
     const st = d.st, L = lim(d);
@@ -10343,7 +10385,7 @@ const Scenarios = (() => {
       case 'leak': return { leak: live && t.tone === 'danger' && t.status !== 'Offline' };
       case 'smoke': case 'gas': return { alarm: live && t.tone === 'danger' && t.status !== 'Offline' };
       case 'lock': return { locked: st.bolt === 'locked' };
-      case 'climate': return { t: typeof st.t === 'number' ? st.t : null };
+      case 'climate': return { t: typeof st.t === 'number' ? st.t : null, h: typeof st.h === 'number' ? st.h : null };
       case 'air': return { bad: /^(Moderate|Poor|Unhealthy)/.test(t.status || '') };
       case 'vibration': return { running: !!st.shaking, shaken: !!st.alarmAt };
       case 'meter': return { kw: kwOf(t.status) };
@@ -10377,7 +10419,9 @@ const Scenarios = (() => {
     },
     climate: {
       ev: [{ k: 'above', label: 'Gets warmer than', s: (v) => `gets warmer than ${v} °C`, num: { def: 27, min: 10, max: 40, step: 1, unit: '°C' }, test: (a, b, v) => a.t != null && b.t != null && a.t <= v && b.t > v },
-        { k: 'below', label: 'Gets colder than', s: (v) => `gets colder than ${v} °C`, num: { def: 18, min: 0, max: 30, step: 1, unit: '°C' }, test: (a, b, v) => a.t != null && b.t != null && a.t >= v && b.t < v }],
+        { k: 'below', label: 'Gets colder than', s: (v) => `gets colder than ${v} °C`, num: { def: 18, min: 0, max: 30, step: 1, unit: '°C' }, test: (a, b, v) => a.t != null && b.t != null && a.t >= v && b.t < v },
+        { k: 'humid', label: 'Gets more humid than', s: (v) => `gets more humid than ${v} %`, num: { def: 70, min: 10, max: 95, step: 5, unit: '%' }, test: (a, b, v) => a.h != null && b.h != null && a.h <= v && b.h > v, hum: true },
+        { k: 'dry', label: 'Gets drier than', s: (v) => `gets drier than ${v} %`, num: { def: 30, min: 5, max: 90, step: 5, unit: '%' }, test: (a, b, v) => a.h != null && b.h != null && a.h >= v && b.h < v, hum: true }],
       st: [{ k: 'warm', label: 'Warmer than 25 °C', s: 'shows more than 25 °C', test: (c) => c.t > 25 }, { k: 'cold', label: 'Colder than 18 °C', s: 'shows less than 18 °C', test: (c) => c.t < 18 }],
     },
     air: { ev: [{ k: 'bad', label: 'Air gets worse', s: 'says the air got worse', test: rise('bad') }, { k: 'good', label: 'Air is good again', s: 'says the air is good again', test: fall('bad') }],
@@ -10402,7 +10446,8 @@ const Scenarios = (() => {
       act: [{ k: 'on', label: w[4], s: w[4].toLowerCase(), back: true, light: d.type === 'light' }, { k: 'off', label: w[5], s: w[5].toLowerCase() },
         ...(d.type === 'curtain' ? [{ k: 'pos', label: 'Set a position', s: 'set', pos: true }] : [])],
     } : {};
-    return { ev: c.ev || onoff.ev || [], st: c.st || onoff.st || [], act: c.act || onoff.act || [] };
+    const hasHum = !d.features || d.features.includes('humidity');
+    return { ev: (c.ev || onoff.ev || []).filter((e) => !e.hum || hasHum), st: c.st || onoff.st || [], act: c.act || onoff.act || [] };
   }
   /** Every device channel the user can pick for a role: 'ev' | 'st' | 'act'. */
   function pickable(role) {
@@ -10865,11 +10910,19 @@ if (typeof Store !== 'undefined') Scenarios.start();
     return st.topRow;
   }
   const chipIcon = (d) => (d.type === 'climate' ? 'chip-temperature' : d.type === 'contact' ? 'chip-door' : DeviceAPI(d).icon(0));
-  const chipName = (d) => (d.type === 'climate' && S().devices.filter((x) => x.type === 'climate').length === 1 ? 'Temperature' : d.name);   // Figma: "Temperature"
+  /* short names in the row: drop the room the device sits in ("Living room motion" → "Motion"),
+     unless two chips would then read the same */
+  const shortName = (d) => { const r = Store.roomName(d.roomId), n = d.name.replace(new RegExp('^' + r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+', 'i'), ''); return n && n !== d.name ? n.charAt(0).toUpperCase() + n.slice(1) : d.name; };
+  const chipName = (d) => {
+    if (d.type === 'climate' && S().devices.filter((x) => x.type === 'climate').length === 1) return 'Temperature';   // Figma: "Temperature"
+    const n = shortName(d);
+    return S().devices.some((x) => x.id !== d.id && SENSOR_TYPES.includes(x.type) && shortName(x) === n) ? d.name : n;
+  };
   /** A sensor chip: its icon, its name, its live state — coloured like its tile when it needs attention */
   function devChip(d) {
     const t = DeviceAPI(d).homeTiles()[0] || {};
-    const text = d.type === 'climate' ? Devices.climate.chipText(d) : t.status;
+    // minimal: only the state itself ("No motion", not "No motion · yesterday 13:00")
+    const text = (d.type === 'climate' ? Devices.climate.chipText(d) : String(t.status || '')).split(' · ')[0];
     return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0" data-key="qc-${d.id}">${icon(chipIcon(d))}<span><b>${UI.esc(chipName(d))}</b><span class="${t.tone ? 'tone-' + t.tone : ''}"><span data-num>${UI.esc(text || '')}</span></span></span></button>`;
   }
   function sceneChip(x) {

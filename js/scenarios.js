@@ -65,7 +65,7 @@ const Scenarios = (() => {
       case 'leak': return { leak: live && t.tone === 'danger' && t.status !== 'Offline' };
       case 'smoke': case 'gas': return { alarm: live && t.tone === 'danger' && t.status !== 'Offline' };
       case 'lock': return { locked: st.bolt === 'locked' };
-      case 'climate': return { t: typeof st.t === 'number' ? st.t : null };
+      case 'climate': return { t: typeof st.t === 'number' ? st.t : null, h: typeof st.h === 'number' ? st.h : null };
       case 'air': return { bad: /^(Moderate|Poor|Unhealthy)/.test(t.status || '') };
       case 'vibration': return { running: !!st.shaking, shaken: !!st.alarmAt };
       case 'meter': return { kw: kwOf(t.status) };
@@ -99,7 +99,9 @@ const Scenarios = (() => {
     },
     climate: {
       ev: [{ k: 'above', label: 'Gets warmer than', s: (v) => `gets warmer than ${v} °C`, num: { def: 27, min: 10, max: 40, step: 1, unit: '°C' }, test: (a, b, v) => a.t != null && b.t != null && a.t <= v && b.t > v },
-        { k: 'below', label: 'Gets colder than', s: (v) => `gets colder than ${v} °C`, num: { def: 18, min: 0, max: 30, step: 1, unit: '°C' }, test: (a, b, v) => a.t != null && b.t != null && a.t >= v && b.t < v }],
+        { k: 'below', label: 'Gets colder than', s: (v) => `gets colder than ${v} °C`, num: { def: 18, min: 0, max: 30, step: 1, unit: '°C' }, test: (a, b, v) => a.t != null && b.t != null && a.t >= v && b.t < v },
+        { k: 'humid', label: 'Gets more humid than', s: (v) => `gets more humid than ${v} %`, num: { def: 70, min: 10, max: 95, step: 5, unit: '%' }, test: (a, b, v) => a.h != null && b.h != null && a.h <= v && b.h > v, hum: true },
+        { k: 'dry', label: 'Gets drier than', s: (v) => `gets drier than ${v} %`, num: { def: 30, min: 5, max: 90, step: 5, unit: '%' }, test: (a, b, v) => a.h != null && b.h != null && a.h >= v && b.h < v, hum: true }],
       st: [{ k: 'warm', label: 'Warmer than 25 °C', s: 'shows more than 25 °C', test: (c) => c.t > 25 }, { k: 'cold', label: 'Colder than 18 °C', s: 'shows less than 18 °C', test: (c) => c.t < 18 }],
     },
     air: { ev: [{ k: 'bad', label: 'Air gets worse', s: 'says the air got worse', test: rise('bad') }, { k: 'good', label: 'Air is good again', s: 'says the air is good again', test: fall('bad') }],
@@ -124,7 +126,8 @@ const Scenarios = (() => {
       act: [{ k: 'on', label: w[4], s: w[4].toLowerCase(), back: true, light: d.type === 'light' }, { k: 'off', label: w[5], s: w[5].toLowerCase() },
         ...(d.type === 'curtain' ? [{ k: 'pos', label: 'Set a position', s: 'set', pos: true }] : [])],
     } : {};
-    return { ev: c.ev || onoff.ev || [], st: c.st || onoff.st || [], act: c.act || onoff.act || [] };
+    const hasHum = !d.features || d.features.includes('humidity');
+    return { ev: (c.ev || onoff.ev || []).filter((e) => !e.hum || hasHum), st: c.st || onoff.st || [], act: c.act || onoff.act || [] };
   }
   /** Every device channel the user can pick for a role: 'ev' | 'st' | 'act'. */
   function pickable(role) {

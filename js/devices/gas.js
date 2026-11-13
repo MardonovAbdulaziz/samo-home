@@ -127,11 +127,28 @@ Devices.gas = (() => {
   const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: icon0(d), on: false, status: s.text, tone: s.tone, alert: d.online && alarm(d), controllable: false, offline: !d.online }]; };
 
   /* ---------- Device page ---------- */
+  /* "Where to mount it": a plain side view of a kitchen wall — ceiling, floor, the stove — where the gas
+     gathers (a soft band: natural gas at the ceiling, propane at the floor, CO everywhere) and the detector at
+     the right height with its distance. Nothing decorative. Moves smoothly when the choice changes. */
   function mountPic(v) {
-    const y = v === 'natural' ? 26 : v === 'lpg' ? 112 : 68;
-    return `<div class="gs-mount" aria-hidden="true"><svg viewBox="0 0 200 140"><rect x="24" y="10" width="152" height="120" rx="6" class="w"/><line x1="24" y1="10" x2="176" y2="10" class="c"/><line x1="24" y1="130" x2="176" y2="130" class="c"/>
-      <rect x="132" y="98" width="34" height="32" rx="3" class="s"/><circle cx="141" cy="96" r="3" class="s"/><circle cx="157" cy="96" r="3" class="s"/>
-      <rect x="40" y="${y - 7}" width="26" height="14" rx="4" class="dt"/><line x1="72" y1="${y}" x2="110" y2="${y}" class="ar"/><text x="114" y="${y + 4}">${v === 'natural' ? 'high' : v === 'lpg' ? 'low' : 'middle'}</text></svg></div>`;
+    const C = 16, F = 154;                                     // ceiling, floor
+    const DY = { natural: C + 12, lpg: F - 12 - 18, co: 66 }[v] || C + 12, mid = DY + 9;
+    const band = v === 'natural' ? `<rect x="16" y="${C}" width="311" height="54" fill="url(#gmUp)"/>`
+      : v === 'lpg' ? `<rect x="16" y="${F - 54}" width="311" height="54" fill="url(#gmDown)"/>`
+      : `<rect x="16" y="${C}" width="311" height="${F - C}" class="gm-even"/>`;
+    const from = v === 'lpg' ? F : v === 'co' ? F : C, label = v === 'co' ? 'about 1.5 m' : '10–30 cm';
+    const y1 = Math.min(from, mid), y2 = Math.max(from, mid);
+    return `<div class="gs-mount" aria-hidden="true"><svg viewBox="0 0 343 170" preserveAspectRatio="xMidYMid meet">
+      <defs><clipPath id="gmClip"><rect x="0" y="0" width="343" height="170" rx="20"/></clipPath><linearGradient id="gmUp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="gm-g0"/><stop offset="1" class="gm-g1"/></linearGradient>
+        <linearGradient id="gmDown" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="gm-g0"/><stop offset="1" class="gm-g1"/></linearGradient></defs>
+      <rect x="0" y="0" width="343" height="170" rx="20" class="gm-card"/>
+      <g class="gm-band" clip-path="url(#gmClip)">${band}</g>
+      <line x1="16" y1="${C}" x2="327" y2="${C}" class="gm-line"/><line x1="16" y1="${F}" x2="327" y2="${F}" class="gm-line"/>
+      <g class="gm-stove"><rect x="236" y="104" width="68" height="50" rx="6"/><rect x="244" y="98" width="22" height="4" rx="2"/><rect x="274" y="98" width="22" height="4" rx="2"/><rect x="246" y="118" width="48" height="24" rx="3" class="gm-oven"/></g>
+      <g class="gm-dim"><line x1="118" y1="${y1}" x2="118" y2="${y2}"/><line x1="113" y1="${y1}" x2="123" y2="${y1}"/><line x1="113" y1="${y2}" x2="123" y2="${y2}"/>
+        <text x="106" y="${(y1 + y2) / 2 + 4}" text-anchor="end">${label}</text></g>
+      <g class="gm-det" style="transform:translateY(${DY}px)"><rect x="134" y="0" width="40" height="18" rx="9"/><circle cx="154" cy="9" r="2.5"/></g>
+    </svg></div>`;
   }
   function page(d) {
     const st = d.st, L = lim(d);
