@@ -1911,3 +1911,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-wheel-row, .scn-slider-head, .scn-disclose { -webkit-user-select: none; user-select: none; }
 .scn-ct::-webkit-slider-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important; }
 .scn-ct::-moz-range-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important; }
+/* clock time on the shared wheel (scenarios): 07 : 30 */
+.tw.tw-clock { gap: 8px; }
+.tw-clock .tw-wheel span { text-align: center; padding-right: 0; }
+.tw-colon { align-self: center; font: 500 22px/40px var(--font); color: var(--label-primary); }

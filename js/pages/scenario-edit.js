@@ -21,19 +21,18 @@
   const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'bell' : a.k === 'wait' ? 'hourglass' : a.k === 'auto' ? (a.on ? 'power' : 'hand-stop') : 'tab-scenarios');
   const row = (act, i, ic, text, sub = '') => `<button class="cell scn-row" data-action="${act}" data-i="${i}">
       <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(text)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
-  const addRow = (act, text) => `<button class="cell scn-add-row" data-action="${act}"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">${esc(text)}</span></button>`;
+  const addBtn = (act, text, key) => `<div class="pad scn-addbtn" data-key="${key}"><button class="btn btn-glass btn-block" data-action="${act}">${icon('plus')} ${esc(text)}</button></div>`;   // = valve “Add a plan”
   const condLabel = (c) => cap1(SC.condText(c).replace(/^only (if )?/, (m, f) => (f ? 'if ' : '')));
   const actSub = (a) => (a.k === 'notify' ? `“${a.text}”` : '');
 
   function render() {
     const auto = !s.manual, warn = SC.warnings(s);
     const title = isNew ? (s.manual ? 'New scene' : 'New automation') : 'Edit scenario';
-    let h = UI.toolbar({ title, back: '', plain: true, right: `<button class="tb-text" data-action="save">${isNew ? 'Add' : 'Save'}</button>` })
-      .replace('<span class="spacer"></span>', `<button class="tb-text muted" data-action="cancel">Cancel</button>`);
-    h += `<div class="scn-head">
-        <button class="scn-avatar" data-action="pick-icon" aria-label="Change icon">${icon(s.icon || 'tab-scenarios', 'icon')}<span class="pen">${icon('pen', 'icon')}</span></button>
-        <button class="scn-name" data-action="rename"><span class="field-label">Name</span><b>${esc(s.name)}</b></button>
-      </div>
+    // same top as Device Settings: back, title, the icon with a pen, the name field
+    let h = UI.toolbar({ title, back: '', plain: true }).replace('<span class="spacer"></span>', `<button class="icon-btn" data-action="cancel" aria-label="Back">${icon('back')}</button>`);
+    h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:48px;height:48px"')}</div>
+        <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
+      <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
       <div class="scn-plain" data-key="plain"><span class="scn-plain-k">In plain words</span><p>${esc(SC.sentence(s))}</p></div>
       <div class="pad"><div class="segmented scn-mode" role="tablist">
         <button class="${s.manual ? 'on' : ''}" data-action="mode" data-v="scene" role="tab" aria-selected="${s.manual}">Tap to run</button>
@@ -41,14 +40,14 @@
         <div class="scn-mode-note">${s.manual ? 'Runs when you tap it on the Scenarios page.' : 'Runs on its own — the hub keeps working even when your phone is off.'}</div></div>`;
     if (auto) {
       h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>
-        <div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}${addRow('trig-add', s.when.length ? 'Or when…' : 'Add a start')}</div>
+        ${s.when.length ? `<div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}</div>` : ''}${addBtn('trig-add', s.when.length ? 'Or when…' : 'Add a start', 'b-when')}
         ${s.when.length > 1 ? '<div class="list-footer" data-key="f-when">Any one of these starts it.</div>' : ''}
         <div class="list-header scn-lh" data-key="h-only">Only if <span class="scn-opt">optional</span></div>
-        <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}${addRow('cond-add', s.only.length ? 'And only if…' : 'Add a condition')}</div>
+        ${s.only.length ? `<div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}</div>` : ''}${addBtn('cond-add', s.only.length ? 'And only if…' : 'Add a condition', 'b-only')}
         <div class="list-footer" data-key="f-only">${s.only.length ? 'All of these must be true — otherwise it skips this time, and says why.' : 'For example: only at night, only on weekdays, only if the door is locked.'}</div>`;
     }
     h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
-      <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', s.do.length ? 'Then…' : 'Add an action')}</div>
+      ${s.do.length ? `<div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}</div>` : ''}${addBtn('act-add', s.do.length ? 'Then…' : 'Add an action', 'b-do')}
       ${s.do.length > 1 ? '<div class="list-footer" data-key="f-do">Done from top to bottom.</div>' : ''}`;
     const nx = SC.next(s);
     if (nx.length) h += `<div class="scn-next" data-key="next">${icon('arrow-fork', 'icon')}<span>When this runs, it also starts ${nx.map((x) => `<b>${esc(x.name)}</b>`).join(', ')}.</span></div>`;
@@ -59,23 +58,38 @@
       h += `<div class="list-header" data-key="h-log">What happened</div><div class="list scn-log" data-key="l-log">${s.log.slice(0, 6).map((l) => `<div class="cell"><span class="cell-icon ${l.ok ? 'ok' : 'warn'}">${icon(l.ok ? 'check' : 'round-info', 'icon')}</span>
         <span class="cell-main"><span class="cell-title" style="display:block">${esc(l.ok ? (l.text || 'Ran') : l.text)}</span><span class="cell-sub" style="display:block">${esc(when(l.at))}${l.cause ? ' · ' + esc(l.cause) : ''}</span></span></div>`).join('')}</div>`;
     }
-    h += '<div style="height:40px"></div>';
+    h += '<div style="height:24px"></div>';
     UI.patch(UI.screen, h);
+    UI.screen.classList.add('with-footer');
+    let f = UI.phone.querySelector('.footer-cta');
+    if (!f) { f = document.createElement('div'); f.className = 'footer-cta'; UI.phone.appendChild(f); }
+    UI.patch(f, `<button class="btn btn-primary btn-block" data-action="save">${isNew ? (s.manual ? 'Add scene' : 'Add automation') : 'Save'}</button>`);
   }
   function when(t) { const d = new Date(t), hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; return new Date().toDateString() === d.toDateString() ? `Today ${hm}` : `${d.getDate()} ${d.toLocaleString('en', { month: 'short' })} ${hm}`; }
 
   /* ---------- sheet helpers ---------- */
   const card = (inner) => `<div class="sheet-group"><div class="group-card">${inner}</div></div>`;
   const choice = (act, ic, title, sub, data = '') => `<button class="cell" data-action="${act}" ${data}><span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(title)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
-  const done = (act, removable, needDone = true) => (!removable && !needDone ? '' : `<div class="scn-sheet-foot">${removable ? `<button class="btn btn-danger" data-action="${act}-remove">Remove</button>` : ''}${needDone ? `<button class="btn btn-primary" data-action="${act}-done">Done</button>` : ''}</div>`);
+  /* Every item sheet in the editor has Done: a choice here is not applied until Done (a preselected option
+     must not look chosen while × throws it away — user, 2026-11-13). Editing an item adds Remove. */
+  const done = (act, removable) => `<div class="scn-sheet-foot">${removable ? `<button class="btn btn-danger" data-action="${act}-remove">Remove</button>` : ''}<button class="btn btn-primary" data-action="${act}-done">Done</button></div>`;
   const deviceList = (role, act) => {
     const L = SC.pickable(role);
     if (!L.length) return '<div class="pad scn-none">No devices for this yet.</div>';
     const rooms = [...new Set(L.map((x) => x.room))];
     return rooms.map((r) => UI.group(r, L.filter((x) => x.room === r).map((x) => `<button class="cell" data-action="${act}" data-id="${x.id}" data-ch="${x.ch}"><span class="cell-icon">${icon(x.icon, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(x.name)}${x.offline ? ' <span class="cell-tag">Offline</span>' : ''}</span>${x.sub ? `<span class="cell-sub" style="display:block">${esc(x.sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`).join(''))).join('');
   };
-  const daysChips = (days) => `<div class="scn-days" role="group" aria-label="Days">${[1, 2, 3, 4, 5, 6, 7].map((d) => `<button class="chip" data-action="day" data-d="${d}" aria-pressed="${days.includes(d)}">${SC.DAY[d].slice(0, 2)}</button>`).join('')}</div>
-    <div class="scn-presets">${[['Every day', '1234567'], ['Weekdays', '12345'], ['Weekends', '67']].map(([l, v]) => `<button class="btn-sm" data-action="days-preset" data-v="${v}" aria-pressed="${[...days].sort().join('') === v}">${l}</button>`).join('')}</div>`;
+  /* clock time on the Timer's wheel (UI.wheelHTML) — 07 : 30 */
+  const clockWheels = (at, kh, km) => { const [hh, mm] = at.split(':').map(Number); return `<div class="tw tw-clock">${UI.wheelHTML(kh, 23, hh, '', true)}<span class="tw-colon">:</span>${UI.wheelHTML(km, 59, mm, '', true)}</div>`; };
+  const bindClock = (el, x, field, kh, km) => UI.bindWheels(el, (k) => +x[field].split(':')[k === kh ? 0 : 1], (k, v) => { const p = x[field].split(':'); p[k === kh ? 0 : 1] = String(v).padStart(2, '0'); x[field] = p.join(':'); });
+  /* Repeat: a radio card (Figma) — Custom opens the seven days with check marks */
+  const DAYNAME = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const repKind = (days) => ({ 1234567: 'all', 12345: 'wd', 67: 'we' }[[...days].sort().join('')] || 'custom');
+  const repeatCard = (x, title = 'Repeat') => {
+    const k = sh && sh.ui && sh.ui.custom ? 'custom' : repKind(x.days);
+    return `<div class="list-header">${title}</div><div class="list">${Kit.radio('rep', k, [['all', 'Every day', ''], ['wd', 'Weekdays', ''], ['we', 'Weekends', ''], ['custom', 'Custom', k === 'custom' ? SC.daysText(x.days).replace(/^on /, '') : '']])}</div>
+      ${UI.collapse(k === 'custom', `<div class="list scn-daylist" style="margin-top:12px">${[1, 2, 3, 4, 5, 6, 7].map((d) => `<button class="scn-inline-opt" data-action="rep-day" data-d="${d}" role="checkbox" aria-checked="${x.days.includes(d)}"><span>${DAYNAME[d]}</span>${icon('check', 'icon')}</button>`).join('')}</div>`)}`;
+  };
   let sh = null;   // the open sheet's draft: { kind, i, x }
   const reopen = () => sh && sh.open && sh.open();
 
@@ -88,7 +102,7 @@
   }
   function trigTime(i) {
     const t = i != null ? clone(s.when[i]) : { k: 'time', at: '07:30', days: [1, 2, 3, 4, 5] };
-    sh = { kind: 'trig', i, x: t, open: () => UI.sheet({ title: 'At a time', render: () => `<div class="pad"><label class="scn-time-wrap"><input type="time" class="scn-time" value="${t.at}" data-f="at" aria-label="Time"></label>${daysChips(t.days)}</div>`, footer: done('trig', i != null), onMount: bindTime }) };
+    sh = { kind: 'trig', i, x: t, ui: { custom: repKind(t.days) === 'custom' }, open: () => UI.sheet({ title: 'At a time', render: () => `<div class="pad">${clockWheels(t.at, 'h', 'm')}</div>${repeatCard(t)}`, footer: done('trig', i != null), onMount: (el) => bindClock(el, t, 'at', 'h', 'm') }) };
     reopen();
   }
   function trigSun(i) {
@@ -113,7 +127,7 @@
   function trigPeople(i) {
     const t = i != null ? clone(s.when[i]) : { k: 'leave' };
     sh = { kind: 'trig', i, x: t, open: () => UI.sheet({ title: 'People come or go', render: () => `<div class="list">${Kit.radio('people', t.k, [['leave', 'Everyone leaves home', 'The last phone leaves'], ['arrive', 'Someone comes home', 'The first phone arrives']])}</div>
-      <div class="list-footer">Works with the Samo Home app on your family’s phones, with location turned on.</div>`, footer: done('trig', i != null, false) }) };
+      <div class="list-footer">Works with the Samo Home app on your family’s phones, with location turned on.</div>`, footer: done('trig', i != null) }) };
     reopen();
   }
   function openTrig(i) { const t = s.when[i]; if (t.k === 'time') trigTime(i); else if (t.k === 'sun') trigSun(i); else if (t.k === 'dev') trigDeviceEvent(t.id, t.ch, i); else trigPeople(i); }
@@ -128,19 +142,20 @@
     const c = i != null ? clone(s.only[i]) : { k: 'between', from: 'sunset', to: 'sunrise' };
     const mode = () => (c.from === 'sunset' && c.to === 'sunrise' ? 'night' : c.from === 'sunrise' && c.to === 'sunset' ? 'day' : 'custom');
     sh = { kind: 'cond', i, x: c, open: () => UI.sheet({ title: 'Time of day', render: () => `<div class="list">${Kit.radio('ct-mode', mode(), [['night', 'At night', `From sunset to sunrise · ${SC.SUN.sunset}–${SC.SUN.sunrise} today`], ['day', 'In the daytime', `From sunrise to sunset · ${SC.SUN.sunrise}–${SC.SUN.sunset} today`], ['custom', 'Between two times', '']])}</div>
-      ${mode() === 'custom' ? `<div class="pad scn-between"><label>From<input type="time" class="scn-time sm" data-f="from" value="${c.from}"></label><label>To<input type="time" class="scn-time sm" data-f="to" value="${c.to}"></label></div>` : ''}`, footer: () => done('cond', i != null, mode() === 'custom'), onMount: bindTime }) };
+      ${mode() === 'custom' ? `<div class="scn-gap"></div><div class="list">${['from', 'to'].map((f) => `<button class="cell scn-disclose" data-action="ct-open" data-v="${f}" aria-expanded="${sh.ui.open === f}"><span class="cell-main cell-title">${f === 'from' ? 'From' : 'To'}</span><span class="cell-value">${c[f]}</span>${icon('chevron-down', 'chev')}</button>${UI.collapse(sh.ui.open === f, `<div class="scn-wheel-in">${clockWheels(c[f], f + 'h', f + 'm')}</div>`)}`).join('')}</div>` : ''}`,
+      footer: () => done('cond', i != null), onMount: (el) => { if (sh.ui.open) bindClock(el, c, sh.ui.open, sh.ui.open + 'h', sh.ui.open + 'm'); } }), ui: { open: '' } };
     reopen();
   }
   function condDays(i) {
     const c = i != null ? clone(s.only[i]) : { k: 'days', days: [1, 2, 3, 4, 5] };
-    sh = { kind: 'cond', i, x: c, open: () => UI.sheet({ title: 'Days of the week', render: () => `<div class="pad">${daysChips(c.days)}</div>`, footer: done('cond', i != null) }) };
+    sh = { kind: 'cond', i, x: c, ui: { custom: repKind(c.days) === 'custom' }, open: () => UI.sheet({ title: 'Days of the week', render: () => repeatCard(c, 'Only on').replace('<div class="list-header">Only on</div>', ''), footer: done('cond', i != null) }) };
     reopen();
   }
   function condDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('st', 'c-dev-pick') }); }
   function condDeviceState(id, ch, i) {
     const sts = SC.cap(Store.device(id)).st;
     const c = i != null ? clone(s.only[i]) : { k: 'state', id, ch, is: sts[0].k };
-    sh = { kind: 'cond', i, x: c, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => `<div class="list">${Kit.radio('st-pick', c.is, sts.map((x) => [x.k, x.label, '']))}</div>`, footer: done('cond', i != null, false) }) };
+    sh = { kind: 'cond', i, x: c, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => `<div class="list">${Kit.radio('st-pick', c.is, sts.map((x) => [x.k, x.label, '']))}</div>`, footer: done('cond', i != null) }) };
     reopen();
   }
   function openCond(i) { const c = s.only[i]; if (c.k === 'between') condTime(i); else if (c.k === 'days') condDays(i); else condDeviceState(c.id, c.ch, i); }
@@ -173,7 +188,6 @@
     if (a.col === 'white') { delete a.col; a.mode = 'ct'; }
     const ui = { open: '' };   // which row is open in place: 'fx' | 'back' | ''
     const isSet = () => a.set !== false && !!(a.br || a.col || a.mode || a.fx);
-    const needDone = () => { const c = SC.findIn(acts, a.to) || {}; return !!(c.back || c.pos || c.light); };
     const valueRow = (key, title, value) => `<button class="cell scn-disclose" data-action="do-open" data-v="${key}" aria-expanded="${ui.open === key}"><span class="cell-main cell-title">${esc(title)}</span><span class="cell-value">${esc(value)}</span>${icon('chevron-down', 'chev')}</button>`;
     const choices = (key, act, list, cur) => UI.collapse(ui.open === key, `<div class="scn-inline">${list.map(([v, l]) => `<button class="scn-inline-opt" data-action="${act}" data-v="${v}" aria-checked="${String(cur) === String(v)}" role="radio"><span>${esc(l)}</span>${icon('check', 'icon')}</button>`).join('')}</div>`);
     function lightCard() {
@@ -206,7 +220,7 @@
       if (cur.back) h += `<div class="scn-gap"></div><div class="list">${valueRow('back', cur.label === 'Open' ? 'Close after' : 'Turn off after', backLabel(a.back))}${choices('back', 'do-back', BACKS.map((b) => [b, backLabel(b)]), a.back || 0)}</div>
           <div class="list-footer">${a.back ? `Goes back by itself after ${backLabel(a.back)} — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>`;
       return h;
-    }, footer: () => done('act', i != null, needDone()), onMount: (el) => bindLook(el, a) }) };
+    }, footer: () => done('act', i != null), onMount: (el) => bindLook(el, a) }) };
     sh.ui = ui;
     reopen();
   }
@@ -243,7 +257,7 @@
   function actRun(i) {
     const scenes = SC.list().filter((x) => x.manual && x.id !== s.id);
     const a = i != null ? clone(s.do[i]) : { k: 'run', sid: (scenes[0] || {}).id };
-    sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Run a scene', render: () => `<div class="list">${Kit.radio('run-pick', a.sid, scenes.map((x) => [x.id, x.name, `${x.do.length} actions`]))}</div>`, footer: done('act', i != null, false) }) };
+    sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Run a scene', render: () => `<div class="list">${Kit.radio('run-pick', a.sid, scenes.map((x) => [x.id, x.name, `${x.do.length} actions`]))}</div>`, footer: done('act', i != null) }) };
     reopen();
   }
   const autosOther = () => SC.list().filter((x) => !x.manual && x.id !== s.id);
@@ -258,9 +272,6 @@
   }
   function openAct(i) { const a = s.do[i]; if (a.k === 'dev') actDeviceDo(a.id, a.ch, i); else if (a.k === 'notify') actNotify(i); else if (a.k === 'wait') actWait(i); else if (a.k === 'auto') actAuto(i); else actRun(i); }
 
-  function bindTime(el) {
-    el.querySelectorAll('input[type="time"]').forEach((inp) => inp.addEventListener('change', () => { if (inp.value) { sh.x[inp.dataset.f] = inp.value; } }));
-  }
   const listOf = (kind) => (kind === 'trig' ? s.when : kind === 'cond' ? s.only : s.do);
   function commit(kind) {
     const L = listOf(kind);
@@ -305,20 +316,21 @@
     't-dev-pick': ({ id, ch }) => trigDeviceEvent(id, +ch),
     'sun-ev': ({ v }) => { sh.x.ev = v; reopen(); },
     'sun-off': ({ d }) => { sh.x.off = Math.max(-60, Math.min(60, (+sh.x.off || 0) + 15 * +d)); reopen(); },
-    'ev-pick': ({ v }) => { sh.x.ev = v; const e = SC.evOf(sh.x); if (e && e.num) { sh.x.v = sh.x.v != null && sh.x.v >= e.num.min && sh.x.v <= e.num.max ? sh.x.v : e.num.def; reopen(); } else { delete sh.x.v; commit('trig'); } },
+    'ev-pick': ({ v }) => { sh.x.ev = v; const e = SC.evOf(sh.x); if (e && e.num) sh.x.v = sh.x.v != null && sh.x.v >= e.num.min && sh.x.v <= e.num.max ? sh.x.v : e.num.def; else delete sh.x.v; reopen(); },
     'ev-v': ({ d }) => { const n = SC.evOf(sh.x).num; sh.x.v = Math.round(Math.max(n.min, Math.min(n.max, sh.x.v + n.step * +d)) * 10) / 10; reopen(); },
-    people: ({ v }) => { sh.x.k = v; commit('trig'); },
+    people: ({ v }) => { sh.x.k = v; reopen(); },
     'trig-done': () => commit('trig'), 'trig-remove': () => removeItem('trig'),
 
     'cond-add': condChooser, cond: ({ i }) => openCond(+i),
     'c-time': () => condTime(), 'c-days': () => condDays(), 'c-dev': condDevice,
     'c-dev-pick': ({ id, ch }) => condDeviceState(id, +ch),
-    'ct-mode': ({ v }) => { const c = sh.x; if (v === 'night') { c.from = 'sunset'; c.to = 'sunrise'; } else if (v === 'day') { c.from = 'sunrise'; c.to = 'sunset'; } else { if (/sun/.test(c.from)) { c.from = '22:00'; c.to = '07:00'; } return reopen(); } commit('cond'); },
-    'st-pick': ({ v }) => { sh.x.is = v; commit('cond'); },
+    'ct-mode': ({ v }) => { const c = sh.x; if (v === 'night') { c.from = 'sunset'; c.to = 'sunrise'; } else if (v === 'day') { c.from = 'sunrise'; c.to = 'sunset'; } else if (/sun/.test(c.from)) { c.from = '22:00'; c.to = '07:00'; } reopen(); },
+    'st-pick': ({ v }) => { sh.x.is = v; reopen(); },
     'cond-done': () => commit('cond'), 'cond-remove': () => removeItem('cond'),
 
-    day: ({ d }) => { const L = sh.x.days; const n = +d; const i = L.indexOf(n); if (i >= 0) { if (L.length > 1) L.splice(i, 1); } else L.push(n); reopen(); },
-    'days-preset': ({ v }) => { sh.x.days = v.split('').map(Number); reopen(); },
+    rep: ({ v }) => { sh.ui.custom = v === 'custom'; if (v !== 'custom') sh.x.days = { all: [1, 2, 3, 4, 5, 6, 7], wd: [1, 2, 3, 4, 5], we: [6, 7] }[v]; reopen(); },
+    'rep-day': ({ d }) => { const L = sh.x.days, n = +d, i = L.indexOf(n); if (i >= 0) { if (L.length > 1) L.splice(i, 1); } else L.push(n); L.sort(); reopen(); },
+    'ct-open': ({ v }) => { sh.ui.open = sh.ui.open === v ? '' : v; reopen(); },
 
     'act-add': actChooser, act: ({ i }) => openAct(+i),
     'a-dev': actDevice, 'a-notify': () => actNotify(), 'a-wait': () => actWait(), 'a-run': () => actRun(),
@@ -326,7 +338,7 @@
     'do-pick': ({ v }) => {
       const x = sh.x; x.to = v; const c = SC.findIn(SC.cap(Store.device(x.id)).act, v) || {};
       if (!c.back) delete x.back; if (!c.light) { ['br', 'col', 'mode', 'kel', 'fx', 'set'].forEach((f) => delete x[f]); } if (c.pos) { if (x.pos == null) x.pos = 10; } else delete x.pos;
-      if (c.back || c.pos || c.light) reopen(); else commit('act');
+      reopen();
     },
     'do-set': () => { const x = sh.x; if (x.set === false || !(x.br || x.col || x.mode || x.fx)) { x.set = true; if (!x.br) x.br = 80; if (!x.col && !x.mode) { x.mode = 'ct'; x.kel = 2700; } } else x.set = false; reopen(); },
     'do-mode': ({ v }) => { const x = sh.x; x.mode = v; if (v === 'hs' && !x.col) x.col = '#ff2563'; if (v === 'ct' && !x.kel) x.kel = 2700; reopen(); },
@@ -337,7 +349,7 @@
     'do-back': ({ v }) => { if (+v) sh.x.back = +v; else delete sh.x.back; sh.ui.open = ''; reopen(); },
     'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
     'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },
-    'run-pick': ({ v }) => { sh.x.sid = v; commit('act'); },
+    'run-pick': ({ v }) => { sh.x.sid = v; reopen(); },
     'a-auto': () => actAuto(),
     'au-on': ({ v }) => { sh.x.on = v === '1'; reopen(); },
     'au-pick': ({ v }) => { sh.x.sid = v; reopen(); },

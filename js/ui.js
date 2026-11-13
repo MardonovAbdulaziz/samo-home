@@ -509,6 +509,23 @@ const UI = (() => {
      cfg: { sub, tabs?, running(): timer | null, start(sec) → toast text, cancel(), lastCustom(), saveCustom(sec), extra?: actions } */
   const TM_PRE = [[300, '5', 'min'], [900, '15', 'min'], [1800, '30', 'min'], [3600, '1', 'hour'], [7200, '2', 'hours']];
   const TW_ROW = 40;   // wheel row height
+  /** One iOS-style number wheel — the Timer's Custom wheel, shared by every time / number picker in the app.
+      label: unit shown next to it ('hours', 'min') or '' for a clock; pad: 07 instead of 7 (clock times). */
+  const wheelHTML = (k, max, v, label, pad = false, step = 1) => `<div class="tw-col"><div class="tw-wheel" data-wheel="${k}" data-step="${step}" tabindex="0" role="spinbutton" aria-label="${label || k}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${v}">${
+    Array.from({ length: Math.floor(max / step) + 1 }, (_, i) => { const n = i * step; return `<span data-v="${i}" class="${n === v ? 'on' : ''}">${pad ? String(n).padStart(2, '0') : n}</span>`; }).join('')}</div>${label ? `<span class="tw-unit">${label}</span>` : ''}</div>`;
+  /** Wheels outside the Timer sheet: put them on their values and report changes. get(k) → value, set(k, value). */
+  function bindWheels(root, get, set) {
+    root.querySelectorAll('.tw-wheel').forEach((w) => {
+      const step = +w.dataset.step || 1;
+      w.scrollTop = Math.round(get(w.dataset.wheel) / step) * TW_ROW;
+      w.addEventListener('scroll', () => {
+        const i = Math.max(0, Math.min(w.children.length - 1, Math.round(w.scrollTop / TW_ROW))), v = i * step;
+        if (v === get(w.dataset.wheel)) return;
+        w.setAttribute('aria-valuenow', v); w.querySelector('.on')?.classList.remove('on'); w.children[i].classList.add('on');
+        set(w.dataset.wheel, v);
+      }, { passive: true });
+    });
+  }
   function timerSheet(cfg) {
     const R = 84, LEN = 2 * Math.PI * R;
     const ring = (t) => { const left = Math.max(0, (t.end - Date.now()) / 1000); return { left, off: LEN * (1 - left / (t.total || left || 1)) }; };
@@ -516,8 +533,7 @@ const UI = (() => {
     const st = { custom: false, h: Math.floor(last / 3600), m: Math.floor((last % 3600) / 60) };
     const secs = () => st.h * 3600 + st.m * 60;
     const endsAt = () => `Turns off at ${fmtTime(Date.now() + secs() * 1000)}`;
-    const wheel = (k, max, v, unit) => `<div class="tw-col"><div class="tw-wheel" data-wheel="${k}" tabindex="0" role="spinbutton" aria-label="${unit}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${v}">${
-      Array.from({ length: max + 1 }, (_, n) => `<span data-v="${n}" class="${n === v ? 'on' : ''}">${n}</span>`).join('')}</div><span class="tw-unit">${unit}</span></div>`;
+    const wheel = (k, max, v, unit) => wheelHTML(k, max, v, unit);
     const s = sheet({
       title: 'Timer', sub: cfg.sub, tabs: cfg.tabs,
       render: () => {
@@ -586,5 +602,5 @@ const UI = (() => {
   /** Re-run fn every second (timers, countdowns). */
   const tick = (fn) => setInterval(fn, 1000);
 
-  return { esc, param, go, flash, segTabs, patch, setNum, pulse, collapse, group, mount, on, toolbar, sheet, closeSheet, confirm, prompt, popover, toast, push, fmtDur, fmtTime, tick, timerSheet, get screen() { return screen; }, get phone() { return phone; }, get sheetOpen() { return !!sheetState; } };
+  return { esc, param, go, flash, segTabs, patch, setNum, pulse, collapse, group, mount, on, toolbar, sheet, closeSheet, confirm, prompt, popover, toast, push, fmtDur, fmtTime, tick, timerSheet, wheelHTML, bindWheels, get screen() { return screen; }, get phone() { return phone; }, get sheetOpen() { return !!sheetState; } };
 })();
