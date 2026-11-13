@@ -21,7 +21,7 @@
   function autoCard(s) {
     return `<div class="scn-card ${s.on === false ? 'paused' : ''}" data-key="sa-${s.id}">
       <button class="scn-card-main" data-action="scn-open" data-id="${s.id}">
-        <span class="scn-ic">${icon(s.icon || 'tab-scenarios', 'icon')}</span>
+        <span class="scn-ic">${Scenarios.ic(s.icon, 'icon')}</span>
         <span class="scn-txt"><b>${esc(s.name)}</b><span class="scn-sent">${esc(Scenarios.sentence(s))}</span>${lastLine(s)}</span>
       </button>
       <button class="switch" role="switch" aria-checked="${s.on !== false}" data-action="toggle" data-id="${s.id}" aria-label="${s.on === false ? 'Turn on' : 'Pause'} ${esc(s.name)}"></button>

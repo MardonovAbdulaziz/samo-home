@@ -385,11 +385,25 @@ const Scenarios = (() => {
     return true;
   }
   const isBusy = (id) => !!prog[id];
+  /** A scenario's picture: an app icon name, or "emoji:🌙" chosen in the picker. Same size rules as icon(). */
+  function ic(name, cls = 'icon', extra = '') {
+    if (name && name.startsWith('emoji:')) {
+      const m = /width:\s*(\d+)px/.exec(extra), fs = m ? Math.round(+m[1] * 0.86) : null;
+      return `<span class="${cls} emoji-ic" role="img" aria-hidden="true" ${fs ? `style="width:${m[1]}px;height:${m[1]}px;font-size:${fs}px"` : ''}>${esc(name.slice(6))}</span>`;
+    }
+    return icon(name || 'tab-scenarios', cls, extra);
+  }
+  /* Emoji for the icon picker — everyday moments and rooms, the way people name their scenes */
+  const EMOJI = [
+    ['Home and time of day', ['🏠', '🛏️', '🛋️', '🍽️', '🛁', '🚪', '🌙', '☀️', '🌅', '🌃', '⏰', '🔒']],
+    ['What you do', ['🎬', '📺', '🎮', '📖', '🎵', '🧘', '🏃', '💼', '🍿', '☕', '🍳', '🎉']],
+    ['Comfort and care', ['💡', '🕯️', '🔥', '❄️', '🌡️', '💧', '🌿', '🧺', '🧹', '👶', '🐶', '❤️']],
+  ];
   /** Scene tile = a device tile: tap opens the scene, the round button runs it (Home: tile opens, power toggles) */
   function tileHTML(s) {
     const busy = isBusy(s.id);
     return `<div class="tile scn-tile ${busy ? 'on' : ''}" role="button" tabindex="0" data-key="sc-${s.id}" data-action="scn-open" data-id="${s.id}">
-      <span class="tile-icon" style="${busy ? 'color:var(--primary)' : ''}">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:28px;height:28px"')}</span>
+      <span class="tile-icon" style="${busy ? 'color:var(--primary)' : ''}">${ic(s.icon, 'icon', 'style="width:28px;height:28px"')}</span>
       <button class="tile-power scn-play" data-action="scene-run" data-id="${s.id}" aria-label="Run ${esc(s.name)}">${ringHTML(s.id)}</button>
       <span class="tile-name">${esc(s.name)}</span>
       <span class="tile-status"><span data-num>${esc(statusText(s))}</span></span></div>`;
@@ -530,6 +544,6 @@ const Scenarios = (() => {
   }
 
   return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
-    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
+    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, ic, EMOJI, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
 })();
 if (typeof Store !== 'undefined') Scenarios.start();

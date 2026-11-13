@@ -2136,6 +2136,15 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .footer-cta.scn-save { transform: translateY(110%); opacity: 0; pointer-events: none; transition: transform 340ms cubic-bezier(0.32, 0.72, 0, 1), opacity 200ms var(--ease-out); }
 .footer-cta.scn-save.shown { transform: none; opacity: 1; pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) { .footer-cta.scn-save { transition: opacity 120ms linear; transform: none; } }
+/* emoji as a scenario's icon (picker "Emoji" tab) — sits where an icon would, same box */
+.emoji-ic { display: inline-grid; place-items: center; line-height: 1; font-style: normal; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+.scn-ic .emoji-ic { width: 20px; height: 20px; font-size: 18px; }
+.quick-chip > .emoji-ic, .cell-icon .emoji-ic { width: 24px; height: 24px; font-size: 20px; }
+.emoji-grid .emoji-ic { font-size: 30px; }
+.sheet-tabs .segmented button { height: 32px; font: var(--body-md-accent); }
+.sheet .sheet-head + .sheet-tabs { padding-top: 12px; }   /* 20 px under the title, like a sheet without a description */
+.sheet .sheet-tabs + .sheet-body .ip-list { padding-top: 0; }
+.sheet .sheet-tabs + .sheet-body .ip-list > .ip-group:first-child { padding-top: 4px; }
 
 </style>
 </head>
@@ -10634,11 +10643,25 @@ const Scenarios = (() => {
     return true;
   }
   const isBusy = (id) => !!prog[id];
+  /** A scenario's picture: an app icon name, or "emoji:🌙" chosen in the picker. Same size rules as icon(). */
+  function ic(name, cls = 'icon', extra = '') {
+    if (name && name.startsWith('emoji:')) {
+      const m = /width:\s*(\d+)px/.exec(extra), fs = m ? Math.round(+m[1] * 0.86) : null;
+      return `<span class="${cls} emoji-ic" role="img" aria-hidden="true" ${fs ? `style="width:${m[1]}px;height:${m[1]}px;font-size:${fs}px"` : ''}>${esc(name.slice(6))}</span>`;
+    }
+    return icon(name || 'tab-scenarios', cls, extra);
+  }
+  /* Emoji for the icon picker — everyday moments and rooms, the way people name their scenes */
+  const EMOJI = [
+    ['Home and time of day', ['🏠', '🛏️', '🛋️', '🍽️', '🛁', '🚪', '🌙', '☀️', '🌅', '🌃', '⏰', '🔒']],
+    ['What you do', ['🎬', '📺', '🎮', '📖', '🎵', '🧘', '🏃', '💼', '🍿', '☕', '🍳', '🎉']],
+    ['Comfort and care', ['💡', '🕯️', '🔥', '❄️', '🌡️', '💧', '🌿', '🧺', '🧹', '👶', '🐶', '❤️']],
+  ];
   /** Scene tile = a device tile: tap opens the scene, the round button runs it (Home: tile opens, power toggles) */
   function tileHTML(s) {
     const busy = isBusy(s.id);
     return `<div class="tile scn-tile ${busy ? 'on' : ''}" role="button" tabindex="0" data-key="sc-${s.id}" data-action="scn-open" data-id="${s.id}">
-      <span class="tile-icon" style="${busy ? 'color:var(--primary)' : ''}">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:28px;height:28px"')}</span>
+      <span class="tile-icon" style="${busy ? 'color:var(--primary)' : ''}">${ic(s.icon, 'icon', 'style="width:28px;height:28px"')}</span>
       <button class="tile-power scn-play" data-action="scene-run" data-id="${s.id}" aria-label="Run ${esc(s.name)}">${ringHTML(s.id)}</button>
       <span class="tile-name">${esc(s.name)}</span>
       <span class="tile-status"><span data-num>${esc(statusText(s))}</span></span></div>`;
@@ -10779,7 +10802,7 @@ const Scenarios = (() => {
   }
 
   return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
-    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
+    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, ic, EMOJI, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
 })();
 if (typeof Store !== 'undefined') Scenarios.start();
 
@@ -10826,7 +10849,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
   function sceneChip(x) {
     const busy = Scenarios.isBusy(x.id);
     return `<button class="quick-chip scn-chip" data-action="scene-run" data-id="${x.id}" data-key="qc-${x.id}" aria-label="Run ${UI.esc(x.name)}">
-      ${busy ? Scenarios.ringHTML(x.id) : icon(x.icon || 'tab-scenarios')}<span><b>${UI.esc(x.name)}</b><span data-num>${UI.esc(busy ? Scenarios.statusText(x) : 'Scene')}</span></span></button>`;
+      ${busy ? Scenarios.ringHTML(x.id) : Scenarios.ic(x.icon)}<span><b>${UI.esc(x.name)}</b><span data-num>${UI.esc(busy ? Scenarios.statusText(x) : 'Scene')}</span></span></button>`;
   }
   function chipOf(key, n) {
     if (key === 'all-off') return allOffChip(n);
@@ -10847,7 +10870,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
     const draw = () => {
       const on = topRow(), L = rowChoices();
       return `<div class="list">${L.map(([k, name, ic, sub]) => `<button class="cell" data-action="row-tog" data-k="${k}" role="switch" aria-checked="${on.includes(k)}">
-        <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(name)}</span>${sub ? `<span class="cell-sub" style="display:block">${UI.esc(sub)}</span>` : ''}</span>
+        <span class="cell-icon">${scenesOK() ? Scenarios.ic(ic, 'icon') : icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(name)}</span>${sub ? `<span class="cell-sub" style="display:block">${UI.esc(sub)}</span>` : ''}</span>
         <span class="switch" aria-hidden="true" aria-checked="${on.includes(k)}"></span></button>`).join('')}</div>`;
     };
     const sh = UI.sheet({ title: 'Top row', render: draw });
@@ -11312,7 +11335,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
   function autoCard(s) {
     return `<div class="scn-card ${s.on === false ? 'paused' : ''}" data-key="sa-${s.id}">
       <button class="scn-card-main" data-action="scn-open" data-id="${s.id}">
-        <span class="scn-ic">${icon(s.icon || 'tab-scenarios', 'icon')}</span>
+        <span class="scn-ic">${Scenarios.ic(s.icon, 'icon')}</span>
         <span class="scn-txt"><b>${esc(s.name)}</b><span class="scn-sent">${esc(Scenarios.sentence(s))}</span>${lastLine(s)}</span>
       </button>
       <button class="switch" role="switch" aria-checked="${s.on !== false}" data-action="toggle" data-id="${s.id}" aria-label="${s.on === false ? 'Turn on' : 'Pause'} ${esc(s.name)}"></button>
@@ -11401,7 +11424,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
     const title = `${isNew ? 'New' : 'Edit'} ${s.manual ? 'scene' : 'automation'}`;   // the kind is chosen from the + menu, not switched here
     // same top as Device Settings: back, title, the icon with a pen, the name field
     let h = UI.toolbar({ title, back: '', plain: true }).replace('<span class="spacer"></span>', `<button class="icon-btn" data-action="cancel" aria-label="Back">${icon('back')}</button>`);
-    h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:48px;height:48px"')}</div>
+    h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${SC.ic(s.icon, 'icon', 'style="width:48px;height:48px"')}</div>
         <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
       <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
       ${settingsCard()}
@@ -11688,7 +11711,14 @@ if (typeof Store !== 'undefined') Scenarios.start();
       UI.toast(r.problems && r.problems.length ? r.problems[0] : r.note ? `Done · normally it would skip now: ${r.note}` : 'Done — check your devices');
     },
     rename: () => UI.prompt({ title: 'Name', label: 'Scenario name', value: s.name, onOk: (v) => { s.name = v; renamed = true; touch(); } }),
-    'pick-icon': () => { UI.sheet({ title: 'Select an icon', render: () => iconPickerHTML(SCN_ICONS, s.icon, 'sc-icon'), footer: ICON_DONE }); },
+    'pick-icon': () => {
+      let tab = (s.icon || '').startsWith('emoji:') ? 'emoji' : 'icons';
+      const emojiHTML = () => `<div class="ip-list">${SC.EMOJI.map(([g, list]) => `<section class="ip-group"><div class="ip-title">${esc(g)}</div><div class="ip-grid emoji-grid">${list.map((e) => `<button data-action="sc-icon" data-n="emoji:${e}" aria-pressed="${s.icon === 'emoji:' + e}" aria-label="${e}"><span class="emoji-ic">${e}</span></button>`).join('')}</div></section>`).join('')}</div>`;
+      const sheet = UI.sheet({ title: 'Select an icon',
+        tabs: () => `<div class="segmented"><button class="${tab === 'icons' ? 'on' : ''}" data-action="ip-tab" data-v="icons">Icons</button><button class="${tab === 'emoji' ? 'on' : ''}" data-action="ip-tab" data-v="emoji">Emoji</button></div>`,
+        render: () => (tab === 'icons' ? iconPickerHTML(SCN_ICONS, s.icon, 'sc-icon') : emojiHTML()), footer: ICON_DONE });
+      UI.on({ 'ip-tab': ({ v }) => { tab = v; sheet.refresh(); } });
+    },
     'sc-icon': ({ n }) => { s.icon = n; dirty = true; UI.closeSheet(); render(); },
     'home-toggle': () => { s.home = s.home === false; touch(); },
     history: () => openHistory(),

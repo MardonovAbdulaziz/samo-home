@@ -31,7 +31,7 @@
     const title = `${isNew ? 'New' : 'Edit'} ${s.manual ? 'scene' : 'automation'}`;   // the kind is chosen from the + menu, not switched here
     // same top as Device Settings: back, title, the icon with a pen, the name field
     let h = UI.toolbar({ title, back: '', plain: true }).replace('<span class="spacer"></span>', `<button class="icon-btn" data-action="cancel" aria-label="Back">${icon('back')}</button>`);
-    h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:48px;height:48px"')}</div>
+    h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${SC.ic(s.icon, 'icon', 'style="width:48px;height:48px"')}</div>
         <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
       <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
       ${settingsCard()}
@@ -318,7 +318,14 @@
       UI.toast(r.problems && r.problems.length ? r.problems[0] : r.note ? `Done · normally it would skip now: ${r.note}` : 'Done — check your devices');
     },
     rename: () => UI.prompt({ title: 'Name', label: 'Scenario name', value: s.name, onOk: (v) => { s.name = v; renamed = true; touch(); } }),
-    'pick-icon': () => { UI.sheet({ title: 'Select an icon', render: () => iconPickerHTML(SCN_ICONS, s.icon, 'sc-icon'), footer: ICON_DONE }); },
+    'pick-icon': () => {
+      let tab = (s.icon || '').startsWith('emoji:') ? 'emoji' : 'icons';
+      const emojiHTML = () => `<div class="ip-list">${SC.EMOJI.map(([g, list]) => `<section class="ip-group"><div class="ip-title">${esc(g)}</div><div class="ip-grid emoji-grid">${list.map((e) => `<button data-action="sc-icon" data-n="emoji:${e}" aria-pressed="${s.icon === 'emoji:' + e}" aria-label="${e}"><span class="emoji-ic">${e}</span></button>`).join('')}</div></section>`).join('')}</div>`;
+      const sheet = UI.sheet({ title: 'Select an icon',
+        tabs: () => `<div class="segmented"><button class="${tab === 'icons' ? 'on' : ''}" data-action="ip-tab" data-v="icons">Icons</button><button class="${tab === 'emoji' ? 'on' : ''}" data-action="ip-tab" data-v="emoji">Emoji</button></div>`,
+        render: () => (tab === 'icons' ? iconPickerHTML(SCN_ICONS, s.icon, 'sc-icon') : emojiHTML()), footer: ICON_DONE });
+      UI.on({ 'ip-tab': ({ v }) => { tab = v; sheet.refresh(); } });
+    },
     'sc-icon': ({ n }) => { s.icon = n; dirty = true; UI.closeSheet(); render(); },
     'home-toggle': () => { s.home = s.home === false; touch(); },
     history: () => openHistory(),

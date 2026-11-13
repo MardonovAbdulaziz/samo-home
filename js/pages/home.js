@@ -36,7 +36,7 @@
   function sceneChip(x) {
     const busy = Scenarios.isBusy(x.id);
     return `<button class="quick-chip scn-chip" data-action="scene-run" data-id="${x.id}" data-key="qc-${x.id}" aria-label="Run ${UI.esc(x.name)}">
-      ${busy ? Scenarios.ringHTML(x.id) : icon(x.icon || 'tab-scenarios')}<span><b>${UI.esc(x.name)}</b><span data-num>${UI.esc(busy ? Scenarios.statusText(x) : 'Scene')}</span></span></button>`;
+      ${busy ? Scenarios.ringHTML(x.id) : Scenarios.ic(x.icon)}<span><b>${UI.esc(x.name)}</b><span data-num>${UI.esc(busy ? Scenarios.statusText(x) : 'Scene')}</span></span></button>`;
   }
   function chipOf(key, n) {
     if (key === 'all-off') return allOffChip(n);
@@ -57,7 +57,7 @@
     const draw = () => {
       const on = topRow(), L = rowChoices();
       return `<div class="list">${L.map(([k, name, ic, sub]) => `<button class="cell" data-action="row-tog" data-k="${k}" role="switch" aria-checked="${on.includes(k)}">
-        <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(name)}</span>${sub ? `<span class="cell-sub" style="display:block">${UI.esc(sub)}</span>` : ''}</span>
+        <span class="cell-icon">${scenesOK() ? Scenarios.ic(ic, 'icon') : icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(name)}</span>${sub ? `<span class="cell-sub" style="display:block">${UI.esc(sub)}</span>` : ''}</span>
         <span class="switch" aria-hidden="true" aria-checked="${on.includes(k)}"></span></button>`).join('')}</div>`;
     };
     const sh = UI.sheet({ title: 'Top row', render: draw });

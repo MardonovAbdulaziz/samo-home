@@ -1960,3 +1960,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .footer-cta.scn-save { transform: translateY(110%); opacity: 0; pointer-events: none; transition: transform 340ms cubic-bezier(0.32, 0.72, 0, 1), opacity 200ms var(--ease-out); }
 .footer-cta.scn-save.shown { transform: none; opacity: 1; pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) { .footer-cta.scn-save { transition: opacity 120ms linear; transform: none; } }
+/* emoji as a scenario's icon (picker "Emoji" tab) — sits where an icon would, same box */
+.emoji-ic { display: inline-grid; place-items: center; line-height: 1; font-style: normal; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+.scn-ic .emoji-ic { width: 20px; height: 20px; font-size: 18px; }
+.quick-chip > .emoji-ic, .cell-icon .emoji-ic { width: 24px; height: 24px; font-size: 20px; }
+.emoji-grid .emoji-ic { font-size: 30px; }
+.sheet-tabs .segmented button { height: 32px; font: var(--body-md-accent); }
+.sheet .sheet-head + .sheet-tabs { padding-top: 12px; }   /* 20 px under the title, like a sheet without a description */
+.sheet .sheet-tabs + .sheet-body .ip-list { padding-top: 0; }
+.sheet .sheet-tabs + .sheet-body .ip-list > .ip-group:first-child { padding-top: 4px; }
