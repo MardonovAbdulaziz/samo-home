@@ -2013,3 +2013,10 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* top row chips stay short: a long name or state ends with … (max ~ 140 px of text) */
 .chips-row .quick-chip > span { min-width: 0; max-width: 140px; }
 .chips-row .quick-chip > span b, .chips-row .quick-chip > span > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* scene running on a white (on) tile: no grey disc — the button is white and the progress ring runs
+   along its own edge, so the ring and the button are one circle (user, 2026-11-13) */
+.tile.on .scn-play { background: var(--static-white); }
+.tile .scn-play .scn-ring { width: 100%; height: 100%; }
+.tile .scn-play .scn-ring circle { stroke-width: 2; }
+.tile.on .scn-play .scn-ring .trk { stroke: rgba(120, 120, 128, 0.16); }
+.tile .scn-play .scn-ring .icon { width: 18px !important; height: 18px !important; }
