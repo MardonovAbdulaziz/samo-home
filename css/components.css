@@ -1985,11 +1985,11 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .quick-chip .tone-danger { color: var(--red); }
 /* "Top row" edit sheet: − / + on the left, grip on the right (iOS Control Center editing) */
 .tr-row { gap: 12px !important; touch-action: pan-y; background: transparent; }
-/* Hamroh glyphs, no circle: cross = take out of the row, plus-01 = put in (user, 2026-11-13) */
-.tr-btn { width: 28px; height: 28px; display: grid; place-items: center; flex-shrink: 0; background: none; }
-.tr-btn .icon { width: 20px !important; height: 20px !important; }
-.tr-btn.minus { color: var(--red); }
-.tr-btn.plus { color: var(--primary); }
+/* filled circles: red − takes out of the row, brand-blue + puts in (user, 2026-11-13) */
+.tr-btn { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; color: #fff; }
+.tr-btn .icon { width: 16px !important; height: 16px !important; }
+.tr-btn.minus { background: var(--red); }
+.tr-btn.plus { background: var(--primary); }
 .tr-btn { position: relative; }
 .tr-btn::after { content: ""; position: absolute; inset: -8px; }   /* 44 px to tap */
 .tr-btn:active { transform: scale(0.9); }
@@ -2023,3 +2023,14 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .tile .scn-play .scn-ring circle { stroke-width: 2; }
 .tile.on .scn-play .scn-ring .trk { stroke: rgba(120, 120, 128, 0.16); }
 .tile .scn-play .scn-ring .icon { width: 18px !important; height: 18px !important; }
+
+/* scenario item sheets: every row title in one style — 17 Regular like the radio rows (user, 2026-11-13) */
+.sheet :is(.list, .group-card) > .cell.scn-disclose .cell-title, .sheet .scn-slider-head .cell-title { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+.scn-inline-opt { padding-left: 0; }
+/* sheet on top of a sheet (UI.subSheet): the one under it steps back, like iOS */
+.sheet-backdrop-2 { z-index: 52; }
+.sheet-2 { z-index: 53; max-height: 82%; }
+.sheet.open.behind { transform: translateY(-10px) scale(0.94); transform-origin: 50% 0; }
+/* Turn off after: the Timer's wheels on top, the usual times as chips under them */
+.scn-after { padding-top: 4px; }
+.scn-after-chips { justify-content: center; margin-top: 20px; }

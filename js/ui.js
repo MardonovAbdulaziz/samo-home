@@ -258,6 +258,8 @@ const UI = (() => {
       <div class="popover-backdrop" id="popBg"></div>
       <div class="sheet-backdrop" id="sheetBg"></div>
       <section class="sheet" id="sheet" role="dialog" aria-modal="true"></section>
+      <div class="sheet-backdrop sheet-backdrop-2" id="sheetBg2"></div>
+      <section class="sheet sheet-2" id="sheet2" role="dialog" aria-modal="true"></section>
       <div class="toast" id="toast" role="status"></div>`;
     document.body.appendChild(phone);
     if (opts.panel) {
@@ -271,6 +273,8 @@ const UI = (() => {
     backdrop = phone.querySelector('#sheetBg');
     toastEl = phone.querySelector('#toast');
     backdrop.addEventListener('click', closeSheet);
+    sheet2El = phone.querySelector('#sheet2'); backdrop2 = phone.querySelector('#sheetBg2');
+    backdrop2.addEventListener('click', closeSubSheet);
     // Scroll: bar background fades in (Figma "top": blur 10 + base 80%); large title → centered nav title
     const SCROLL_TL = CSS.supports('animation-timeline: scroll()');
     let ticking = false;   // one layout read per frame, never per scroll event
@@ -406,7 +410,31 @@ const UI = (() => {
     }, changed ? TAB_MS : 0);
   }
 
+  /** A second sheet over the open one (iOS stacked sheet): a choice inside a sheet opens here, the sheet under it
+      steps back. cfg: { title, render(), footer?, onMount?(el), onClose?() }. × or the backdrop closes only this one. */
+  let sheet2El, backdrop2, sub2 = null;
+  function subSheet(cfg) {
+    sub2 = cfg; drawSub();
+    requestAnimationFrame(() => { sheet2El.classList.add('open'); backdrop2.classList.add('open'); sheetEl.classList.add('behind'); });
+    return { close: closeSubSheet, refresh: drawSub };
+  }
+  function drawSub() {
+    const c = sub2; if (!c) return;
+    const body = c.render ? c.render() : '', foot = footerHTML(c, body);
+    patch(sheet2El, `<div class="grabber"></div><div class="sheet-head"><div class="sheet-title">${esc(c.title)}</div><button class="icon-btn sheet-x" data-action="sub-close" aria-label="Close">${icon('close-circle')}</button></div>
+      <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`, { animate: false });
+    c.onMount && c.onMount(sheet2El);
+  }
+  function closeSubSheet() {
+    if (!sub2) return;
+    const c = sub2; sub2 = null;
+    sheet2El.classList.remove('open'); backdrop2.classList.remove('open'); sheetEl.classList.remove('behind');
+    c.onClose && c.onClose();
+  }
+  on({ 'sub-close': closeSubSheet });
+
   function closeSheet() {
+    if (sub2) closeSubSheet();
     if (!sheetState) return;
     const c = sheetState; sheetState = null;
     sheetEl.classList.remove('open'); backdrop.classList.remove('open');
@@ -602,5 +630,5 @@ const UI = (() => {
   /** Re-run fn every second (timers, countdowns). */
   const tick = (fn) => setInterval(fn, 1000);
 
-  return { esc, param, go, flash, segTabs, patch, setNum, pulse, collapse, group, mount, on, toolbar, sheet, closeSheet, confirm, prompt, popover, toast, push, fmtDur, fmtTime, tick, timerSheet, wheelHTML, bindWheels, get screen() { return screen; }, get phone() { return phone; }, get sheetOpen() { return !!sheetState; } };
+  return { esc, param, go, flash, segTabs, patch, setNum, pulse, collapse, group, mount, on, toolbar, sheet, closeSheet, subSheet, closeSubSheet, confirm, prompt, popover, toast, push, fmtDur, fmtTime, tick, timerSheet, wheelHTML, bindWheels, get screen() { return screen; }, get phone() { return phone; }, get sheetOpen() { return !!sheetState; } };
 })();
