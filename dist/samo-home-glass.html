@@ -2145,6 +2145,9 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .sheet .sheet-head + .sheet-tabs { padding-top: 12px; }   /* 20 px under the title, like a sheet without a description */
 .sheet .sheet-tabs + .sheet-body .ip-list { padding-top: 0; }
 .sheet .sheet-tabs + .sheet-body .ip-list > .ip-group:first-child { padding-top: 4px; }
+/* Sheet cards are flat (Figma: fills/quaternary, no inner highlight) — also when the sheet opens over an
+   ambient page, where `.phone.ambient .list` would otherwise add the glass highlight and a lighter fill */
+.phone .sheet :is(.list, .group-card) { box-shadow: none !important; background: var(--fill-quaternary) !important; }
 
 /* ==========================================================================
    VARIANT "glass" — only in dist/samo-home-glass.html (tools/bundle.py --variant glass); the main build does not load it.
