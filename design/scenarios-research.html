@@ -72,9 +72,9 @@
 
 <h2><span class="k">03</span>What we chose — and why</h2>
 <div class="grid">
-  <div class="card"><b>One tab, two kinds, everyday words</b><p>“Tap to run” (tiles, like device tiles) and “Automatic” (cards with a switch) on one page. One editor with a switch between them — no “scene / routine / precondition” vocabulary.</p><div class="from">Tuya’s clarity without its two lists</div></div>
+  <div class="card"><b>One tab, two kinds, everyday words</b><p>“Tap to run” (tiles, like device tiles) and “Automatic” (cards with a switch) on one page. The kind is chosen once from the + menu (New scene / New automation), so the editor never switches it — no “scene / routine / precondition” vocabulary.</p><div class="from">Tuya’s clarity without its two lists</div></div>
   <div class="card"><b>The whole scenario as one sentence</b><p>The editor builds and shows it live: <i>“When Front door opens, only at night, turn on Hall for 5 min.”</i> The same sentence is the card on the list. People check logic in words, not in boxes.</p><div class="from">Answers the “rules with bugs” problem</div></div>
-  <div class="card"><b>Starts when · Only if · Do</b><p>Three sections that read top to bottom. “Any one starts it”, “all must be true” are said in a short line under the list — never as an Any/All switch.</p><div class="from">Google’s structure, without its logic words</div></div>
+  <div class="card"><b>Starts when · Only when · Do</b><p>Three sections that read top to bottom; “Only when” appears only after there is a start. “Any one starts it”, “all must be true” are said in a short line under the list — never as an Any/All switch.</p><div class="from">Google’s structure, without its logic words</div></div>
   <div class="card"><b>“For X min” inside the action</b><p>Turn on → “then turn it off after 2 / 5 / 10 min”. The most common automation (light on motion or door) needs no second rule — the classic source of bugs.</p><div class="from">Apple Home</div></div>
   <div class="card"><b>Ideas filled with your own devices</b><p>Good night, I’m leaving, Light when I come in at night, Door left open, Laundry is done, Too warm… Only ideas this home can actually run are shown; tap → it opens already complete → Add.</p><div class="from">Aqara / Alexa templates, made personal</div></div>
   <div class="card"><b>“What happened” — and why it didn’t</b><p>Each card says when it last ran and what started it. A skipped run says why in words: <i>“Skipped — not at night”</i>. The editor keeps the last runs.</p><div class="from">Research: debugging is the hard part</div></div>
@@ -88,7 +88,7 @@
 <ul>
   <li><b>Scenarios tab</b> — Tap to run tiles (tap runs it, pen edits), Automatic cards (sentence, last run, switch), Ideas carousel, Built into your devices.</li>
   <li><b>Starts</b>: at a time (days), sunrise / sunset ± minutes, a device (door opens / closes / <b>stays open for X min</b>, motion, someone comes in / room empty, water, smoke, gas, lock / unlock, warmer / colder than, air gets worse, washer starts / finishes / is shaken, power above X kW, any light / relay / plug / curtain / valve on or off), people leave / arrive.</li>
-  <li><b>Only if</b>: at night / in the daytime / between two times, days of the week, a device is in a state.</li>
+  <li><b>Only when</b>: at night / in the daytime / between two times, days of the week, a device is in a state.</li>
   <li><b>Do</b>: control a device (with “for X min”), send a notification (or an urgent alert), wait, run a scene, pause or turn on an automation.</li>
   <li><b>Real engine</b>: scenarios really switch the prototype’s devices. Sensor events from each device page’s test panel start them; waits and “for X min” survive a page change.</li>
 </ul>
@@ -149,7 +149,7 @@
 
 <h2><span class="k">07</span>Rules for the real app</h2>
 <ul>
-  <li>Words: Scenarios · Tap to run · Automatic · Starts when · Only if · Do. Never: trigger, condition, precondition, routine, any/all.</li>
+  <li>Words: Scenarios · Tap to run · Automatic · Starts when · Only when · Do. Never: trigger, condition, precondition, routine, any/all.</li>
   <li>Every scenario is shown as its sentence. If something can’t be said in a short sentence, it doesn’t belong in the simple editor.</li>
   <li>Every run is logged with its cause; every skip with its reason.</li>
   <li>Safety: no automatic unlock; urgent alerts only for leaks, smoke, gas, break-ins.</li>

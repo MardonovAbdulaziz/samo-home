@@ -11268,24 +11268,21 @@ if (typeof Store !== 'undefined') Scenarios.start();
 
   function render() {
     const auto = !s.manual, warn = SC.warnings(s);
-    const title = isNew ? (s.manual ? 'New scene' : 'New automation') : 'Edit scenario';
+    const title = `${isNew ? 'New' : 'Edit'} ${s.manual ? 'scene' : 'automation'}`;   // the kind is chosen from the + menu, not switched here
     // same top as Device Settings: back, title, the icon with a pen, the name field
     let h = UI.toolbar({ title, back: '', plain: true }).replace('<span class="spacer"></span>', `<button class="icon-btn" data-action="cancel" aria-label="Back">${icon('back')}</button>`);
     h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:48px;height:48px"')}</div>
         <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
       <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
       <div class="scn-plain" data-key="plain"><span class="scn-plain-k">In plain words</span><p>${esc(SC.sentence(s))}</p></div>
-      <div class="pad"><div class="segmented scn-mode" role="tablist">
-        <button class="${s.manual ? 'on' : ''}" data-action="mode" data-v="scene" role="tab" aria-selected="${s.manual}">Tap to run</button>
-        <button class="${auto ? 'on' : ''}" data-action="mode" data-v="auto" role="tab" aria-selected="${auto}">Automatic</button></div>
-        <div class="scn-mode-note">${s.manual ? 'Runs when you tap it on the Scenarios page.' : 'Runs on its own — the hub keeps working even when your phone is off.'}</div></div>`;
+`;
     if (auto) {
       h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>
         <div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}${addRow('trig-add', s.when.length ? 'Or when…' : 'Add a start')}</div>
         ${s.when.length > 1 ? '<div class="list-footer" data-key="f-when">Any one of these starts it.</div>' : ''}
-        <div class="list-header scn-lh" data-key="h-only">Only if <span class="scn-opt">optional</span></div>
-        <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}${addRow('cond-add', s.only.length ? 'And only if…' : 'Add a condition')}</div>
-        <div class="list-footer" data-key="f-only">${s.only.length ? 'All of these must be true — otherwise it skips this time, and says why.' : 'For example: only at night, only on weekdays, only if the door is locked.'}</div>`;
+        ${s.when.length ? `<div class="list-header scn-lh" data-key="h-only">Only when</div>
+        <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}${addRow('cond-add', s.only.length ? 'Add another condition' : 'Add a condition')}</div>
+        ${s.only.length > 1 ? '<div class="list-footer" data-key="f-only">All of these must be true.</div>' : ''}` : ''}`;
     }
     h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
       <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', s.do.length ? 'Then…' : 'Add an action')}</div>
