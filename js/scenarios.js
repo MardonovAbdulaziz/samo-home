@@ -207,6 +207,8 @@ const Scenarios = (() => {
     const st = S();
     if (!st.scenarios) { st.scenarios = []; Store.save(); }   // simple version: start empty (no ready-made scenarios)
     if (!st.scenarios.some((x) => x.id === ALL_OFF)) { st.scenarios.unshift({ id: ALL_OFF, sys: true, follow: true, name: 'Turn off all', icon: 'power', manual: true, on: true, home: false, when: [], only: [], do: [], log: [] }); Store.save(); }
+    // simple version: no "Only when" anywhere — older saved conditions are dropped, so what you see is what runs
+    if (st.scenarios.some((x) => x.only && x.only.length)) { st.scenarios.forEach((x) => { x.only = []; }); Store.save(); }
     const ao = st.scenarios.find((x) => x.id === ALL_OFF);
     if (ao.follow) ao.do = allOffDefault();
     return st.scenarios;

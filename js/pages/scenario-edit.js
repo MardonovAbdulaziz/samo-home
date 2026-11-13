@@ -41,9 +41,7 @@
       h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>
         <div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}${addRow('trig-add', 'Add a start')}</div>
         ${s.when.length > 1 ? '<div class="list-footer" data-key="f-when">Any one of these starts it.</div>' : ''}
-        ${s.only.length ? `<div class="list-header scn-lh" data-key="h-only">Only when</div>
-        <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}</div>
-        ${s.only.length > 1 ? '<div class="list-footer" data-key="f-only">All of these must be true.</div>' : ''}` : ''}`;
+`;
     }
     h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
       <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', 'Add an action')}</div>
@@ -304,7 +302,7 @@
       if (!s.do.length) { UI.toast('Add at least one action'); return; }
       if (!s.manual && !s.when.length) { UI.toast('Add when it should start'); return; }
       const out = clone(s);
-      if (out.manual) { out.when = []; out.only = []; }
+      out.only = []; if (out.manual) out.when = [];
       if (out.sys) out.follow = false;   // "Turn off all": from now on exactly this list
       out.do = out.do.filter((a) => !(a.k === 'dev' && a.to === 'unlock' && !out.manual));
       SC.upsert(out);
