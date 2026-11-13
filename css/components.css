@@ -2034,3 +2034,10 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* Turn off after: the Timer's wheels on top, the usual times as chips under them */
 .scn-after { padding-top: 4px; }
 .scn-after-chips { justify-content: center; margin-top: 20px; }
+.scn-after .tw { gap: 12px; }
+
+/* Repeat: seven round day buttons in one row */
+.scn-days { display: flex !important; align-items: center !important; justify-content: space-between; gap: 0; padding: 16px 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; }
+.scn-day { width: 40px; height: 40px; border-radius: 50%; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); display: grid; place-items: center; transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast) var(--ease); }
+.scn-day[aria-pressed="true"] { background: var(--primary); color: #fff; }
+.scn-day:active { transform: scale(0.92); }

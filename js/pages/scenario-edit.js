@@ -18,7 +18,7 @@
   /* ---------- rows ---------- */
   const tIcon = (t) => (t.k === 'time' ? 'clock' : t.k === 'sun' ? (t.ev === 'sunrise' ? 'sunrise' : 'moon') : t.k === 'dev' ? SC.iconOf(t.id, t.ch) : 'my-location');
   const cIcon = (c) => (c.k === 'between' ? (c.from === 'sunrise' ? 'sun' : 'moon') : c.k === 'days' ? 'clock' : SC.iconOf(c.id, c.ch));
-  const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'bell' : a.k === 'wait' ? 'hourglass' : a.k === 'auto' ? (a.on ? 'power' : 'hand-stop') : 'tab-scenarios');
+  const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'notification-bell' : a.k === 'wait' ? 'hourglass' : a.k === 'auto' ? (a.on ? 'power' : 'hand-stop') : 'tab-scenarios');
   const row = (act, i, ic, text, sub = '') => `<button class="cell scn-row" data-action="${act}" data-i="${i}">
       <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(text)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
   /* add row inside the list card: blue plus + title (user's pick, 2026-11-13) */
@@ -97,11 +97,10 @@
   /* Repeat: a radio card (Figma) — Custom opens the seven days with check marks */
   const DAYNAME = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const repKind = (days) => ({ 1234567: 'all', 12345: 'wd', 67: 'we' }[[...days].sort().join('')] || 'custom');
-  const repeatCard = (x, title = 'Repeat') => {
-    const k = sh && sh.ui && sh.ui.custom ? 'custom' : repKind(x.days);
-    return `<div class="list-header">${title}</div><div class="list">${Kit.radio('rep', k, [['all', 'Every day', ''], ['wd', 'Weekdays', ''], ['we', 'Weekends', ''], ['custom', 'Custom', k === 'custom' ? x.days.map((d) => DAYNAME[d].slice(0, 3)).join(', ') : 'Choose the days']])}</div>
-      ${UI.collapse(k === 'custom', `<div class="list scn-daylist" style="margin-top:12px">${[1, 2, 3, 4, 5, 6, 7].map((d) => `<button class="option" role="checkbox" aria-checked="${x.days.includes(d)}" data-action="rep-day" data-d="${d}"><span class="option-main"><span class="option-title" style="display:block">${DAYNAME[d]}</span></span><span class="radio">${icon('radio-on')}</span></button>`).join('')}</div>`)}`;
-  };
+  /* Repeat = one row of seven round day buttons (Apple Home / Google Home); the line under it names the choice */
+  const repWord = (days) => ({ all: 'Every day', wd: 'Weekdays', we: 'Weekends' }[repKind(days)] || days.map((d) => DAYNAME[d].slice(0, 3)).join(', '));
+  const repeatCard = (x, title = 'Repeat') => `<div class="list-header">${title}</div><div class="list"><div class="cell scn-days" role="group" aria-label="${title}">${[1, 2, 3, 4, 5, 6, 7].map((d) => `<button class="scn-day" data-action="rep-day" data-d="${d}" aria-pressed="${x.days.includes(d)}" aria-label="${DAYNAME[d]}">${DAYNAME[d][0]}</button>`).join('')}</div></div>
+    <div class="list-footer" data-out="rep">${repWord(x.days)}</div>`;
   let sh = null;   // the open sheet's draft: { kind, i, x }
   const reopen = () => sh && sh.open && sh.open();
 
@@ -175,13 +174,13 @@
   function actChooser() {
     const scenes = SC.list().filter((x) => x.manual && x.id !== s.id);
     UI.sheet({ title: 'Do', render: () => UI.group('',
-      choice('a-notify', 'bell', 'Send a notification', 'To your phone or the whole family') +
+      choice('a-notify', 'notification-bell', 'Send a notification', 'To your phone or the whole family') +
       (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '') +
       '') + deviceList('act', 'a-dev-pick') });
   }
   function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
-  const BACKS = [0, 1, 5, 15, 30, 60, 120];   // quick picks under the wheel
-  const backLabel = (m) => { if (!m) return 'Never'; const h = Math.floor(m / 60), mm = m % 60; return h ? (mm ? `${h} h ${mm} min` : `${h} h`) : `${mm} min`; };
+  const BACKS = [30, 60, 300, 900, 1800, 3600];   // quick picks under the wheels, in seconds
+  const backLabel = (m) => SC.backWord(m);   // minutes (may carry seconds)
   /* colour wheel helpers (hue = angle, saturation = distance from the centre) */
   const hsHex = (h, sat) => { const l = 0.5, a = (sat / 100) * Math.min(l, 1 - l); const f = (n) => { const k = (n + h / 30) % 12; return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))).toString(16).padStart(2, '0'); }; return `#${f(0)}${f(8)}${f(4)}`; };
   const hexHS = (hex) => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || ''); if (!m) return { h: 0, s: 0 }; const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = !d ? 0 : mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; const l = (mx + mn) / 2; const sat = !d ? 0 : d / (1 - Math.abs(2 * l - 1)); return { h, s: Math.min(100, sat * 100) }; };
@@ -228,7 +227,8 @@
       if (blocked.length) h += `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>`;
       if (cur.light && lc && (lc.br || lc.color || lc.ct || lc.fx.length)) h += `<div class="scn-gap"></div>` + lightCard();
       if (cur.pos) h += `<div class="scn-gap"></div><div class="list"><div class="cell"><span class="cell-main cell-title">Open</span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
-      if (cur.back) h += `<div class="scn-gap"></div><div class="list">${valueRow('back', cur.label === 'Open' ? 'Close after' : 'Turn off after', backLabel(a.back))}</div>`;
+      // Turn off after = a switch (off = it stays on); on → "After" row opens the time on a sheet on top (Apple Home / SmartThings "Auto turn off")
+      if (cur.back) h += `<div class="scn-gap"></div><div class="list">${Kit.sw('do-back-on', 'b', cur.label === 'Open' ? 'Close by itself' : 'Turn off by itself', '', !!a.back)}${UI.collapse(!!a.back, valueRow('back', 'After', a.back ? backLabel(a.back) : ''))}</div>`;
       return h;
     }, footer: () => done('act', i != null), onMount: (el) => bindLook(el, a) }) };
     sh.ui = ui; sh.fxList = lc ? [['', 'None'], ...lc.fx] : []; sh.backTitle = (SC.findIn(acts, a.to) || {}).label === 'Open' ? 'Close after' : 'Turn off after';
@@ -292,7 +292,7 @@
 
   /* ---------- actions ---------- */
   const SCN_ICONS = [
-    ['Scenarios', ['tab-scenarios', 'moon', 'sun', 'sunrise', 'tab-home', 'lock', 'bell', 'clock', 'power', 'shield-check', 'temperature', 'my-location']],
+    ['Scenarios', ['tab-scenarios', 'moon', 'sun', 'sunrise', 'tab-home', 'lock', 'notification-bell', 'clock', 'power', 'shield-check', 'temperature', 'my-location']],
     ['Devices', ['dev-bulb', 'dev-lamp', 'dev-curtains', 'dev-door-02', 'dev-tv-1', 'dev-washing', 'dev-radiator', 'dev-drop', 'dev-motion', 'dev-fan', 'dev-ac', 'dev-kettle']],
   ];
   function leave() { UI.go(s.sys ? 'index.html' : 'scenarios.html'); }   // “Turn off all” is edited from Home
@@ -370,15 +370,16 @@
         return;
       }
       // Turn off after: the Timer's wheels for any time + the usual times as chips; Done keeps it, × drops it
-      sh.backDraft = sh.x.back || 0;
+      sh.backDraft = Math.round((sh.x.back || 5) * 60);   // seconds
       const t = sh.backDraft, title = sh.backTitle;
       sh.sub = UI.subSheet({ title,
-        render: () => { const m = sh.backDraft; return `<div class="pad scn-after"><div class="tw">${UI.wheelHTML('ah', 23, Math.floor(m / 60), 'h')}${UI.wheelHTML('am', 59, m % 60, 'min')}</div>
-          <div class="chips scn-after-chips">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${b === m}">${backLabel(b)}</button>`).join('')}</div></div>`; },
-        footer: '<button class="btn btn-primary btn-block" data-action="back-done">Done</button>',
-        onMount: (el) => UI.bindWheels(el.querySelector('.scn-after'), (k) => (k === 'ah' ? Math.floor(sh.backDraft / 60) : sh.backDraft % 60), (k, val) => {
-          const h = k === 'ah' ? val : Math.floor(sh.backDraft / 60), mm = k === 'am' ? val : sh.backDraft % 60; sh.backDraft = h * 60 + mm;
+        render: () => { const t = sh.backDraft; return `<div class="pad scn-after"><div class="tw">${UI.wheelHTML('ah', 23, Math.floor(t / 3600), 'h')}${UI.wheelHTML('am', 59, Math.floor((t % 3600) / 60), 'min')}${UI.wheelHTML('as', 59, t % 60, 's')}</div>
+          <div class="chips scn-after-chips">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${b === t}">${backLabel(b / 60)}</button>`).join('')}</div></div>`; },
+        footer: () => `<button class="btn btn-primary btn-block" data-action="back-done" ${sh.backDraft ? '' : 'disabled'}>Done</button>`,
+        onMount: (el) => UI.bindWheels(el.querySelector('.scn-after'), (k) => { const t = sh.backDraft; return k === 'ah' ? Math.floor(t / 3600) : k === 'am' ? Math.floor((t % 3600) / 60) : t % 60; }, (k, val) => {
+          const t = sh.backDraft, h = k === 'ah' ? val : Math.floor(t / 3600), mm = k === 'am' ? val : Math.floor((t % 3600) / 60), ss = k === 'as' ? val : t % 60; sh.backDraft = h * 3600 + mm * 60 + ss;
           el.querySelectorAll('.scn-after .chip').forEach((c) => c.setAttribute('aria-pressed', String(+c.dataset.v === sh.backDraft)));
+          const go = el.querySelector('[data-action="back-done"]'); if (go) go.disabled = !sh.backDraft;
         }),
         onClose: () => { sh.sub = null; } });
       void t;
@@ -386,7 +387,8 @@
     'do-fx': ({ v }) => { if (v) sh.x.fx = v; else delete sh.x.fx; UI.closeSubSheet(); reopen(); },   // one choice: picks and goes back
     'do-pos': ({ d }) => { sh.x.pos = Math.max(0, Math.min(100, (sh.x.pos || 0) + 10 * +d)); reopen(); },
     'do-back': ({ v }) => { sh.backDraft = +v; sh.sub && sh.sub.refresh(); },   // quick pick: the wheels jump to it
-    'back-done': () => { if (sh.backDraft) sh.x.back = sh.backDraft; else delete sh.x.back; UI.closeSubSheet(); reopen(); },
+    'back-done': () => { if (sh.backDraft) sh.x.back = sh.backDraft / 60; UI.closeSubSheet(); reopen(); },
+    'do-back-on': () => { if (sh.x.back) delete sh.x.back; else sh.x.back = 5; reopen(); },
     'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
     'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },
     'run-pick': ({ v }) => { sh.x.sid = v; reopen(); },

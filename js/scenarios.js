@@ -53,7 +53,9 @@ const Scenarios = (() => {
   }
   const kWord = (k) => (!k ? 'white light' : k < 3300 ? 'warm white' : k < 5000 ? 'neutral white' : 'cool white');
   const fxWord = (id, fx) => { const d = dev(id); const f = d && d.type === 'light' ? (Devices.light.sceneCaps(d).fx.find((x) => x[0] === fx) || [])[1] : ''; return (f || fx).toLowerCase(); };
-  const backWord = (m) => (m >= 60 ? `${m / 60} h` : `${m} min`);
+  /** "Turn off after" in words; minutes may carry seconds (1.5 = 1 min 30 s) */
+  const backWord = (m) => { const t = Math.round(m * 60), h = Math.floor(t / 3600), mm = Math.floor((t % 3600) / 60), ss = t % 60;
+    return [h && `${h} h`, mm && `${mm} min`, ss && `${ss} s`].filter(Boolean).join(' ') || '0 s'; };
 
   /** Current signals of one device channel (read from the live device model). */
   function sig(d, ch = 0) {
@@ -248,8 +250,8 @@ const Scenarios = (() => {
           ...lights.filter((l) => l.id !== lamp.id || l.ch !== lamp.ch).map((l) => ({ k: 'dev', id: l.id, ch: l.ch, to: 'off' }))] }) },
       lamp && { key: 'sunset', title: 'Lamp on at sunset', sub: `${nameOf(lamp.id, lamp.ch)} turns on when it gets dark`, icon: 'sun',
         make: () => base({ name: 'Lamp at sunset', icon: 'sun', when: [{ k: 'sun', ev: 'sunset', off: 0 }], do: [{ k: 'dev', id: lamp.id, ch: lamp.ch, to: 'on' }] }) },
-      door && { key: 'leftopen', title: 'Door left open', sub: `Tell me if ${door.name} stays open for 5 min`, icon: 'bell',
-        make: () => base({ name: 'Door left open', icon: 'bell', when: [{ k: 'dev', id: door.id, ch: 0, ev: 'openFor', v: 5 }], do: [{ k: 'notify', text: `${door.name} has been open for 5 min` }] }) },
+      door && { key: 'leftopen', title: 'Door left open', sub: `Tell me if ${door.name} stays open for 5 min`, icon: 'notification-bell',
+        make: () => base({ name: 'Door left open', icon: 'notification-bell', when: [{ k: 'dev', id: door.id, ch: 0, ev: 'openFor', v: 5 }], do: [{ k: 'notify', text: `${door.name} has been open for 5 min` }] }) },
       dryer && { key: 'laundry', title: 'Laundry is done', sub: `A notification when ${dryer.name} finishes`, icon: 'dev-washing',
         make: () => base({ name: 'Laundry is done', icon: 'dev-washing', when: [{ k: 'dev', id: dryer.id, ch: 0, ev: 'finished' }], do: [{ k: 'notify', text: `${dryer.name} has finished` }] }) },
       climate && { key: 'hot', title: 'Too warm in the bedroom', sub: `Tell me when ${climate.name} goes above 27 °C`, icon: 'temperature',
@@ -552,6 +554,6 @@ const Scenarios = (() => {
   }
 
   return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
-    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, ic, EMOJI, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
+    backWord, triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, ic, EMOJI, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
 })();
 if (typeof Store !== 'undefined') Scenarios.start();
