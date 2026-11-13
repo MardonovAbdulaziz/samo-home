@@ -1497,7 +1497,7 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
    toolbar) so every device page starts at the same height. Numbers roll (data-num). */
 .th-hero { display: flex; justify-content: center; align-items: center; gap: 0; padding: 40px var(--screen-pad) 0; transition: opacity var(--dur) var(--ease-out); }
 .th-hero.is-off { opacity: .45; }
-/* label first, then the value (iOS Health): "Temperature" → 23.4 °C; the unit sits on the number's baseline */
+/* the value on top, its label under it; the unit sits on the number's baseline */
 .th-val { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .th-num { display: flex; justify-content: center; align-items: baseline; gap: 3px; font: 500 44px/48px var(--font); letter-spacing: -1px; font-variant-numeric: tabular-nums; color: var(--label-primary); }
 .th-num small { font: 400 20px/24px var(--font); letter-spacing: 0; color: var(--label-secondary); }
@@ -6398,8 +6398,8 @@ Devices.climate = (() => {
 
     // The two readings are the page (spec: last REPORTED values + when)
     h += `<div class="th-hero ${d.online ? '' : 'is-off'}" data-key="hero">
-        <div class="th-val"><div class="th-cap">${icon('temperature')}Temperature</div><div class="th-num"><span data-num data-live="t">${fmtT(st.t)}</span><small>°C</small></div></div>
-        ${has(d, 'humidity') ? `<i class="th-sep"></i><div class="th-val"><div class="th-cap">${icon('dev-drop')}Humidity</div><div class="th-num"><span data-num data-live="h">${fmtH(st.h)}</span><small>%</small></div></div>` : ''}
+        <div class="th-val"><div class="th-num"><span data-num data-live="t">${fmtT(st.t)}</span><small>°C</small></div><div class="th-cap">${icon('temperature')}Temperature</div></div>
+        ${has(d, 'humidity') ? `<i class="th-sep"></i><div class="th-val"><div class="th-num"><span data-num data-live="h">${fmtH(st.h)}</span><small>%</small></div><div class="th-cap">${icon('dev-drop')}Humidity</div></div>` : ''}
       </div>
       <div class="th-rep" data-num data-live="rep">${reportedText(d)}</div>`;
 

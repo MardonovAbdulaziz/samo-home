@@ -249,8 +249,8 @@ Devices.climate = (() => {
 
     // The two readings are the page (spec: last REPORTED values + when)
     h += `<div class="th-hero ${d.online ? '' : 'is-off'}" data-key="hero">
-        <div class="th-val"><div class="th-cap">${icon('temperature')}Temperature</div><div class="th-num"><span data-num data-live="t">${fmtT(st.t)}</span><small>°C</small></div></div>
-        ${has(d, 'humidity') ? `<i class="th-sep"></i><div class="th-val"><div class="th-cap">${icon('dev-drop')}Humidity</div><div class="th-num"><span data-num data-live="h">${fmtH(st.h)}</span><small>%</small></div></div>` : ''}
+        <div class="th-val"><div class="th-num"><span data-num data-live="t">${fmtT(st.t)}</span><small>°C</small></div><div class="th-cap">${icon('temperature')}Temperature</div></div>
+        ${has(d, 'humidity') ? `<i class="th-sep"></i><div class="th-val"><div class="th-num"><span data-num data-live="h">${fmtH(st.h)}</span><small>%</small></div><div class="th-cap">${icon('dev-drop')}Humidity</div></div>` : ''}
       </div>
       <div class="th-rep" data-num data-live="rep">${reportedText(d)}</div>`;
 
