@@ -1956,3 +1956,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-home-grid { margin-top: 20px; }
 .quick-chip.row-edit { padding-right: 16px; }
 .quick-chip.row-edit .icon { color: var(--label-secondary); }
+/* scenario editor: Save rises in only when there is something to save */
+.footer-cta.scn-save { transform: translateY(110%); opacity: 0; pointer-events: none; transition: transform 340ms cubic-bezier(0.32, 0.72, 0, 1), opacity 200ms var(--ease-out); }
+.footer-cta.scn-save.shown { transform: none; opacity: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .footer-cta.scn-save { transition: opacity 120ms linear; transform: none; } }
