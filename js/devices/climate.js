@@ -249,8 +249,8 @@ Devices.climate = (() => {
 
     // The two readings are the page (spec: last REPORTED values + when)
     h += `<div class="th-hero ${d.online ? '' : 'is-off'}" data-key="hero">
-        <div class="th-val"><div class="th-num"><span data-num data-live="t">${fmtT(st.t)}</span><small>°C</small></div><div class="th-cap">${icon('temperature')}Temperature</div></div>
-        ${has(d, 'humidity') ? `<i class="th-sep"></i><div class="th-val"><div class="th-num"><span data-num data-live="h">${fmtH(st.h)}</span><small>%</small></div><div class="th-cap">${icon('dev-drop')}Humidity</div></div>` : ''}
+        <div class="th-val"><div class="th-cap">${icon('temperature')}Temperature</div><div class="th-num"><span data-num data-live="t">${fmtT(st.t)}</span><small>°C</small></div></div>
+        ${has(d, 'humidity') ? `<i class="th-sep"></i><div class="th-val"><div class="th-cap">${icon('dev-drop')}Humidity</div><div class="th-num"><span data-num data-live="h">${fmtH(st.h)}</span><small>%</small></div></div>` : ''}
       </div>
       <div class="th-rep" data-num data-live="rep">${reportedText(d)}</div>`;
 
@@ -260,7 +260,7 @@ Devices.climate = (() => {
       cards.push(`<div class="info-card"><span>Dew point</span><b data-num="count">${fmtT(dew(st.t, st.h))} °C</b></div>`);
       cards.push(`<div class="info-card"><span>VPD</span><b data-num="count">${vpd(st.t, st.h).toFixed(2)} kPa</b></div>`);
     }
-    if (has(d, 'probe')) cards.push(`<div class="info-card"><span>${esc(d.probeName)} probe</span><b data-num="count">${fmtT(st.probe)} °C</b></div>`);
+    if (has(d, 'probe')) cards.push(`<div class="info-card"><span>${esc(/probe/i.test(d.probeName || '') ? d.probeName : `${d.probeName} probe`)}</span><b data-num="count">${fmtT(st.probe)} °C</b></div>`);
     if (cards.length % 2) cards[cards.length - 1] = cards[cards.length - 1].replace('class="info-card"', 'class="info-card wide"');   // small cards in pairs
     if (has(d, 'control') && S(d, 'control').on) {
       const v = S(d, 'control');

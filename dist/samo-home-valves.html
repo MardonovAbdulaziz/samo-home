@@ -1495,15 +1495,16 @@ button.cell::after, a.cell::after { transition: opacity var(--dur-fast) var(--ea
 
 /* Temperature & humidity sensor — the two reported values are the page; the switch block's spacing (50 px from the
    toolbar) so every device page starts at the same height. Numbers roll (data-num). */
-.th-hero { display: flex; justify-content: center; align-items: stretch; gap: 28px; padding: 50px var(--screen-pad) 0; transition: opacity var(--dur) var(--ease-out); }
+.th-hero { display: flex; justify-content: center; align-items: center; gap: 0; padding: 40px var(--screen-pad) 0; transition: opacity var(--dur) var(--ease-out); }
 .th-hero.is-off { opacity: .45; }
-.th-val { text-align: center; min-width: 0; }
-.th-num { display: flex; justify-content: center; align-items: flex-start; font: 600 56px/60px var(--font); letter-spacing: -1.5px; font-variant-numeric: tabular-nums; color: var(--label-primary); }
-.th-num small { font: 600 22px/30px var(--font); letter-spacing: 0; color: var(--label-secondary); margin: 4px 0 0 3px; }
-.th-cap { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 6px; font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-secondary); }
+/* label first, then the value (iOS Health): "Temperature" → 23.4 °C; the unit sits on the number's baseline */
+.th-val { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.th-num { display: flex; justify-content: center; align-items: baseline; gap: 3px; font: 500 44px/48px var(--font); letter-spacing: -1px; font-variant-numeric: tabular-nums; color: var(--label-primary); }
+.th-num small { font: 400 20px/24px var(--font); letter-spacing: 0; color: var(--label-secondary); }
+.th-cap { display: flex; align-items: center; justify-content: center; gap: 6px; font: var(--body-md); letter-spacing: var(--body-md-ls); color: var(--label-secondary); }
 .th-cap .icon { width: 18px; height: 18px; }
-.th-sep { width: 1px; margin: 10px 0 28px; background: var(--separator-opaque); }
-.th-rep { margin-top: 14px; text-align: center; font: var(--body-sm); color: var(--label-tertiary); }
+.th-sep { width: 1px; height: 48px; align-self: center; background: var(--separator-opaque); }
+.th-rep { margin-top: 16px; text-align: center; white-space: nowrap; font: var(--body-sm); color: var(--label-tertiary); }
 /* history chart (server data) */
 .th-chart { padding: 4px 0 2px; }
 .th-plot { position: relative; height: 120px; }
@@ -6390,8 +6391,8 @@ Devices.climate = (() => {
 
     // The two readings are the page (spec: last REPORTED values + when)
     h += `<div class="th-hero ${d.online ? '' : 'is-off'}" data-key="hero">
-        <div class="th-val"><div class="th-num"><span data-num data-live="t">${fmtT(st.t)}</span><small>°C</small></div><div class="th-cap">${icon('temperature')}Temperature</div></div>
-        ${has(d, 'humidity') ? `<i class="th-sep"></i><div class="th-val"><div class="th-num"><span data-num data-live="h">${fmtH(st.h)}</span><small>%</small></div><div class="th-cap">${icon('dev-drop')}Humidity</div></div>` : ''}
+        <div class="th-val"><div class="th-cap">${icon('temperature')}Temperature</div><div class="th-num"><span data-num data-live="t">${fmtT(st.t)}</span><small>°C</small></div></div>
+        ${has(d, 'humidity') ? `<i class="th-sep"></i><div class="th-val"><div class="th-cap">${icon('dev-drop')}Humidity</div><div class="th-num"><span data-num data-live="h">${fmtH(st.h)}</span><small>%</small></div></div>` : ''}
       </div>
       <div class="th-rep" data-num data-live="rep">${reportedText(d)}</div>`;
 
@@ -6401,7 +6402,7 @@ Devices.climate = (() => {
       cards.push(`<div class="info-card"><span>Dew point</span><b data-num="count">${fmtT(dew(st.t, st.h))} °C</b></div>`);
       cards.push(`<div class="info-card"><span>VPD</span><b data-num="count">${vpd(st.t, st.h).toFixed(2)} kPa</b></div>`);
     }
-    if (has(d, 'probe')) cards.push(`<div class="info-card"><span>${esc(d.probeName)} probe</span><b data-num="count">${fmtT(st.probe)} °C</b></div>`);
+    if (has(d, 'probe')) cards.push(`<div class="info-card"><span>${esc(/probe/i.test(d.probeName || '') ? d.probeName : `${d.probeName} probe`)}</span><b data-num="count">${fmtT(st.probe)} °C</b></div>`);
     if (cards.length % 2) cards[cards.length - 1] = cards[cards.length - 1].replace('class="info-card"', 'class="info-card wide"');   // small cards in pairs
     if (has(d, 'control') && S(d, 'control').on) {
       const v = S(d, 'control');
