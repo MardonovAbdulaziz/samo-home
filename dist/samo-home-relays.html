@@ -2048,6 +2048,45 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-colour-row .scn-dots { gap: 10px; }
 /* rows with a trailing value (Event History, info rows) = Figma "Settings row": title 15/18 medium, value 13/16 */
 .sheet :is(.list, .group-card) > .cell:has(> .cell-value) .cell-title { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }
+/* ---- scenario: light look + "turn off after" (Apple Home style: one card, rows open in place) ---- */
+.scn-gap { height: 24px; }
+/* rows inside a collapse that sits in a sheet card: same rows, separator on top */
+.sheet .list > .cell:has(+ .collapse), .sheet .list > .cell:has(+ .collapse[aria-hidden="false"]) { border-bottom: 0; }
+.sheet .list > .collapse > .collapse-inner { margin-inline: 0; padding-inline: 0; }
+.sheet .list .collapse-inner > .cell { min-height: 64px; padding: 11px 0; border-top: 1px solid var(--separator); border-radius: 0; position: relative; }
+.sheet .list .collapse-inner > .cell .cell-title { font: var(--body-lg); letter-spacing: var(--body-lg-ls); }
+.sheet .list > .collapse + .cell { border-top: 1px solid var(--separator); }
+/* value row with a chevron that opens its choices in place */
+.scn-disclose .cell-value { font: var(--body-lg); letter-spacing: var(--body-lg-ls); color: var(--label-secondary); max-width: none; }
+.scn-disclose .chev { width: 16px; height: 16px; color: var(--label-tertiary); transition: transform var(--dur) var(--ease); }
+.scn-disclose[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.scn-disclose[aria-expanded="true"] .cell-value { color: var(--primary); }
+.scn-inline { border-top: 1px solid var(--separator); padding: 4px 0; }
+.scn-inline-opt { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 2px 0 8px; font: var(--body-lg); letter-spacing: var(--body-lg-ls); color: var(--label-primary); text-align: left; border-radius: 10px; }
+.scn-inline-opt:active { background: rgba(255, 255, 255, 0.06); }
+.scn-inline-opt .icon { width: 20px; height: 20px; color: var(--primary); opacity: 0; }
+.scn-inline-opt[aria-checked="true"] .icon { opacity: 1; }
+/* sliders */
+.scn-slider { flex-direction: column; align-items: stretch !important; gap: 14px; padding: 14px 0 18px !important; }
+.scn-slider-head { display: flex; justify-content: space-between; align-items: baseline; }
+.scn-slider-head .cell-value { font: var(--body-lg); color: var(--label-secondary); max-width: none; font-variant-numeric: tabular-nums; }
+.scn-ct::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--warm), var(--cool)) !important; }
+.scn-ct::-moz-range-track { background: linear-gradient(90deg, var(--warm), var(--cool)) !important; }
+.scn-seg-row { padding: 12px 0 !important; min-height: 0 !important; }
+.scn-seg-row .segmented { width: 100%; }
+.scn-seg-row .segmented button { height: 32px; font: var(--body-md-accent); }
+/* colour wheel: hue around, white in the middle; presets under it */
+.scn-wheel-row { flex-direction: column; align-items: center !important; gap: 18px; padding: 18px 0 16px !important; }
+.scn-wheel { position: relative; width: 220px; height: 220px; border-radius: 50%; touch-action: none; cursor: crosshair;
+  background: radial-gradient(circle closest-side, #fff 0%, rgba(255, 255, 255, 0.85) 12%, rgba(255, 255, 255, 0) 100%),
+    conic-gradient(#ff0000, #ffff00 60deg, #00ff00 120deg, #00ffff 180deg, #0000ff 240deg, #ff00ff 300deg, #ff0000);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.scn-knob { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; box-shadow: 0 0 0 3px #fff, 0 2px 8px rgba(0, 0, 0, 0.45); transition: transform var(--dur-fast) var(--ease-out); pointer-events: none; }
+.scn-wheel.dragging .scn-knob { transform: scale(1.25); }
+.scn-wheel-row .scn-dots { justify-content: center; gap: 14px; }
+.scn-wheel-row, .scn-slider-head, .scn-disclose { -webkit-user-select: none; user-select: none; }
+.scn-ct::-webkit-slider-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important; }
+.scn-ct::-moz-range-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important; }
 
 </style>
 </head>
@@ -5993,14 +6032,21 @@ Devices.light = (() => {
     presetName: (id) => (PRESETS.find((p) => p.id === id) || {}).name,
     _k2rgb: k2rgb,
     /* Scenarios: what this light can be set to, and setting it in one go (on + brightness + colour) */
-    sceneCaps: (d) => ({ br: has(d, 'brightness'), color: has(d, 'color'), ct: has(d, 'colorTemp') }),
+    sceneCaps: (d) => ({ br: has(d, 'brightness'), color: has(d, 'color'), ct: has(d, 'colorTemp'), k: kRange(d), fx: effects(d).map((n) => [n, MOOD[n] || n]) }),
     SWATCH: SWATCH.map(([n, hex]) => ({ n, hex: hex || '#fffdf5' })),
+    /** o = { br, mode: 'hs'|'ct', col: '#rrggbb' or a swatch name, k, fx } — anything left out stays as it was */
     applyScene(d, i, o = {}) {
       const w = why(d, i); if (w) return w;
-      const c = d.channels[i]; c.on = true; c.timer = null; c.fx = null;
+      const c = d.channels[i]; c.on = true; c.timer = null;
+      if (!o.fx) c.fx = null;
       if (o.br && has(d, 'brightness')) c.br = clamp(Math.round(o.br), 1, 100);
-      if (o.col === 'white') c.mode = 'ct';
-      else if (o.col && has(d, 'color')) { const s = SWATCH.find((x) => x[0] === o.col); if (s) { setColour(c, s[1], s[2] || undefined); Object.assign(c, { h: s[3][0], s: s[3][1] }); } }
+      if (o.mode === 'ct' || o.col === 'white') { c.mode = 'ct'; if (o.k && has(d, 'colorTemp')) c.k = clamp(Math.round(o.k), ...kRange(d)); }
+      else if (o.col && has(d, 'color')) {
+        const s = SWATCH.find((x) => x[0] === o.col || (x[1] && x[1].toLowerCase() === String(o.col).toLowerCase()));
+        if (s && s[1]) { setColour(c, s[1], s[2] || undefined); Object.assign(c, { h: s[3][0], s: s[3][1] }); }
+        else if (/^#[0-9a-f]{6}$/i.test(o.col)) setColour(c, o.col);
+      }
+      if (o.fx && effects(d).includes(o.fx) && !(c.fx && c.fx.name === o.fx)) startFx(d, i, o.fx);
       return null;
     },
   };
@@ -10182,6 +10228,19 @@ const Scenarios = (() => {
   };
   const words = (d) => WORDS[d.type] || WORDS._;
   const COLOUR_WORD = { white: 'white light', blue: 'blue', mint: 'mint', red: 'red', purple: 'purple' };
+  /** "red", "orange", "pink"… — a hex colour in one everyday word */
+  function colourWord(c) {
+    if (COLOUR_WORD[c]) return COLOUR_WORD[c];
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c || ''); if (!m) return c;
+    const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), dd = mx - mn;
+    if (dd < 0.12) return 'white light';
+    let h = mx === r ? ((g - b) / dd) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h = (h * 60 + 360) % 360;
+    const sat = dd / mx; const pale = sat < 0.35 ? 'soft ' : '';
+    return pale + (h < 15 || h >= 345 ? 'red' : h < 40 ? 'orange' : h < 65 ? 'yellow' : h < 160 ? 'green' : h < 195 ? 'turquoise' : h < 250 ? 'blue' : h < 290 ? 'purple' : 'pink');
+  }
+  const kWord = (k) => (!k ? 'white light' : k < 3300 ? 'warm white' : k < 5000 ? 'neutral white' : 'cool white');
+  const fxWord = (id, fx) => { const d = dev(id); const f = d && d.type === 'light' ? (Devices.light.sceneCaps(d).fx.find((x) => x[0] === fx) || [])[1] : ''; return (f || fx).toLowerCase(); };
+  const backWord = (m) => (m >= 60 ? `${m / 60} h` : `${m} min`);
 
   /** Current signals of one device channel (read from the live device model). */
   function sig(d, ch = 0) {
@@ -10302,8 +10361,9 @@ const Scenarios = (() => {
     if (a.k === 'dev') {
       const d = dev(a.id); const x = findIn(cap(d).act, a.to);
       if (a.to === 'pos') return `set ${nameOf(a.id, a.ch)} to ${a.pos} % open`;
-      const extra = [a.br ? `${a.br} %` : '', a.col ? COLOUR_WORD[a.col] || a.col : ''].filter(Boolean).join(', ');
-      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${extra ? ` at ${extra}` : ''}${a.back ? ` for ${a.back} min` : ''}`;
+      const look = a.set === false ? [] : [a.br ? `${a.br} %` : '', a.mode === 'ct' ? kWord(a.kel) : a.col ? colourWord(a.col) : ''].filter(Boolean);
+      const fx = a.set !== false && a.fx ? ` with the ${fxWord(a.id, a.fx)} effect` : '';
+      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${look.length ? ` at ${look.join(', ')}` : ''}${fx}${a.back ? `, off after ${backWord(a.back)}` : ''}`;
     }
     if (a.k === 'notify') return a.critical ? 'send everyone an urgent alert' : 'send you a notification';
     if (a.k === 'wait') return `wait ${a.min} min`;
@@ -10422,7 +10482,7 @@ const Scenarios = (() => {
     const d = dev(a.id); if (!d || d.online === false) return `${nameOf(a.id, a.ch)} is offline`;
     if (d.type === 'lock') { Devices.lock.remote(d, a.to === 'lock', 'Scenario', 'scenario'); return null; }
     if (a.to === 'pos') return Devices.curtain.goToOpen(d, a.ch || 0, a.pos) === false ? `${nameOf(a.id, a.ch)} isn’t set up yet` : null;
-    if (d.type === 'light' && a.to === 'on' && (a.br || a.col)) return Devices.light.applyScene(d, a.ch || 0, { br: a.br, col: a.col });
+    if (d.type === 'light' && a.to === 'on' && a.set !== false && (a.br || a.col || a.mode || a.fx)) return Devices.light.applyScene(d, a.ch || 0, { br: a.br, col: a.col, mode: a.mode, k: a.kel, fx: a.fx });
     const t = tileOf(d, a.ch || 0);
     if (!t.controllable) return `${nameOf(a.id, a.ch)} can’t be switched`;
     const want = a.to === 'on';
@@ -11316,33 +11376,79 @@ if (typeof Store !== 'undefined') Scenarios.start();
       (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + deviceList('act', 'a-dev-pick') });
   }
   function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
-  const BACKS = [0, 1, 2, 5, 10, 30, 60, 90];
+  const BACKS = [0, 1, 2, 5, 10, 15, 30, 60, 120];
+  const backLabel = (m) => (!m ? 'Never' : m >= 60 ? `${m / 60} h` : `${m} min`);
+  /* colour wheel helpers (hue = angle, saturation = distance from the centre) */
+  const hsHex = (h, sat) => { const l = 0.5, a = (sat / 100) * Math.min(l, 1 - l); const f = (n) => { const k = (n + h / 30) % 12; return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))).toString(16).padStart(2, '0'); }; return `#${f(0)}${f(8)}${f(4)}`; };
+  const hexHS = (hex) => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || ''); if (!m) return { h: 0, s: 0 }; const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = !d ? 0 : mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; const l = (mx + mn) / 2; const sat = !d ? 0 : d / (1 - Math.abs(2 * l - 1)); return { h, s: Math.min(100, sat * 100) }; };
+  const swHex = (n) => ((Devices.light.SWATCH.find((x) => x.n === n) || {}).hex || n);
+  const kColour = (k, k0, k1) => { const t = (k - k0) / (k1 - k0 || 1); const warm = [255, 179, 102], cool = [214, 232, 255]; return `rgb(${warm.map((w, j) => Math.round(w + (cool[j] - w) * t)).join(',')})`; };
+
+  /** Device action: what to do + (light) how it should look + "turn off after", Apple Home style:
+      everything in cards, rows with a value and a chevron open their choices in place. */
   function actDeviceDo(id, ch, i) {
     const d = Store.device(id), acts = SC.cap(d).act;
-    const lc = d.type === 'light' ? Devices.light.sceneCaps(d) : {};
+    const lc = d.type === 'light' ? Devices.light.sceneCaps(d) : null;
     const a = i != null ? clone(s.do[i]) : { k: 'dev', id, ch, to: acts[0].k };
+    if (a.col && !/^#/.test(a.col) && a.col !== 'white') a.col = swHex(a.col);
+    if (a.col === 'white') { delete a.col; a.mode = 'ct'; }
+    const ui = { open: '' };   // which row is open in place: 'fx' | 'back' | ''
+    const isSet = () => a.set !== false && !!(a.br || a.col || a.mode || a.fx);
     const needDone = () => { const c = SC.findIn(acts, a.to) || {}; return !!(c.back || c.pos || c.light); };
+    const valueRow = (key, title, value) => `<button class="cell scn-disclose" data-action="do-open" data-v="${key}" aria-expanded="${ui.open === key}"><span class="cell-main cell-title">${esc(title)}</span><span class="cell-value">${esc(value)}</span>${icon('chevron-down', 'chev')}</button>`;
+    const choices = (key, act, list, cur) => UI.collapse(ui.open === key, `<div class="scn-inline">${list.map(([v, l]) => `<button class="scn-inline-opt" data-action="${act}" data-v="${v}" aria-checked="${String(cur) === String(v)}" role="radio"><span>${esc(l)}</span>${icon('check', 'icon')}</button>`).join('')}</div>`);
+    function lightCard() {
+      const on = isSet(), mode = a.mode === 'ct' || !lc.color ? 'ct' : 'hs';
+      const hs = hexHS(a.col || '#ff2563');
+      let h = `<div class="list">${Kit.sw('do-set', 'set', 'Set brightness and colour', on ? 'Comes on exactly like this' : 'Comes on as it was last time', on)}`;
+      let body = '';
+      if (lc.br) { const br = a.br || 80; body += `<div class="cell slider-row scn-slider"><span class="scn-slider-head"><span class="cell-title">Brightness</span><span class="cell-value" data-out="br">${br} %</span></span><input class="range" type="range" min="1" max="100" value="${br}" data-r="br" style="--v:${(br - 1) / 99}" aria-label="Brightness"></div>`; }
+      if (lc.color && lc.ct) body += `<div class="cell scn-seg-row"><div class="segmented"><button class="${mode === 'hs' ? 'on' : ''}" data-action="do-mode" data-v="hs">Colour</button><button class="${mode === 'ct' ? 'on' : ''}" data-action="do-mode" data-v="ct">White</button></div></div>`;
+      if (mode === 'hs' && lc.color) {
+        const R = 0.5 * Math.min(1, hs.s / 100), ang = (hs.h - 90) * Math.PI / 180;
+        body += `<div class="cell scn-wheel-row"><div class="scn-wheel" data-wheel role="slider" aria-label="Colour" tabindex="0"><i class="scn-knob" style="left:${50 + R * 100 * Math.cos(ang)}%;top:${50 + R * 100 * Math.sin(ang)}%;background:${a.col || '#ff2563'}"></i></div>
+          <div class="scn-dots">${Devices.light.SWATCH.filter((x) => x.n !== 'white').map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.hex}" role="radio" aria-checked="${(a.col || '').toLowerCase() === x.hex}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</div></div>`;
+      } else if (lc.ct) {
+        const [k0, k1] = lc.k, k = a.kel || 2700;
+        body += `<div class="cell slider-row scn-slider"><span class="scn-slider-head"><span class="cell-title">White tone</span><span class="cell-value" data-out="kel">${k} K</span></span><input class="range scn-ct" type="range" min="${k0}" max="${k1}" step="100" value="${k}" data-r="kel" style="--v:${(k - k0) / (k1 - k0)};--warm:${kColour(k0, k0, k1)};--cool:${kColour(k1, k0, k1)}" aria-label="White tone"></div>`;
+      }
+      if (lc.fx.length) body += valueRow('fx', 'Effect', a.fx ? (lc.fx.find((x) => x[0] === a.fx) || [])[1] : 'None') + choices('fx', 'do-fx', [['', 'None'], ...lc.fx], a.fx || '');
+      h += UI.collapse(on, body) + '</div>';
+      if (on && a.fx) h += `<div class="list-footer">The effect starts after the light comes on.</div>`;
+      return h;
+    }
     sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => {
       const cur = SC.findIn(acts, a.to) || {};
       const blocked = acts.filter((x) => x.manualOnly && !s.manual);
       let h = `<div class="list">${Kit.radio('do-pick', a.to, acts.filter((x) => !(x.manualOnly && !s.manual)).map((x) => [x.k, x.label, '']))}</div>`;
       if (blocked.length) h += `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>`;
-      // light: brightness and colour, set together with "Turn on"
-      if (cur.light && (lc.br || lc.color || lc.ct)) {
-        const dots = Devices.light.SWATCH.filter((x) => lc.color || x.n === 'white');
-        h += `<div class="list-header">When it turns on</div><div class="list">
-          ${lc.br ? `<div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Brightness</span><span class="cell-sub" style="display:block">${a.br ? 'Set when it turns on' : 'Stays as it was last time'}</span></span>${Kit.stepper('do-br', 'br', a.br ? `${a.br} %` : 'As is', !a.br, a.br >= 100)}</div>` : ''}
-          ${lc.color || lc.ct ? `<div class="cell scn-colour-row"><span class="cell-main"><span class="cell-title" style="display:block">Colour</span>
-            <span class="scn-dots" role="radiogroup" aria-label="Colour"><button class="scn-dot keep" data-action="do-col" data-v="" aria-checked="${!a.col}" role="radio">As is</button>
-            ${dots.map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.n}" role="radio" aria-checked="${a.col === x.n}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</span></span></div>` : ''}</div>`;
-      }
-      // curtain: an exact position
-      if (cur.pos) h += `<div class="list-header">Position</div><div class="list"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Open</span><span class="cell-sub" style="display:block">${a.pos === 0 ? 'Fully closed' : a.pos === 100 ? 'Fully open' : `${100 - a.pos} % closed`}</span></span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
-      if (cur.back) h += `<div class="list-header">Then ${esc(cur.label === 'Open' ? 'close it' : 'turn it off')}</div><div class="scn-backs">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${(a.back || 0) === b}">${b ? (b >= 60 ? `${b / 60 === 1.5 ? '1.5' : b / 60} h` : `${b} min`) : 'Never'}</button>`).join('')}</div>
-          <div class="list-footer">${a.back ? `Goes back after ${a.back} min — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>`;
+      if (cur.light && lc && (lc.br || lc.color || lc.ct || lc.fx.length)) h += `<div class="scn-gap"></div>` + lightCard();
+      if (cur.pos) h += `<div class="scn-gap"></div><div class="list"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Open</span><span class="cell-sub" style="display:block">${a.pos === 0 ? 'Fully closed' : a.pos === 100 ? 'Fully open' : `${100 - a.pos} % closed`}</span></span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
+      if (cur.back) h += `<div class="scn-gap"></div><div class="list">${valueRow('back', cur.label === 'Open' ? 'Close after' : 'Turn off after', backLabel(a.back))}${choices('back', 'do-back', BACKS.map((b) => [b, backLabel(b)]), a.back || 0)}</div>
+          <div class="list-footer">${a.back ? `Goes back by itself after ${backLabel(a.back)} — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>`;
       return h;
-    }, footer: () => done('act', i != null, needDone()) }) };
+    }, footer: () => done('act', i != null, needDone()), onMount: (el) => bindLook(el, a) }) };
+    sh.ui = ui;
     reopen();
+  }
+  /** live sliders and the colour wheel: follow the finger, no re-render while dragging */
+  function bindLook(el, a) {
+    el.querySelectorAll('input[data-r]').forEach((r) => r.addEventListener('input', () => {
+      const k = r.dataset.r, v = +r.value; a[k] = v;
+      const out = el.querySelector(`[data-out="${k}"]`); if (out) out.textContent = k === 'kel' ? `${v} K` : `${v} %`;
+    }));
+    const wh = el.querySelector('[data-wheel]'); if (!wh) return;
+    const knob = wh.querySelector('.scn-knob');
+    const pick = (e) => {
+      const b = wh.getBoundingClientRect(), x = e.clientX - b.left - b.width / 2, y = e.clientY - b.top - b.height / 2;
+      const r = Math.min(1, Math.hypot(x, y) / (b.width / 2)), h = (Math.atan2(y, x) * 180 / Math.PI + 90 + 360) % 360;
+      a.col = hsHex(h, Math.max(8, r * 100)); a.mode = 'hs';
+      knob.style.left = `${50 + 50 * r * Math.sin(h * Math.PI / 180)}%`; knob.style.top = `${50 - 50 * r * Math.cos(h * Math.PI / 180)}%`; knob.style.background = a.col;
+      el.querySelectorAll('.scn-dot').forEach((dd) => dd.setAttribute('aria-checked', 'false'));
+    };
+    wh.addEventListener('pointerdown', (e) => { wh.setPointerCapture(e.pointerId); wh.classList.add('dragging'); pick(e); });
+    wh.addEventListener('pointermove', (e) => { if (wh.hasPointerCapture(e.pointerId)) pick(e); });
+    wh.addEventListener('pointerup', () => wh.classList.remove('dragging'));
   }
   function actNotify(i) {
     const a = i != null ? clone(s.do[i]) : { k: 'notify', text: s.manual ? `${s.name} is done` : '', critical: false };
@@ -11440,13 +11546,16 @@ if (typeof Store !== 'undefined') Scenarios.start();
     'a-dev-pick': ({ id, ch }) => actDeviceDo(id, +ch),
     'do-pick': ({ v }) => {
       const x = sh.x; x.to = v; const c = SC.findIn(SC.cap(Store.device(x.id)).act, v) || {};
-      if (!c.back) delete x.back; if (!c.light) { delete x.br; delete x.col; } if (c.pos) { if (x.pos == null) x.pos = 10; } else delete x.pos;
+      if (!c.back) delete x.back; if (!c.light) { ['br', 'col', 'mode', 'kel', 'fx', 'set'].forEach((f) => delete x[f]); } if (c.pos) { if (x.pos == null) x.pos = 10; } else delete x.pos;
       if (c.back || c.pos || c.light) reopen(); else commit('act');
     },
-    'do-br': ({ d }) => { const x = sh.x; const v = (x.br || 0) + 10 * +d; if (v <= 0) delete x.br; else x.br = Math.min(100, v); reopen(); },
-    'do-col': ({ v }) => { if (v) sh.x.col = v; else delete sh.x.col; reopen(); },
+    'do-set': () => { const x = sh.x; if (x.set === false || !(x.br || x.col || x.mode || x.fx)) { x.set = true; if (!x.br) x.br = 80; if (!x.col && !x.mode) { x.mode = 'ct'; x.kel = 2700; } } else x.set = false; reopen(); },
+    'do-mode': ({ v }) => { const x = sh.x; x.mode = v; if (v === 'hs' && !x.col) x.col = '#ff2563'; if (v === 'ct' && !x.kel) x.kel = 2700; reopen(); },
+    'do-col': ({ v }) => { sh.x.col = v; sh.x.mode = 'hs'; reopen(); },
+    'do-open': ({ v }) => { sh.ui.open = sh.ui.open === v ? '' : v; reopen(); },
+    'do-fx': ({ v }) => { if (v) sh.x.fx = v; else delete sh.x.fx; sh.ui.open = ''; reopen(); },
     'do-pos': ({ d }) => { sh.x.pos = Math.max(0, Math.min(100, (sh.x.pos || 0) + 10 * +d)); reopen(); },
-    'do-back': ({ v }) => { if (+v) sh.x.back = +v; else delete sh.x.back; reopen(); },
+    'do-back': ({ v }) => { if (+v) sh.x.back = +v; else delete sh.x.back; sh.ui.open = ''; reopen(); },
     'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
     'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },
     'run-pick': ({ v }) => { sh.x.sid = v; commit('act'); },

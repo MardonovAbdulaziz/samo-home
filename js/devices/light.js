@@ -567,14 +567,21 @@ Devices.light = (() => {
     presetName: (id) => (PRESETS.find((p) => p.id === id) || {}).name,
     _k2rgb: k2rgb,
     /* Scenarios: what this light can be set to, and setting it in one go (on + brightness + colour) */
-    sceneCaps: (d) => ({ br: has(d, 'brightness'), color: has(d, 'color'), ct: has(d, 'colorTemp') }),
+    sceneCaps: (d) => ({ br: has(d, 'brightness'), color: has(d, 'color'), ct: has(d, 'colorTemp'), k: kRange(d), fx: effects(d).map((n) => [n, MOOD[n] || n]) }),
     SWATCH: SWATCH.map(([n, hex]) => ({ n, hex: hex || '#fffdf5' })),
+    /** o = { br, mode: 'hs'|'ct', col: '#rrggbb' or a swatch name, k, fx } — anything left out stays as it was */
     applyScene(d, i, o = {}) {
       const w = why(d, i); if (w) return w;
-      const c = d.channels[i]; c.on = true; c.timer = null; c.fx = null;
+      const c = d.channels[i]; c.on = true; c.timer = null;
+      if (!o.fx) c.fx = null;
       if (o.br && has(d, 'brightness')) c.br = clamp(Math.round(o.br), 1, 100);
-      if (o.col === 'white') c.mode = 'ct';
-      else if (o.col && has(d, 'color')) { const s = SWATCH.find((x) => x[0] === o.col); if (s) { setColour(c, s[1], s[2] || undefined); Object.assign(c, { h: s[3][0], s: s[3][1] }); } }
+      if (o.mode === 'ct' || o.col === 'white') { c.mode = 'ct'; if (o.k && has(d, 'colorTemp')) c.k = clamp(Math.round(o.k), ...kRange(d)); }
+      else if (o.col && has(d, 'color')) {
+        const s = SWATCH.find((x) => x[0] === o.col || (x[1] && x[1].toLowerCase() === String(o.col).toLowerCase()));
+        if (s && s[1]) { setColour(c, s[1], s[2] || undefined); Object.assign(c, { h: s[3][0], s: s[3][1] }); }
+        else if (/^#[0-9a-f]{6}$/i.test(o.col)) setColour(c, o.col);
+      }
+      if (o.fx && effects(d).includes(o.fx) && !(c.fx && c.fx.name === o.fx)) startFx(d, i, o.fx);
       return null;
     },
   };

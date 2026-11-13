@@ -155,33 +155,79 @@
       (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + deviceList('act', 'a-dev-pick') });
   }
   function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
-  const BACKS = [0, 1, 2, 5, 10, 30, 60, 90];
+  const BACKS = [0, 1, 2, 5, 10, 15, 30, 60, 120];
+  const backLabel = (m) => (!m ? 'Never' : m >= 60 ? `${m / 60} h` : `${m} min`);
+  /* colour wheel helpers (hue = angle, saturation = distance from the centre) */
+  const hsHex = (h, sat) => { const l = 0.5, a = (sat / 100) * Math.min(l, 1 - l); const f = (n) => { const k = (n + h / 30) % 12; return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))).toString(16).padStart(2, '0'); }; return `#${f(0)}${f(8)}${f(4)}`; };
+  const hexHS = (hex) => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex || ''); if (!m) return { h: 0, s: 0 }; const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = !d ? 0 : mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; const l = (mx + mn) / 2; const sat = !d ? 0 : d / (1 - Math.abs(2 * l - 1)); return { h, s: Math.min(100, sat * 100) }; };
+  const swHex = (n) => ((Devices.light.SWATCH.find((x) => x.n === n) || {}).hex || n);
+  const kColour = (k, k0, k1) => { const t = (k - k0) / (k1 - k0 || 1); const warm = [255, 179, 102], cool = [214, 232, 255]; return `rgb(${warm.map((w, j) => Math.round(w + (cool[j] - w) * t)).join(',')})`; };
+
+  /** Device action: what to do + (light) how it should look + "turn off after", Apple Home style:
+      everything in cards, rows with a value and a chevron open their choices in place. */
   function actDeviceDo(id, ch, i) {
     const d = Store.device(id), acts = SC.cap(d).act;
-    const lc = d.type === 'light' ? Devices.light.sceneCaps(d) : {};
+    const lc = d.type === 'light' ? Devices.light.sceneCaps(d) : null;
     const a = i != null ? clone(s.do[i]) : { k: 'dev', id, ch, to: acts[0].k };
+    if (a.col && !/^#/.test(a.col) && a.col !== 'white') a.col = swHex(a.col);
+    if (a.col === 'white') { delete a.col; a.mode = 'ct'; }
+    const ui = { open: '' };   // which row is open in place: 'fx' | 'back' | ''
+    const isSet = () => a.set !== false && !!(a.br || a.col || a.mode || a.fx);
     const needDone = () => { const c = SC.findIn(acts, a.to) || {}; return !!(c.back || c.pos || c.light); };
+    const valueRow = (key, title, value) => `<button class="cell scn-disclose" data-action="do-open" data-v="${key}" aria-expanded="${ui.open === key}"><span class="cell-main cell-title">${esc(title)}</span><span class="cell-value">${esc(value)}</span>${icon('chevron-down', 'chev')}</button>`;
+    const choices = (key, act, list, cur) => UI.collapse(ui.open === key, `<div class="scn-inline">${list.map(([v, l]) => `<button class="scn-inline-opt" data-action="${act}" data-v="${v}" aria-checked="${String(cur) === String(v)}" role="radio"><span>${esc(l)}</span>${icon('check', 'icon')}</button>`).join('')}</div>`);
+    function lightCard() {
+      const on = isSet(), mode = a.mode === 'ct' || !lc.color ? 'ct' : 'hs';
+      const hs = hexHS(a.col || '#ff2563');
+      let h = `<div class="list">${Kit.sw('do-set', 'set', 'Set brightness and colour', on ? 'Comes on exactly like this' : 'Comes on as it was last time', on)}`;
+      let body = '';
+      if (lc.br) { const br = a.br || 80; body += `<div class="cell slider-row scn-slider"><span class="scn-slider-head"><span class="cell-title">Brightness</span><span class="cell-value" data-out="br">${br} %</span></span><input class="range" type="range" min="1" max="100" value="${br}" data-r="br" style="--v:${(br - 1) / 99}" aria-label="Brightness"></div>`; }
+      if (lc.color && lc.ct) body += `<div class="cell scn-seg-row"><div class="segmented"><button class="${mode === 'hs' ? 'on' : ''}" data-action="do-mode" data-v="hs">Colour</button><button class="${mode === 'ct' ? 'on' : ''}" data-action="do-mode" data-v="ct">White</button></div></div>`;
+      if (mode === 'hs' && lc.color) {
+        const R = 0.5 * Math.min(1, hs.s / 100), ang = (hs.h - 90) * Math.PI / 180;
+        body += `<div class="cell scn-wheel-row"><div class="scn-wheel" data-wheel role="slider" aria-label="Colour" tabindex="0"><i class="scn-knob" style="left:${50 + R * 100 * Math.cos(ang)}%;top:${50 + R * 100 * Math.sin(ang)}%;background:${a.col || '#ff2563'}"></i></div>
+          <div class="scn-dots">${Devices.light.SWATCH.filter((x) => x.n !== 'white').map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.hex}" role="radio" aria-checked="${(a.col || '').toLowerCase() === x.hex}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</div></div>`;
+      } else if (lc.ct) {
+        const [k0, k1] = lc.k, k = a.kel || 2700;
+        body += `<div class="cell slider-row scn-slider"><span class="scn-slider-head"><span class="cell-title">White tone</span><span class="cell-value" data-out="kel">${k} K</span></span><input class="range scn-ct" type="range" min="${k0}" max="${k1}" step="100" value="${k}" data-r="kel" style="--v:${(k - k0) / (k1 - k0)};--warm:${kColour(k0, k0, k1)};--cool:${kColour(k1, k0, k1)}" aria-label="White tone"></div>`;
+      }
+      if (lc.fx.length) body += valueRow('fx', 'Effect', a.fx ? (lc.fx.find((x) => x[0] === a.fx) || [])[1] : 'None') + choices('fx', 'do-fx', [['', 'None'], ...lc.fx], a.fx || '');
+      h += UI.collapse(on, body) + '</div>';
+      if (on && a.fx) h += `<div class="list-footer">The effect starts after the light comes on.</div>`;
+      return h;
+    }
     sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: SC.nameOf(id, ch), render: () => {
       const cur = SC.findIn(acts, a.to) || {};
       const blocked = acts.filter((x) => x.manualOnly && !s.manual);
       let h = `<div class="list">${Kit.radio('do-pick', a.to, acts.filter((x) => !(x.manualOnly && !s.manual)).map((x) => [x.k, x.label, '']))}</div>`;
       if (blocked.length) h += `<div class="list-footer">${esc(blocked.map((x) => x.label).join(', '))} is only for “Tap to run” scenes — a door should never open on its own.</div>`;
-      // light: brightness and colour, set together with "Turn on"
-      if (cur.light && (lc.br || lc.color || lc.ct)) {
-        const dots = Devices.light.SWATCH.filter((x) => lc.color || x.n === 'white');
-        h += `<div class="list-header">When it turns on</div><div class="list">
-          ${lc.br ? `<div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Brightness</span><span class="cell-sub" style="display:block">${a.br ? 'Set when it turns on' : 'Stays as it was last time'}</span></span>${Kit.stepper('do-br', 'br', a.br ? `${a.br} %` : 'As is', !a.br, a.br >= 100)}</div>` : ''}
-          ${lc.color || lc.ct ? `<div class="cell scn-colour-row"><span class="cell-main"><span class="cell-title" style="display:block">Colour</span>
-            <span class="scn-dots" role="radiogroup" aria-label="Colour"><button class="scn-dot keep" data-action="do-col" data-v="" aria-checked="${!a.col}" role="radio">As is</button>
-            ${dots.map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.n}" role="radio" aria-checked="${a.col === x.n}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</span></span></div>` : ''}</div>`;
-      }
-      // curtain: an exact position
-      if (cur.pos) h += `<div class="list-header">Position</div><div class="list"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Open</span><span class="cell-sub" style="display:block">${a.pos === 0 ? 'Fully closed' : a.pos === 100 ? 'Fully open' : `${100 - a.pos} % closed`}</span></span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
-      if (cur.back) h += `<div class="list-header">Then ${esc(cur.label === 'Open' ? 'close it' : 'turn it off')}</div><div class="scn-backs">${BACKS.map((b) => `<button class="chip" data-action="do-back" data-v="${b}" aria-pressed="${(a.back || 0) === b}">${b ? (b >= 60 ? `${b / 60 === 1.5 ? '1.5' : b / 60} h` : `${b} min`) : 'Never'}</button>`).join('')}</div>
-          <div class="list-footer">${a.back ? `Goes back after ${a.back} min — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>`;
+      if (cur.light && lc && (lc.br || lc.color || lc.ct || lc.fx.length)) h += `<div class="scn-gap"></div>` + lightCard();
+      if (cur.pos) h += `<div class="scn-gap"></div><div class="list"><div class="cell"><span class="cell-main"><span class="cell-title" style="display:block">Open</span><span class="cell-sub" style="display:block">${a.pos === 0 ? 'Fully closed' : a.pos === 100 ? 'Fully open' : `${100 - a.pos} % closed`}</span></span>${Kit.stepper('do-pos', 'pos', `${a.pos} %`, a.pos <= 0, a.pos >= 100)}</div></div>`;
+      if (cur.back) h += `<div class="scn-gap"></div><div class="list">${valueRow('back', cur.label === 'Open' ? 'Close after' : 'Turn off after', backLabel(a.back))}${choices('back', 'do-back', BACKS.map((b) => [b, backLabel(b)]), a.back || 0)}</div>
+          <div class="list-footer">${a.back ? `Goes back by itself after ${backLabel(a.back)} — no second scenario needed.` : 'Stays as it is until someone changes it.'}</div>`;
       return h;
-    }, footer: () => done('act', i != null, needDone()) }) };
+    }, footer: () => done('act', i != null, needDone()), onMount: (el) => bindLook(el, a) }) };
+    sh.ui = ui;
     reopen();
+  }
+  /** live sliders and the colour wheel: follow the finger, no re-render while dragging */
+  function bindLook(el, a) {
+    el.querySelectorAll('input[data-r]').forEach((r) => r.addEventListener('input', () => {
+      const k = r.dataset.r, v = +r.value; a[k] = v;
+      const out = el.querySelector(`[data-out="${k}"]`); if (out) out.textContent = k === 'kel' ? `${v} K` : `${v} %`;
+    }));
+    const wh = el.querySelector('[data-wheel]'); if (!wh) return;
+    const knob = wh.querySelector('.scn-knob');
+    const pick = (e) => {
+      const b = wh.getBoundingClientRect(), x = e.clientX - b.left - b.width / 2, y = e.clientY - b.top - b.height / 2;
+      const r = Math.min(1, Math.hypot(x, y) / (b.width / 2)), h = (Math.atan2(y, x) * 180 / Math.PI + 90 + 360) % 360;
+      a.col = hsHex(h, Math.max(8, r * 100)); a.mode = 'hs';
+      knob.style.left = `${50 + 50 * r * Math.sin(h * Math.PI / 180)}%`; knob.style.top = `${50 - 50 * r * Math.cos(h * Math.PI / 180)}%`; knob.style.background = a.col;
+      el.querySelectorAll('.scn-dot').forEach((dd) => dd.setAttribute('aria-checked', 'false'));
+    };
+    wh.addEventListener('pointerdown', (e) => { wh.setPointerCapture(e.pointerId); wh.classList.add('dragging'); pick(e); });
+    wh.addEventListener('pointermove', (e) => { if (wh.hasPointerCapture(e.pointerId)) pick(e); });
+    wh.addEventListener('pointerup', () => wh.classList.remove('dragging'));
   }
   function actNotify(i) {
     const a = i != null ? clone(s.do[i]) : { k: 'notify', text: s.manual ? `${s.name} is done` : '', critical: false };
@@ -279,13 +325,16 @@
     'a-dev-pick': ({ id, ch }) => actDeviceDo(id, +ch),
     'do-pick': ({ v }) => {
       const x = sh.x; x.to = v; const c = SC.findIn(SC.cap(Store.device(x.id)).act, v) || {};
-      if (!c.back) delete x.back; if (!c.light) { delete x.br; delete x.col; } if (c.pos) { if (x.pos == null) x.pos = 10; } else delete x.pos;
+      if (!c.back) delete x.back; if (!c.light) { ['br', 'col', 'mode', 'kel', 'fx', 'set'].forEach((f) => delete x[f]); } if (c.pos) { if (x.pos == null) x.pos = 10; } else delete x.pos;
       if (c.back || c.pos || c.light) reopen(); else commit('act');
     },
-    'do-br': ({ d }) => { const x = sh.x; const v = (x.br || 0) + 10 * +d; if (v <= 0) delete x.br; else x.br = Math.min(100, v); reopen(); },
-    'do-col': ({ v }) => { if (v) sh.x.col = v; else delete sh.x.col; reopen(); },
+    'do-set': () => { const x = sh.x; if (x.set === false || !(x.br || x.col || x.mode || x.fx)) { x.set = true; if (!x.br) x.br = 80; if (!x.col && !x.mode) { x.mode = 'ct'; x.kel = 2700; } } else x.set = false; reopen(); },
+    'do-mode': ({ v }) => { const x = sh.x; x.mode = v; if (v === 'hs' && !x.col) x.col = '#ff2563'; if (v === 'ct' && !x.kel) x.kel = 2700; reopen(); },
+    'do-col': ({ v }) => { sh.x.col = v; sh.x.mode = 'hs'; reopen(); },
+    'do-open': ({ v }) => { sh.ui.open = sh.ui.open === v ? '' : v; reopen(); },
+    'do-fx': ({ v }) => { if (v) sh.x.fx = v; else delete sh.x.fx; sh.ui.open = ''; reopen(); },
     'do-pos': ({ d }) => { sh.x.pos = Math.max(0, Math.min(100, (sh.x.pos || 0) + 10 * +d)); reopen(); },
-    'do-back': ({ v }) => { if (+v) sh.x.back = +v; else delete sh.x.back; reopen(); },
+    'do-back': ({ v }) => { if (+v) sh.x.back = +v; else delete sh.x.back; sh.ui.open = ''; reopen(); },
     'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
     'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },
     'run-pick': ({ v }) => { sh.x.sid = v; commit('act'); },

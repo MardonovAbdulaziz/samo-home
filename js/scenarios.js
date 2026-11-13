@@ -41,6 +41,19 @@ const Scenarios = (() => {
   };
   const words = (d) => WORDS[d.type] || WORDS._;
   const COLOUR_WORD = { white: 'white light', blue: 'blue', mint: 'mint', red: 'red', purple: 'purple' };
+  /** "red", "orange", "pink"… — a hex colour in one everyday word */
+  function colourWord(c) {
+    if (COLOUR_WORD[c]) return COLOUR_WORD[c];
+    const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(c || ''); if (!m) return c;
+    const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16) / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), dd = mx - mn;
+    if (dd < 0.12) return 'white light';
+    let h = mx === r ? ((g - b) / dd) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h = (h * 60 + 360) % 360;
+    const sat = dd / mx; const pale = sat < 0.35 ? 'soft ' : '';
+    return pale + (h < 15 || h >= 345 ? 'red' : h < 40 ? 'orange' : h < 65 ? 'yellow' : h < 160 ? 'green' : h < 195 ? 'turquoise' : h < 250 ? 'blue' : h < 290 ? 'purple' : 'pink');
+  }
+  const kWord = (k) => (!k ? 'white light' : k < 3300 ? 'warm white' : k < 5000 ? 'neutral white' : 'cool white');
+  const fxWord = (id, fx) => { const d = dev(id); const f = d && d.type === 'light' ? (Devices.light.sceneCaps(d).fx.find((x) => x[0] === fx) || [])[1] : ''; return (f || fx).toLowerCase(); };
+  const backWord = (m) => (m >= 60 ? `${m / 60} h` : `${m} min`);
 
   /** Current signals of one device channel (read from the live device model). */
   function sig(d, ch = 0) {
@@ -161,8 +174,9 @@ const Scenarios = (() => {
     if (a.k === 'dev') {
       const d = dev(a.id); const x = findIn(cap(d).act, a.to);
       if (a.to === 'pos') return `set ${nameOf(a.id, a.ch)} to ${a.pos} % open`;
-      const extra = [a.br ? `${a.br} %` : '', a.col ? COLOUR_WORD[a.col] || a.col : ''].filter(Boolean).join(', ');
-      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${extra ? ` at ${extra}` : ''}${a.back ? ` for ${a.back} min` : ''}`;
+      const look = a.set === false ? [] : [a.br ? `${a.br} %` : '', a.mode === 'ct' ? kWord(a.kel) : a.col ? colourWord(a.col) : ''].filter(Boolean);
+      const fx = a.set !== false && a.fx ? ` with the ${fxWord(a.id, a.fx)} effect` : '';
+      return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${look.length ? ` at ${look.join(', ')}` : ''}${fx}${a.back ? `, off after ${backWord(a.back)}` : ''}`;
     }
     if (a.k === 'notify') return a.critical ? 'send everyone an urgent alert' : 'send you a notification';
     if (a.k === 'wait') return `wait ${a.min} min`;
@@ -281,7 +295,7 @@ const Scenarios = (() => {
     const d = dev(a.id); if (!d || d.online === false) return `${nameOf(a.id, a.ch)} is offline`;
     if (d.type === 'lock') { Devices.lock.remote(d, a.to === 'lock', 'Scenario', 'scenario'); return null; }
     if (a.to === 'pos') return Devices.curtain.goToOpen(d, a.ch || 0, a.pos) === false ? `${nameOf(a.id, a.ch)} isn’t set up yet` : null;
-    if (d.type === 'light' && a.to === 'on' && (a.br || a.col)) return Devices.light.applyScene(d, a.ch || 0, { br: a.br, col: a.col });
+    if (d.type === 'light' && a.to === 'on' && a.set !== false && (a.br || a.col || a.mode || a.fx)) return Devices.light.applyScene(d, a.ch || 0, { br: a.br, col: a.col, mode: a.mode, k: a.kel, fx: a.fx });
     const t = tileOf(d, a.ch || 0);
     if (!t.controllable) return `${nameOf(a.id, a.ch)} can’t be switched`;
     const want = a.to === 'on';
