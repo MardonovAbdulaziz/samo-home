@@ -83,7 +83,7 @@
   .orb .rip { fill: none; stroke: color-mix(in srgb, var(--c1) 55%, white); stroke-width: .8; }
   .txt { position: absolute; left: 50%; top: 50%; width: 184px; transform: translate(-50%, -50%); text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .18), 0 2px 18px rgba(0, 0, 0, .28); text-wrap: balance; }
   .w { font: 400 31px/35px var(--font); letter-spacing: -.4px; }   /* every state word the same size */
-  .w.alarm { font-weight: 600; }
+  .w.alarm { font-weight: 500; }
   .s { font: var(--body-md); color: rgba(255, 255, 255, .78); margin-top: 6px; font-variant-numeric: tabular-nums; }
   .rep { text-align: center; font: var(--body-sm); color: var(--label-tertiary); margin-top: 10px; position: relative; }
   .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; margin-top: 22px; position: relative; }
@@ -129,7 +129,7 @@
     <label class="auto"><span class="seg" data-opt="auto"><button data-v="on">Play</button><button data-v="off">Pause</button></span> go through every state on its own</label>
     <ul class="notes">
       <li><b>Shape = how worried to be.</b> “Adaptive” is a perfect circle when everything is fine and turns into a softly wobbling blob as the danger grows — a safe home looks still and round, a problem looks alive. Circle and Blob are there to compare.</li>
-      <li><b>Rhythm = urgency.</b> Calm states breathe once every 6 seconds (a resting breath). A warning breathes only a little faster and wobbles gently, an alarm pulses about once a second and sends rings outward like a siren.</li>
+      <li><b>Rhythm = urgency.</b> Calm states breathe once every 6 seconds (a resting breath). A warning breathes only a little faster and wobbles gently, an alarm pulses every 1.7 s and sends thin rings outward — urgent, but never frantic.</li>
       <li><b>One aura, five characters.</b> Gas swirls slowly, smoke rises, water spreads in ripples, vibration trembles when something is hit and turns like a drum when the washer runs, air breathes in and out.</li>
       <li><b>Harmonic, never looping.</b> Every movement is a sum of slow sine waves with golden-ratio speeds, so it never repeats visibly; the rings follow the orb with a delay, like jelly.</li>
       <li><b>Text stays still.</b> Only the glass and light move — the word and number never shake, so they are always readable. Offline freezes everything and goes gray: no live data, no life.</li>
@@ -179,7 +179,7 @@ const SENS = [
     states: [
       { k: 'calm', label: 'Calm', w: 'Calm', s: 'Nothing moved', c: ['green', 'blue'], m: 'calm', note: 'Still glass, slow breath' },
       { k: 'knock', label: 'Knocked', w: 'Knocked 3\u00a0times', s: '2 min ago', c: ['yellow', 'orange'], m: 'warn', jit: .55, note: 'A light tremble' },
-      { k: 'alarm', label: 'Shaken!', w: 'Shaken!', s: 'The safe was moved', c: ['red', 'orange'], m: 'alarm', jit: 2.6, rep: 'Now', cards: [['Siren', 'Sounding'], ['Battery', '76 %']], note: 'Hard shake, red' },
+      { k: 'alarm', label: 'Shaken!', w: 'Shaken!', s: 'The safe was moved', c: ['red', 'orange'], m: 'alarm', jit: 1.5, rep: 'Now', cards: [['Siren', 'Sounding'], ['Battery', '76 %']], note: 'Hard shake, red' },
       { k: 'run', label: 'Running', title: 'Washing machine', room: 'Bathroom', w: 'Running', s: { n: '42', u: ' min' }, c: ['blue', 'green'], m: 'busy', spin: 44, cards: [['Started', '09:12'], ['Last cycle', '1 h 05 min']], note: 'Rings turn like the drum' },
       { k: 'done', label: 'Finished', title: 'Washing machine', room: 'Bathroom', w: 'Finished', s: 'Take the laundry out', c: ['green', 'yellow'], m: 'calm', cards: [['Started', '09:12'], ['Took', '58 min']], note: 'Green, at rest' },
       { k: 'off', label: 'Offline', w: 'Unknown', s: 'Last report 3 h ago', c: ['gray', 'gray'], m: 'off', rep: 'No connection', note: 'Gray and frozen' },
@@ -203,7 +203,7 @@ const MOT = {
   mild:  { sev: .18, T: 5,   br: .018, spd: .45, pulse: .12, ripT: 3.6, glow: 1.03, jit: 0, spin: 0 },
   busy:  { sev: .12, T: 3.4, br: .014, spd: .55, pulse: 0,   ripT: 3,   glow: 1,    jit: 0, spin: 16 },
   warn:  { sev: .32, T: 4,   br: .019, spd: .6,  pulse: .22, ripT: 3.2, glow: 1.06, jit: 0, spin: 0 },
-  alarm: { sev: 1,   T: 1.15, br: .034, spd: 2.1, pulse: 1,  ripT: 1.25, glow: 1.25, jit: 0, spin: 0 },
+  alarm: { sev: .62, T: 1.7, br: .026, spd: 1.25, pulse: .75, ripT: 1.8, glow: 1.15, jit: 0, spin: 0 },
   off:   { sev: 0,   T: 8,   br: 0,    spd: 0,   pulse: 0,   ripT: 4,   glow: .38,  jit: 0, spin: 0 },
 };
 function motionOf(sen, st) {
