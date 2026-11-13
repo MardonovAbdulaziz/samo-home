@@ -65,7 +65,7 @@
   function openRowEdit() {
     const ic = (n) => (scenesOK() ? Scenarios.ic(n, 'icon') : icon(n, 'icon'));
     const row = ([k, name, i, sub], on) => `<div class="cell tr-row" data-k="${k}" data-key="tr-${k}">
-        <button class="tr-btn ${on ? 'minus' : 'plus'}" data-action="${on ? 'tr-remove' : 'tr-add'}" data-k="${k}" aria-label="${on ? 'Remove' : 'Add'} ${UI.esc(name)}">${icon(on ? 'minus' : 'plus-small', 'icon')}</button>
+        <button class="tr-btn ${on ? 'minus' : 'plus'}" data-action="${on ? 'tr-remove' : 'tr-add'}" data-k="${k}" aria-label="${on ? 'Remove' : 'Add'} ${UI.esc(name)}">${icon(on ? 'cross-24' : 'plus-01', 'icon')}</button>
         <span class="cell-icon">${ic(i)}</span>
         <span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(name)}</span>${sub ? `<span class="cell-sub" style="display:block">${UI.esc(sub)}</span>` : ''}</span>
         ${on ? `<span class="tr-grip" role="button" tabindex="0" aria-label="Move ${UI.esc(name)}">${icon('menu', 'icon')}</span>` : ''}</div>`;
