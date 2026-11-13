@@ -79,11 +79,10 @@
   .aura { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: -1; pointer-events: none; }
   .aura i { position: absolute; left: 0; top: 0; border-radius: 50%; mix-blend-mode: screen; will-change: transform; }
   .orb { position: absolute; left: 50%; top: 50%; width: 340px; height: 340px; margin: -170px 0 0 -170px; overflow: visible; }
-  .orb .ring { fill: none; stroke: color-mix(in srgb, var(--c1) 40%, white); stroke-width: 1.1; }
-  .orb .rip { fill: none; stroke: color-mix(in srgb, var(--c1) 55%, white); stroke-width: 1.4; }
+  .orb .ring { fill: none; stroke: color-mix(in srgb, var(--c1) 40%, white); stroke-width: .6; }
+  .orb .rip { fill: none; stroke: color-mix(in srgb, var(--c1) 55%, white); stroke-width: .8; }
   .txt { position: absolute; left: 50%; top: 50%; width: 184px; transform: translate(-50%, -50%); text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .18), 0 2px 18px rgba(0, 0, 0, .28); text-wrap: balance; }
-  .w { font: 400 46px/52px var(--font); letter-spacing: -1px; }
-  .w.long { font: 400 31px/35px var(--font); letter-spacing: -.4px; }
+  .w { font: 400 31px/35px var(--font); letter-spacing: -.4px; }   /* every state word the same size */
   .w.alarm { font-weight: 600; }
   .s { font: var(--body-md); color: rgba(255, 255, 255, .78); margin-top: 6px; font-variant-numeric: tabular-nums; }
   .rep { text-align: center; font: var(--body-sm); color: var(--label-tertiary); margin-top: 10px; position: relative; }
@@ -130,7 +129,7 @@
     <label class="auto"><span class="seg" data-opt="auto"><button data-v="on">Play</button><button data-v="off">Pause</button></span> go through every state on its own</label>
     <ul class="notes">
       <li><b>Shape = how worried to be.</b> “Adaptive” is a perfect circle when everything is fine and turns into a softly wobbling blob as the danger grows — a safe home looks still and round, a problem looks alive. Circle and Blob are there to compare.</li>
-      <li><b>Rhythm = urgency.</b> Calm states breathe once every 6 seconds (a resting breath). A warning breathes twice as fast, an alarm pulses about once a second and sends rings outward like a siren.</li>
+      <li><b>Rhythm = urgency.</b> Calm states breathe once every 6 seconds (a resting breath). A warning breathes only a little faster and wobbles gently, an alarm pulses about once a second and sends rings outward like a siren.</li>
       <li><b>One aura, five characters.</b> Gas swirls slowly, smoke rises, water spreads in ripples, vibration trembles when something is hit and turns like a drum when the washer runs, air breathes in and out.</li>
       <li><b>Harmonic, never looping.</b> Every movement is a sum of slow sine waves with golden-ratio speeds, so it never repeats visibly; the rings follow the orb with a delay, like jelly.</li>
       <li><b>Text stays still.</b> Only the glass and light move — the word and number never shake, so they are always readable. Offline freezes everything and goes gray: no live data, no life.</li>
@@ -179,7 +178,7 @@ const SENS = [
     idea: 'Vibration is felt, not seen: the glass trembles for a moment when something is knocked, shakes hard in an alarm, and turns like a drum while the washer runs.',
     states: [
       { k: 'calm', label: 'Calm', w: 'Calm', s: 'Nothing moved', c: ['green', 'blue'], m: 'calm', note: 'Still glass, slow breath' },
-      { k: 'knock', label: 'Knocked', w: 'Knocked 3\u00a0times', s: '2 min ago', c: ['yellow', 'orange'], m: 'warn', jit: 1.1, note: 'A light tremble' },
+      { k: 'knock', label: 'Knocked', w: 'Knocked 3\u00a0times', s: '2 min ago', c: ['yellow', 'orange'], m: 'warn', jit: .55, note: 'A light tremble' },
       { k: 'alarm', label: 'Shaken!', w: 'Shaken!', s: 'The safe was moved', c: ['red', 'orange'], m: 'alarm', jit: 2.6, rep: 'Now', cards: [['Siren', 'Sounding'], ['Battery', '76 %']], note: 'Hard shake, red' },
       { k: 'run', label: 'Running', title: 'Washing machine', room: 'Bathroom', w: 'Running', s: { n: '42', u: ' min' }, c: ['blue', 'green'], m: 'busy', spin: 44, cards: [['Started', '09:12'], ['Last cycle', '1 h 05 min']], note: 'Rings turn like the drum' },
       { k: 'done', label: 'Finished', title: 'Washing machine', room: 'Bathroom', w: 'Finished', s: 'Take the laundry out', c: ['green', 'yellow'], m: 'calm', cards: [['Started', '09:12'], ['Took', '58 min']], note: 'Green, at rest' },
@@ -201,9 +200,9 @@ const SENS = [
    spd = flow speed, pulse = outward rings, ripT = their period, glow = light strength */
 const MOT = {
   calm:  { sev: 0,   T: 6.2, br: .016, spd: .32, pulse: 0,   ripT: 4.8, glow: 1,    jit: 0, spin: 0 },
-  mild:  { sev: .3,  T: 4.4, br: .02,  spd: .6,  pulse: .2,  ripT: 3.2, glow: 1.05, jit: 0, spin: 0 },
+  mild:  { sev: .18, T: 5,   br: .018, spd: .45, pulse: .12, ripT: 3.6, glow: 1.03, jit: 0, spin: 0 },
   busy:  { sev: .12, T: 3.4, br: .014, spd: .55, pulse: 0,   ripT: 3,   glow: 1,    jit: 0, spin: 16 },
-  warn:  { sev: .55, T: 3.1, br: .024, spd: .95, pulse: .4,  ripT: 2.4, glow: 1.1,  jit: 0, spin: 0 },
+  warn:  { sev: .32, T: 4,   br: .019, spd: .6,  pulse: .22, ripT: 3.2, glow: 1.06, jit: 0, spin: 0 },
   alarm: { sev: 1,   T: 1.15, br: .034, spd: 2.1, pulse: 1,  ripT: 1.25, glow: 1.25, jit: 0, spin: 0 },
   off:   { sev: 0,   T: 8,   br: 0,    spd: 0,   pulse: 0,   ripT: 4,   glow: .38,  jit: 0, spin: 0 },
 };
@@ -237,7 +236,6 @@ const GLOW = [   // [size px, colour, strength]
   [360, 'color-mix(in srgb, var(--c1) 75%, white)', .3],             // hot core light, drifts the other way
 ];
 const subHTML = (s) => (typeof s === 'string' ? esc(s) : `<span data-num="count">${s.n}</span>${esc(s.u)}`);
-const isLong = (w) => w.length > 8;
 let uid = 0;
 function mockHTML(sen, st) {
   const id = ++uid, cards = st.cards || sen.cards;
@@ -264,10 +262,10 @@ function mockHTML(sen, st) {
           <path class="ring" stroke-opacity=".22"/><path class="ring" stroke-opacity=".13"/><path class="ring" stroke-opacity=".065"/>
           <path class="core" fill="url(#cf${id})"/>
           <path class="hi" fill="url(#hi${id})"/>
-          <path class="core-rim" fill="none" stroke="url(#rim${id})" stroke-width="1.2"/>
+          <path class="core-rim" fill="none" stroke="url(#rim${id})" stroke-width=".8"/>
         </g>
       </svg>
-      <div class="txt"><div class="w${isLong(st.w) ? ' long' : ''}${st.m === 'alarm' ? ' alarm' : ''}" data-f="w">${esc(st.w)}</div><div class="s" data-f="s">${subHTML(st.s)}</div></div>
+      <div class="txt"><div class="w${st.m === 'alarm' ? ' alarm' : ''}" data-f="w">${esc(st.w)}</div><div class="s" data-f="s">${subHTML(st.s)}</div></div>
     </div>
     <div class="rep" data-f="rep">${esc(st.rep || 'Reported 2 min ago')}</div>
     <div class="cards">${cards.map(([a, b]) => `<div class="card"><span>${esc(a)}</span><b>${esc(b)}</b></div>`).join('')}</div>
@@ -394,7 +392,7 @@ function setLive(sen, st) {
   const txt = (n, v) => { const e = f(n); if (e.textContent !== v) swap(e, () => { e.textContent = v; }); };
   txt('title', st.title || sen.title); txt('room', st.room || sen.room); txt('rep', st.rep || 'Reported 2 min ago');
   const w = f('w');
-  if (w.textContent !== st.w) swap(w, () => { w.textContent = st.w; w.className = `w${isLong(st.w) ? ' long' : ''}${st.m === 'alarm' ? ' alarm' : ''}`; });
+  if (w.textContent !== st.w) swap(w, () => { w.textContent = st.w; w.className = `w${st.m === 'alarm' ? ' alarm' : ''}`; });
   else w.classList.toggle('alarm', st.m === 'alarm');
   const s = f('s'), num = s.querySelector('[data-num]');
   if (num && typeof st.s === 'object' && typeof prev.s === 'object' && prev.s.u === st.s.u) UI.setNum(num, st.s.n);   // same unit: the number counts
