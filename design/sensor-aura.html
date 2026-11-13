@@ -261,7 +261,7 @@ function mockHTML(sen, st) {
         </defs>
         <g class="shake">
           <path class="rip" opacity="0"/><path class="rip" opacity="0"/>
-          <path class="ring" stroke-opacity=".34"/><path class="ring" stroke-opacity=".2"/><path class="ring" stroke-opacity=".1"/>
+          <path class="ring" stroke-opacity=".22"/><path class="ring" stroke-opacity=".13"/><path class="ring" stroke-opacity=".065"/>
           <path class="core" fill="url(#cf${id})"/>
           <path class="hi" fill="url(#hi${id})"/>
           <path class="core-rim" fill="none" stroke="url(#rim${id})" stroke-width="1.2"/>
@@ -339,7 +339,7 @@ function frame(m, dt, t) {
   });
   // outward rings (siren / water ripples)
   m.rips.forEach((el, i) => {
-    const p = live ? ((m.rph + i / 2) % 1 + 1) % 1 : 0, op = P.pulse * Math.pow(1 - p, 1.7) * Math.min(1, p / .06) * .7;
+    const p = live ? ((m.rph + i / 2) % 1 + 1) % 1 : 0, op = P.pulse * Math.pow(1 - p, 1.7) * Math.min(1, p / .06) * .5;
     el.setAttribute('opacity', op.toFixed(3));
     if (op > .002) el.setAttribute('d', blob(R * (1.02 + .78 * p), m.A * .6, m.ph, 1 + p, 0));
   });
