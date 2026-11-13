@@ -1988,7 +1988,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .tr-btn { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; color: #fff; }
 .tr-btn .icon { width: 16px !important; height: 16px !important; }
 .tr-btn.minus { background: var(--red); }
-.tr-btn.plus { background: var(--green); }
+.tr-btn.plus { background: var(--primary); }   /* brand blue (user, 2026-11-13) */
 .tr-btn:active { transform: scale(0.9); }
 .tr-grip { width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; color: var(--label-tertiary); cursor: grab; touch-action: none; flex-shrink: 0; }
 .tr-grip .icon { width: 22px; height: 22px; }
