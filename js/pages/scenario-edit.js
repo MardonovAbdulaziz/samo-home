@@ -34,15 +34,15 @@
     h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:48px;height:48px"')}</div>
         <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
       <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
-      ${s.manual ? `<div class="list" style="margin-top:24px" data-key="home"><button class="cell" data-action="home-toggle"><span class="cell-main cell-title">Show on Home Screen</span><span class="switch" role="switch" aria-checked="${s.home !== false}"></span></button></div>` : ''}
+      ${s.manual && !s.sys ? `<div class="list" style="margin-top:24px" data-key="home"><button class="cell" data-action="home-place"><span class="cell-main cell-title">Show on Home</span><span class="cell-value">${esc(placeLabel())}</span>${icon('chevron-right', 'chev')}</button></div>` : ''}
       <div class="scn-plain" data-key="plain"><span class="scn-plain-k">In plain words</span><p>${esc(SC.sentence(s))}</p></div>
 `;
     if (auto) {
       h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>
         <div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}${addRow('trig-add', s.when.length ? 'Or when…' : 'Add a start')}</div>
         ${s.when.length > 1 ? '<div class="list-footer" data-key="f-when">Any one of these starts it.</div>' : ''}
-        ${s.when.length ? `<div class="list-header scn-lh" data-key="h-only">Only when</div>
-        <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}${addRow('cond-add', s.only.length ? 'Add another condition' : 'Add a condition')}</div>
+        ${s.only.length ? `<div class="list-header scn-lh" data-key="h-only">Only when</div>
+        <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}</div>
         ${s.only.length > 1 ? '<div class="list-footer" data-key="f-only">All of these must be true.</div>' : ''}` : ''}`;
     }
     h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
@@ -52,7 +52,7 @@
     if (nx.length) h += `<div class="scn-next" data-key="next">${icon('arrow-fork', 'icon')}<span>When this runs, it also starts ${nx.map((x) => `<b>${esc(x.name)}</b>`).join(', ')}.</span></div>`;
     if (warn.length) h += `<div class="pad" data-key="warn" style="margin-top:20px">${warn.map((w) => `<div class="banner warn" style="margin-top:8px">${icon('round-info')}<div>${esc(w)}</div></div>`).join('')}</div>`;
     h += `<div class="pad scn-foot" data-key="foot"><button class="btn btn-glass btn-block" data-action="try" ${s.do.length ? '' : 'disabled'}>Try it now</button>
-      ${isNew ? '' : '<button class="btn btn-danger btn-block" data-action="delete">Delete scenario</button>'}</div>`;
+      ${isNew || s.sys ? '' : '<button class="btn btn-danger btn-block" data-action="delete">Delete scenario</button>'}</div>`;
     if (!isNew && (s.log || []).length) {
       h += `<div class="list-header" data-key="h-log">What happened</div><div class="list scn-log" data-key="l-log">${s.log.slice(0, 6).map((l) => `<div class="cell"><span class="cell-icon ${l.ok ? 'ok' : 'warn'}">${icon(l.ok ? 'check' : 'round-info', 'icon')}</span>
         <span class="cell-main"><span class="cell-title" style="display:block">${esc(l.ok ? (l.text || 'Ran') : l.text)}</span><span class="cell-sub" style="display:block">${esc(when(l.at))}${l.cause ? ' · ' + esc(l.cause) : ''}</span></span></div>`).join('')}</div>`;
@@ -96,8 +96,7 @@
   function trigChooser() {
     UI.sheet({ title: 'Starts when', render: () => UI.group('', 
       choice('t-time', 'clock', 'At a time', 'e.g. 07:30 on weekdays') +
-      choice('t-sun', 'sunrise', 'At sunrise or sunset', 'Moves with the seasons by itself') +
-      choice('t-people', 'my-location', 'People come or go', 'Uses your phone’s location')) + deviceList('ev', 't-dev-pick') });
+      choice('t-sun', 'sunrise', 'At sunrise or sunset', 'Moves with the seasons by itself')) + deviceList('ev', 't-dev-pick') });
   }
   function trigTime(i) {
     const t = i != null ? clone(s.when[i]) : { k: 'time', at: '07:30', days: [1, 2, 3, 4, 5] };
@@ -159,14 +158,25 @@
   }
   function openCond(i) { const c = s.only[i]; if (c.k === 'between') condTime(i); else if (c.k === 'days') condDays(i); else condDeviceState(c.id, c.ch, i); }
 
+  /* ---------- Show on Home: the top chip row, a tile in a room, or not at all ---------- */
+  function placeLabel() { const h = SC.homeOf(s); return h === false ? 'Don’t show' : h === 'top' ? 'Top row' : `${Store.roomName(h)} tile`; }
+  function homePlace() {
+    const cur = SC.homeOf(s);
+    sh = { kind: 'home', x: { home: cur }, open: () => UI.sheet({ title: 'Show on Home', render: () => `<div class="list">${Kit.radio('hp-pick', sh.x.home === false ? 'off' : sh.x.home, [
+        ['top', 'Top row', 'A button next to “Turn off all”'],
+        ...Store.state.rooms.map((r) => [r.id, `In ${r.name}`, 'A tile among the room’s devices']),
+        ['off', 'Don’t show', 'Only on the Scenarios page']])}</div>`,
+      footer: '<button class="btn btn-primary btn-block" data-action="hp-done">Done</button>' }) };
+    reopen();
+  }
+
   /* ---------- Do ---------- */
   function actChooser() {
     const scenes = SC.list().filter((x) => x.manual && x.id !== s.id);
     UI.sheet({ title: 'Do', render: () => UI.group('',
       choice('a-notify', 'bell', 'Send a notification', 'To your phone or the whole family') +
-      choice('a-wait', 'hourglass', 'Wait', 'Pause before the next action') +
       (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '') +
-      (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + deviceList('act', 'a-dev-pick') });
+      '') + deviceList('act', 'a-dev-pick') });
   }
   function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
   const BACKS = [0, 1, 2, 5, 10, 15, 30, 60, 120];
@@ -284,7 +294,7 @@
     ['Scenarios', ['tab-scenarios', 'moon', 'sun', 'sunrise', 'tab-home', 'lock', 'bell', 'clock', 'power', 'shield-check', 'temperature', 'my-location']],
     ['Devices', ['dev-bulb', 'dev-lamp', 'dev-curtains', 'dev-door-02', 'dev-tv-1', 'dev-washing', 'dev-radiator', 'dev-drop', 'dev-motion', 'dev-fan', 'dev-ac', 'dev-kettle']],
   ];
-  function leave() { UI.go('scenarios.html'); }
+  function leave() { UI.go(s.sys ? 'index.html' : 'scenarios.html'); }   // “Turn off all” is edited from Home
   UI.on({
     cancel: () => (dirty ? UI.confirm({ title: 'Discard changes?', text: 'What you changed in this scenario will be lost.', ok: 'Discard', onOk: leave }) : leave()),
     save: () => {
@@ -292,6 +302,7 @@
       if (!s.manual && !s.when.length) { UI.toast('Add when it should start'); return; }
       const out = clone(s);
       if (out.manual) { out.when = []; out.only = []; }
+      if (out.sys) out.follow = false;   // "Turn off all": from now on exactly this list
       out.do = out.do.filter((a) => !(a.k === 'dev' && a.to === 'unlock' && !out.manual));
       SC.upsert(out);
       SafeStorage.session.setItem('samo-flash', isNew ? `“${out.name}” added` : 'Saved');
@@ -308,7 +319,9 @@
     rename: () => UI.prompt({ title: 'Name', label: 'Scenario name', value: s.name, onOk: (v) => { s.name = v; renamed = true; touch(); } }),
     'pick-icon': () => { UI.sheet({ title: 'Select an icon', render: () => iconPickerHTML(SCN_ICONS, s.icon, 'sc-icon'), footer: ICON_DONE }); },
     'sc-icon': ({ n }) => { s.icon = n; dirty = true; UI.closeSheet(); render(); },
-    'home-toggle': () => { s.home = s.home === false; touch(); },
+    'home-place': () => homePlace(),
+    'hp-pick': ({ v }) => { sh.x.home = v === 'off' ? false : v; reopen(); },
+    'hp-done': () => { s.home = sh.x.home; sh = null; UI.closeSheet(); touch(); },
     mode: ({ v }) => { const m = v === 'scene'; if (m === s.manual) return; s.manual = m; if (!renamed) s.name = m ? 'New scene' : 'New automation'; touch(); },
 
     'trig-add': trigChooser, trig: ({ i }) => openTrig(+i),

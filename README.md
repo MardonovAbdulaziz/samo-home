@@ -44,6 +44,7 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Energy meter page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-meter |
 | IR remote page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-ir |
 | Scenarios tab (prototype) | https://mardonovabdulaziz.github.io/samo-home/scenarios.html |
+| Scenarios — full version (ideas, conditions, location, waits; tag scenarios-full-v1) | https://mardonovabdulaziz.github.io/samo-home/dist/samo-home-scenarios-full.html |
 | Design lab · Scenarios research, decisions & test | https://mardonovabdulaziz.github.io/samo-home/design/scenarios-research.html |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
 | Design lab · Aura for every sensor state (gas, smoke, leak, vibration, air) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-aura.html |

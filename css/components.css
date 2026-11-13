@@ -1943,3 +1943,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-chip .scn-ring .icon { width: 14px !important; height: 14px !important; color: var(--primary); }
 @media (prefers-reduced-motion: reduce) { .scn-ring .prg { transition: none; } .scn-ring .icon { animation: none !important; } }
 .quick-chip .scn-ring { display: grid; place-items: center; flex-shrink: 0; }
+/* simple version tweaks */
+.ir-empty .btn + .btn { margin-top: 12px; }
+.scn-empty-state { padding-top: 140px; }
+.scn-empty-state p { max-width: 300px; }
+.scn-name-chev { display: inline-flex; align-items: center; gap: 2px; }
+.scn-name-chev .icon { width: 16px; height: 16px; color: var(--label-secondary); flex-shrink: 0; }
+/* run finished: blue like the rest of the ring (no green) */
+.scn-ring.is-done .prg { stroke: var(--primary) !important; }
+.scn-ring.is-done .icon { color: var(--primary) !important; }

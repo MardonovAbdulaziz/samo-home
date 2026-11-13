@@ -32,14 +32,21 @@
   /** Scenes chosen for Home ("Show on Home Screen" in the scene): one tap runs them, the icon becomes the progress ring */
   function sceneChips() {
     if (typeof Scenarios === 'undefined') return '';
-    return Scenarios.list().filter((x) => x.manual && x.home !== false && x.do.length).map((x) => `<button class="quick-chip scn-chip ${Scenarios.isBusy(x.id) ? 'busy' : ''}" data-action="scene-run" data-id="${x.id}" data-key="qc-${x.id}" aria-label="Run ${UI.esc(x.name)}">
+    return Scenarios.list().filter((x) => x.manual && !x.sys && Scenarios.homeOf(x) === 'top' && x.do.length).map((x) => `<button class="quick-chip scn-chip ${Scenarios.isBusy(x.id) ? 'busy' : ''}" data-action="scene-run" data-id="${x.id}" data-key="qc-${x.id}" aria-label="Run ${UI.esc(x.name)}">
       ${Scenarios.isBusy(x.id) ? Scenarios.ringHTML(x.id) : icon(x.icon || 'tab-scenarios')}<span><b>${UI.esc(x.name)}</b><span data-num>${UI.esc(Scenarios.isBusy(x.id) ? Scenarios.statusText(x) : 'Scene')}</span></span></button>`).join('');
   }
 
+  /** How many devices of "Turn off all" are on (its list can be edited, so count that list) */
   function onCount() {
-    let n = 0;
-    S().devices.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { if (t.on) n++; }));
-    return n;
+    if (typeof Scenarios === 'undefined') { let n = 0; S().devices.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { if (t.on) n++; })); return n; }
+    const ao = Scenarios.get(Scenarios.ALL_OFF);
+    return ao.do.filter((a) => { const d = Store.device(a.id); const t = d && DeviceAPI(d).homeTiles().find((x) => (x.ch || 0) === (a.ch || 0)); return t && t.on; }).length;
+  }
+  /** "Turn off all" = a system scene: same chip as before, runs with the progress ring */
+  function allOffChip(n) {
+    const busy = typeof Scenarios !== 'undefined' && Scenarios.isBusy(Scenarios.ALL_OFF);
+    const ao = busy ? Scenarios.get(Scenarios.ALL_OFF) : null;
+    return `<button class="quick-chip scn-chip" data-action="all-off" data-key="qc-all-off">${busy ? Scenarios.ringHTML(Scenarios.ALL_OFF, 'power') : icon('power')}<span><b>Turn off all</b><span data-num>${busy ? UI.esc(Scenarios.statusText(ao)) : n ? `${n} device${n > 1 ? 's' : ''} on` : 'No devices on'}</span></span></button>`;
   }
 
   function render() {
@@ -52,7 +59,7 @@
           <button class="icon-btn" data-action="plus" aria-label="Add">${icon('plus')}</button>
         </div></header>
       <div class="chips-row">
-        <button class="quick-chip" data-action="all-off">${icon('power')}<span><b>Turn off all</b><span data-num>${n ? `${n} device${n > 1 ? 's' : ''} on` : 'No devices on'}</span></span></button>
+        ${allOffChip(n)}
         ${sceneChips()}
         ${tempChip()}
         ${doorChip()}
@@ -64,6 +71,7 @@
       if (r.id === null && !devs.length) continue;
       h += `<div class="section-title">${UI.esc(r.name)} ${icon('chevron-right', 'icon icon-sm')}</div><div class="tile-grid">`;
       devs.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { h += tileHTML(d, t); }));
+      if (r.id && typeof Scenarios !== 'undefined') Scenarios.list().filter((x) => x.manual && Scenarios.homeOf(x) === r.id).forEach((x) => { h += Scenarios.tileHTML(x); });
       if (!devs.length) h += `<button class="tile add" data-action="add-device" data-room="${r.id}"><span class="plus">${icon('plus', 'icon icon-sm')}</span><span>Add a device</span></button>`;
       h += '</div>';
     }
@@ -109,11 +117,17 @@
       onOk: (v) => { Store.addRoom(v); render(); UI.toast(`Room “${v}” created`); },
     }),
     'all-off': () => {
-      const n = onCount();
+      const ao = Scenarios.get(Scenarios.ALL_OFF), n = onCount();
       if (!n) return UI.toast('Nothing is on');
-      UI.confirm({ title: 'Turn off all?', text: `${n} device${n > 1 ? 's are' : ' is'} on. Everything can be switched back on from its tile.`, ok: 'Turn off', danger: true,
-        onOk: () => { S().devices.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { if (t.on) DeviceAPI(d).toggle(t.ch); })); Store.save(); render(); UI.toast('All devices off'); } });
+      const on = ao.do.filter((a) => { const d = Store.device(a.id); const t = d && DeviceAPI(d).homeTiles().find((x) => (x.ch || 0) === (a.ch || 0)); return t && t.on; });
+      UI.sheet({ title: 'Turn off all?', sub: `${n} device${n > 1 ? 's are' : ' is'} on.`,
+        render: () => `<div class="list">${on.map((a) => `<div class="cell"><span class="cell-icon">${icon(Scenarios.iconOf(a.id, a.ch), 'icon')}</span><span class="cell-main cell-title">${UI.esc(Scenarios.nameOf(a.id, a.ch))}</span></div>`).join('')}</div>
+          <div class="pad" style="margin-top:16px"><button class="btn btn-glass btn-block" data-action="all-off-edit">Choose devices</button></div>`,
+        footer: '<button class="btn btn-primary btn-block" data-action="all-off-go">Turn off</button>' });
     },
+    'all-off-go': () => { UI.closeSheet(); Scenarios.tapScene(Scenarios.ALL_OFF, render); },
+    'all-off-edit': () => UI.go(`scenario.html?id=${Scenarios.ALL_OFF}`),
+    'scn-open': ({ id }) => UI.go(`scenario.html?id=${id}`),
     'scene-run': ({ id }) => Scenarios.tapScene(id, render),
     bell: () => UI.toast('Notifications — coming soon'),
     homes: () => UI.toast('Switch home — coming soon'),

@@ -197,20 +197,25 @@ const Scenarios = (() => {
   const cap1 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
   /* ---------- Storage ---------- */
-  function seedList() {
-    const out = [];
-    const ideaById = (k) => ideas(true).find((x) => x.key === k);
-    ['goodnight', 'nightdoor'].forEach((k) => { const i = ideaById(k); if (i) out.push(Object.assign(i.make(), { id: Store.uid('s'), log: [], idea: k })); });
-    return out;
-  }
+  /* "Turn off all" is a scene too (system): Home's first chip runs it, and its list of devices can be edited.
+     Until the user edits it, it follows the home (new lights and sockets join by themselves). */
+  const ALL_OFF = 'all-off';
+  // everything that can be switched, like the old chip — except water valves (switching "all off" must never shut the water)
+  const allOffDefault = () => S().devices.filter((d) => d.type !== 'valve' && d.type !== 'hub')
+    .flatMap((d) => tilesOf(d).filter((t) => t.controllable).map((t) => ({ k: 'dev', id: d.id, ch: t.ch || 0, to: 'off' })));
   function list() {
     const st = S();
-    if (!st.scenarios) { st.scenarios = seedList(); Store.save(); }
+    if (!st.scenarios) { st.scenarios = []; Store.save(); }   // simple version: start empty (no ready-made scenarios)
+    if (!st.scenarios.some((x) => x.id === ALL_OFF)) { st.scenarios.unshift({ id: ALL_OFF, sys: true, follow: true, name: 'Turn off all', icon: 'power', manual: true, on: true, home: 'top', when: [], only: [], do: [], log: [] }); Store.save(); }
+    const ao = st.scenarios.find((x) => x.id === ALL_OFF);
+    if (ao.follow) ao.do = allOffDefault();
     return st.scenarios;
   }
+  /** Where a scene shows on Home: 'top' (chip row), a room id (a tile in that room) or false */
+  const homeOf = (x) => (x.home === false ? false : x.home === true || x.home == null ? 'top' : x.home);
   const get = (id) => list().find((s) => s.id === id);
   function upsert(s) { const l = list(); const i = l.findIndex((x) => x.id === s.id); if (i >= 0) l[i] = s; else l.push(s); Store.save(); return s; }
-  function remove(id) { S().scenarios = list().filter((s) => s.id !== id); Store.save(); }
+  function remove(id) { if (id === ALL_OFF) return; S().scenarios = list().filter((s) => s.id !== id); Store.save(); }
 
   /* ---------- Ideas (templates filled with the user's own devices) ---------- */
   const firstOf = (pred) => S().devices.find(pred);
@@ -378,6 +383,15 @@ const Scenarios = (() => {
     return true;
   }
   const isBusy = (id) => !!prog[id];
+  /** Scene tile = a device tile: tap opens the scene, the round button runs it (Home: tile opens, power toggles) */
+  function tileHTML(s) {
+    const busy = isBusy(s.id);
+    return `<div class="tile scn-tile ${busy ? 'on' : ''}" role="button" tabindex="0" data-key="sc-${s.id}" data-action="scn-open" data-id="${s.id}">
+      <span class="tile-icon" style="${busy ? 'color:var(--primary)' : ''}">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:28px;height:28px"')}</span>
+      <button class="tile-power scn-play" data-action="scene-run" data-id="${s.id}" aria-label="Run ${esc(s.name)}">${ringHTML(s.id)}</button>
+      <span class="tile-name">${esc(s.name)}</span>
+      <span class="tile-status"><span data-num>${esc(statusText(s))}</span></span></div>`;
+  }
   function log(s, e) { s.log = [Object.assign({ at: Date.now() }, e), ...(s.log || [])].slice(0, 20); }
   /** Start a scenario. cause = what started it (words). test = "Try it now" (conditions are shown but not enforced). */
   function fire(s, cause, { test = false } = {}) {
@@ -514,6 +528,6 @@ const Scenarios = (() => {
   }
 
   return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
-    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, presence, warnings, next, start, condOk, whyNot };
+    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
 })();
 if (typeof Store !== 'undefined') Scenarios.start();
