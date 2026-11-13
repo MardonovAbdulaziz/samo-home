@@ -11306,16 +11306,15 @@ if (typeof Store !== 'undefined') Scenarios.start();
   function lastLine(s) {
     const l = (s.log || [])[0];
     if (s.on === false) return '<span class="scn-last">Paused</span>';
-    if (!l) return '<span class="scn-last">Hasn’t run yet</span>';
+    if (!l) return '';   // nothing to say before the first run
     if (!l.ok) return `<span class="scn-last warn">${icon('round-info', 'icon')}${esc(l.text || 'Didn’t finish')} · ${ago(l.at)}</span>`;
     return `<span class="scn-last">${icon('check', 'icon')}Ran ${ago(l.at)}${l.cause ? ` · ${esc(l.cause)}` : ''}</span>`;
   }
-  /* the name carries a chevron, like Home's section titles ("Living Room ›"): it says "tap to open" */
   function autoCard(s) {
     return `<div class="scn-card ${s.on === false ? 'paused' : ''}" data-key="sa-${s.id}">
       <button class="scn-card-main" data-action="scn-open" data-id="${s.id}">
         <span class="scn-ic">${icon(s.icon || 'tab-scenarios', 'icon')}</span>
-        <span class="scn-txt"><b class="scn-name-chev">${esc(s.name)} ${icon('chevron-right', 'icon icon-sm')}</b><span class="scn-sent">${esc(Scenarios.sentence(s))}</span>${lastLine(s)}</span>
+        <span class="scn-txt"><b>${esc(s.name)}</b><span class="scn-sent">${esc(Scenarios.sentence(s))}</span>${lastLine(s)}</span>
       </button>
       <button class="switch" role="switch" aria-checked="${s.on !== false}" data-action="toggle" data-id="${s.id}" aria-label="${s.on === false ? 'Turn on' : 'Pause'} ${esc(s.name)}"></button>
     </div>`;
