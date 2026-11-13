@@ -14,25 +14,26 @@
     </div>`;
   }
 
-  /** "Front Door" chip (Figma home): the first door / window sensor on home, live. */
-  function doorChip() {
-    const d = S().devices.find((x) => x.type === 'contact' && x.showOnHome !== false);
-    if (!d) return `<button class="quick-chip">${icon('chip-door')}<span><b>Front Door</b><span>Open</span></span></button>`;
-    const t = DeviceAPI(d).homeTiles()[0];
-    return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0">${icon('chip-door')}<span><b>${UI.esc(d.name)}</b><span data-num>${UI.esc(t.status)}</span></span></button>`;
-  }
-
-  /** "Temperature" chip (Figma home): the first temperature sensor on home, live. */
-  function tempChip() {
-    const d = S().devices.find((x) => x.type === 'climate' && x.showOnHome !== false);
-    if (!d) return `<button class="quick-chip">${icon('chip-temperature')}<span><b>Temperature</b><span>25.5°</span></span></button>`;
-    return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0">${icon('chip-temperature')}<span><b>Temperature</b><span data-num>${UI.esc(Devices.climate.chipText(d))}</span></span></button>`;
-  }
-
-  /* ---------- Top row: the user's own list of chips (edited from the Edit chip at its end) ---------- */
-  const ROW_DEF = ['all-off', 'temp', 'door'];
-  const topRow = () => (S().topRow = S().topRow || ROW_DEF.slice());
+  /* ---------- Top row: the user's own list of chips (edited from the Edit chip at its end) ----------
+     Keys: 'all-off', 'dev:<id>' (any sensor — shows its live state), 'scene:<id>'. */
+  const SENSOR_TYPES = ['climate', 'contact', 'motion', 'presence', 'leak', 'smoke', 'gas', 'air', 'vibration', 'meter', 'lock', 'valve'];
   const scenesOK = () => typeof Scenarios !== 'undefined';
+  function topRow() {
+    const st = S();
+    if (!st.topRow) st.topRow = ['all-off', 'temp', 'door'];
+    // older keys: the first temperature / door sensor
+    st.topRow = st.topRow.map((k) => { if (k === 'temp' || k === 'door') { const d = st.devices.find((x) => x.type === (k === 'temp' ? 'climate' : 'contact')); return d ? 'dev:' + d.id : null; } return k; }).filter(Boolean)
+      .filter((k, i, a) => a.indexOf(k) === i);
+    return st.topRow;
+  }
+  const chipIcon = (d) => (d.type === 'climate' ? 'chip-temperature' : d.type === 'contact' ? 'chip-door' : DeviceAPI(d).icon(0));
+  const chipName = (d) => (d.type === 'climate' && S().devices.filter((x) => x.type === 'climate').length === 1 ? 'Temperature' : d.name);   // Figma: "Temperature"
+  /** A sensor chip: its icon, its name, its live state — coloured like its tile when it needs attention */
+  function devChip(d) {
+    const t = DeviceAPI(d).homeTiles()[0] || {};
+    const text = d.type === 'climate' ? Devices.climate.chipText(d) : t.status;
+    return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0" data-key="qc-${d.id}">${icon(chipIcon(d))}<span><b>${UI.esc(chipName(d))}</b><span class="${t.tone ? 'tone-' + t.tone : ''}"><span data-num>${UI.esc(text || '')}</span></span></span></button>`;
+  }
   function sceneChip(x) {
     const busy = Scenarios.isBusy(x.id);
     return `<button class="quick-chip scn-chip" data-action="scene-run" data-id="${x.id}" data-key="qc-${x.id}" aria-label="Run ${UI.esc(x.name)}">
@@ -40,28 +41,63 @@
   }
   function chipOf(key, n) {
     if (key === 'all-off') return allOffChip(n);
-    if (key === 'temp') return S().devices.some((x) => x.type === 'climate') ? tempChip() : '';
-    if (key === 'door') return S().devices.some((x) => x.type === 'contact') ? doorChip() : '';
+    if (key.startsWith('dev:')) { const d = Store.device(key.slice(4)); return d ? devChip(d) : ''; }
     if (key.startsWith('scene:') && scenesOK()) { const x = Scenarios.get(key.slice(6)); return x && x.do.length ? sceneChip(x) : ''; }
     return '';
   }
-  /** Everything that can sit in the top row, for the Edit sheet */
+  /** Everything that can sit in the top row: [key, name, icon, sub] */
   function rowChoices() {
-    const L = [['all-off', 'Turn off all', 'power']];
-    const c = S().devices.find((x) => x.type === 'climate'); if (c) L.push(['temp', 'Temperature', 'chip-temperature', c.name]);
-    const d = S().devices.find((x) => x.type === 'contact'); if (d) L.push(['door', d.name, 'chip-door', 'Door sensor']);
+    const L = [['all-off', 'Turn off all', 'power', 'Scene']];
+    S().devices.filter((d) => SENSOR_TYPES.includes(d.type)).forEach((d) => L.push(['dev:' + d.id, chipName(d), chipIcon(d), `${DeviceAPI(d).label} · ${Store.roomName(d.roomId)}`]));
     if (scenesOK()) Scenarios.list().filter((x) => x.manual && !x.sys).forEach((x) => L.push(['scene:' + x.id, x.name, x.icon || 'tab-scenarios', 'Scene']));
     return L;
   }
+  /* Edit sheet, two parts (iOS Control Center style): what is in the row now (− and a grip to reorder),
+     and everything else (+). Changes show on Home at once. */
   function openRowEdit() {
+    const ic = (n) => (scenesOK() ? Scenarios.ic(n, 'icon') : icon(n, 'icon'));
+    const row = ([k, name, i, sub], on) => `<div class="cell tr-row" data-k="${k}" data-key="tr-${k}">
+        <button class="tr-btn ${on ? 'minus' : 'plus'}" data-action="${on ? 'tr-remove' : 'tr-add'}" data-k="${k}" aria-label="${on ? 'Remove' : 'Add'} ${UI.esc(name)}">${icon(on ? 'minus' : 'plus-small', 'icon')}</button>
+        <span class="cell-icon">${ic(i)}</span>
+        <span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(name)}</span>${sub ? `<span class="cell-sub" style="display:block">${UI.esc(sub)}</span>` : ''}</span>
+        ${on ? `<span class="tr-grip" role="button" tabindex="0" aria-label="Move ${UI.esc(name)}">${icon('menu', 'icon')}</span>` : ''}</div>`;
     const draw = () => {
-      const on = topRow(), L = rowChoices();
-      return `<div class="list">${L.map(([k, name, ic, sub]) => `<button class="cell" data-action="row-tog" data-k="${k}" role="switch" aria-checked="${on.includes(k)}">
-        <span class="cell-icon">${scenesOK() ? Scenarios.ic(ic, 'icon') : icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${UI.esc(name)}</span>${sub ? `<span class="cell-sub" style="display:block">${UI.esc(sub)}</span>` : ''}</span>
-        <span class="switch" aria-hidden="true" aria-checked="${on.includes(k)}"></span></button>`).join('')}</div>`;
+      const keys = topRow(), all = rowChoices(), by = Object.fromEntries(all.map((x) => [x[0], x]));
+      const on = keys.filter((k) => by[k]), off = all.filter((x) => !keys.includes(x[0]));
+      return `<div class="list-header">In the top row</div>
+        <div class="list tr-list" data-tr="on">${on.length ? on.map((k) => row(by[k], true)).join('') : '<div class="cell"><span class="cell-main cell-sub">Nothing here — add from below</span></div>'}</div>
+        ${off.length ? `<div class="list-header">More</div><div class="list tr-list">${off.map((x) => row(x, false)).join('')}</div>` : ''}`;
     };
-    const sh = UI.sheet({ title: 'Top row', render: draw });
-    UI.on({ 'row-tog': ({ k }) => { const r = topRow(), i = r.indexOf(k); if (i >= 0) r.splice(i, 1); else r.push(k); Store.save(); render(); sh.refresh(); } });
+    const sh = UI.sheet({ title: 'Top row', render: draw, footer: '<button class="btn btn-primary btn-block" data-action="sheet-close">Done</button>', onMount: bindDrag });
+    const change = () => { Store.save(); render(); sh.refresh(); };
+    UI.on({
+      'tr-remove': ({ k }) => { const r = topRow(); r.splice(r.indexOf(k), 1); change(); },
+      'tr-add': ({ k }) => { topRow().push(k); change(); },
+    });
+    /* drag by the grip: the row follows the finger, the others slide out of its way; drop = new order */
+    function bindDrag(el) {
+      const list = el.querySelector('[data-tr="on"]'); if (!list) return;
+      list.querySelectorAll('.tr-grip').forEach((g) => g.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        const rowEl = g.closest('.tr-row'), rows = [...list.querySelectorAll('.tr-row')], from = rows.indexOf(rowEl);
+        const boxes = rows.map((r) => r.getBoundingClientRect()), h = boxes[from].height, y0 = e.clientY;
+        let to = from;
+        g.setPointerCapture(e.pointerId); rowEl.classList.add('dragging');
+        const move = (ev) => {
+          const dy = Math.max(boxes[0].top - boxes[from].top, Math.min(boxes[rows.length - 1].top - boxes[from].top, ev.clientY - y0));
+          rowEl.style.transform = `translateY(${dy}px)`;
+          const mid = boxes[from].top + h / 2 + dy;
+          to = boxes.reduce((n, b, i) => n + (i !== from && mid > b.top + b.height / 2 ? 1 : 0), 0);   // its new place among the others
+          rows.forEach((r, i) => { if (i === from) return; const shift = from < to && i > from && i <= to ? -h : from > to && i < from && i >= to ? h : 0; r.style.transform = shift ? `translateY(${shift}px)` : ''; });
+        };
+        const up = () => {
+          g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', up); g.removeEventListener('pointercancel', up);
+          rows.forEach((r) => { r.style.transform = ''; }); rowEl.classList.remove('dragging');
+          if (to !== from) { const r = topRow(), keys = rows.map((x) => x.dataset.k).filter((k) => r.includes(k)); const [m] = keys.splice(from, 1); keys.splice(to, 0, m); S().topRow = keys.concat(r.filter((k) => !keys.includes(k))); change(); }
+        };
+        g.addEventListener('pointermove', move); g.addEventListener('pointerup', up); g.addEventListener('pointercancel', up);
+      }));
+    }
   }
 
   /** How many devices of "Turn off all" are on (its list can be edited, so count that list) */

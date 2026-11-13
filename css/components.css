@@ -1972,3 +1972,18 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* Sheet cards are flat (Figma: fills/quaternary, no inner highlight) — also when the sheet opens over an
    ambient page, where `.phone.ambient .list` would otherwise add the glass highlight and a lighter fill */
 .phone .sheet :is(.list, .group-card) { box-shadow: none !important; background: var(--fill-quaternary) !important; }
+/* Home top row: a sensor chip's state takes its tile's colour when it needs attention */
+.quick-chip .tone-warn { color: var(--orange); }
+.quick-chip .tone-danger { color: var(--red); }
+/* "Top row" edit sheet: − / + on the left, grip on the right (iOS Control Center editing) */
+.tr-row { gap: 12px !important; touch-action: pan-y; background: transparent; }
+.tr-btn { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; color: #fff; }
+.tr-btn .icon { width: 16px !important; height: 16px !important; }
+.tr-btn.minus { background: var(--red); }
+.tr-btn.plus { background: var(--green); }
+.tr-btn:active { transform: scale(0.9); }
+.tr-grip { width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; color: var(--label-tertiary); cursor: grab; touch-action: none; flex-shrink: 0; }
+.tr-grip .icon { width: 22px; height: 22px; }
+.tr-list .tr-row { transition: transform 200ms var(--ease-out); }
+.tr-list .tr-row.dragging { transition: none; z-index: 2; background: var(--bg-elevation-2); border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
+.tr-list .tr-row.dragging .tr-grip { cursor: grabbing; color: var(--label-primary); }
