@@ -11411,14 +11411,14 @@ if (typeof Store !== 'undefined') Scenarios.start();
 `;
     if (auto) {
       h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>
-        <div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}${addRow('trig-add', s.when.length ? 'Or when…' : 'Add a start')}</div>
+        <div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}${addRow('trig-add', 'Add a start')}</div>
         ${s.when.length > 1 ? '<div class="list-footer" data-key="f-when">Any one of these starts it.</div>' : ''}
         ${s.only.length ? `<div class="list-header scn-lh" data-key="h-only">Only when</div>
         <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}</div>
         ${s.only.length > 1 ? '<div class="list-footer" data-key="f-only">All of these must be true.</div>' : ''}` : ''}`;
     }
     h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
-      <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', s.do.length ? 'Then…' : 'Add an action')}</div>
+      <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', 'Add an action')}</div>
 `;
     const nx = SC.next(s);
     if (nx.length) h += `<div class="scn-next" data-key="next">${icon('arrow-fork', 'icon')}<span>When this runs, it also starts ${nx.map((x) => `<b>${esc(x.name)}</b>`).join(', ')}.</span></div>`;
