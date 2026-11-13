@@ -44,6 +44,7 @@ Open in a browser (best at phone width, or on a phone). Every viewer keeps their
 | Energy meter page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-meter |
 | IR remote page directly | https://mardonovabdulaziz.github.io/samo-home/device.html?id=d-ir |
 | Design lab · sensor hero (10 variants) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-hero.html |
+| Design lab · Aura for every sensor state (gas, smoke, leak, vibration, air) | https://mardonovabdulaziz.github.io/samo-home/design/sensor-aura.html |
 | Design lab · contact “Other” open / closed (5 ideas) | https://mardonovabdulaziz.github.io/samo-home/design/other-open.html |
 | Design lab · 10 pictures of “contact” | https://mardonovabdulaziz.github.io/samo-home/design/contact-ideas.html |
 | Design lab · “Other” simple pictures (10 everyday things) | https://mardonovabdulaziz.github.io/samo-home/design/other-simple.html |

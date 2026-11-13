@@ -207,7 +207,7 @@ const V = [
       return `<div class="v7"><span class="dot" style="color:${m.word ? '#64d2ff' : 'var(--green)'}"></span><div class="w">${s.state}</div>
         <div class="vals">${m.word ? s.sub.map((x) => `<span>${I(x.ic)}<span class="num">${x.v} ${x.u}</span></span>`).join('') : [m, ...s.sub].map((x) => `<span class="num">${x.v} ${x.u}</span>`).join('<span style="color:var(--label-tertiary)">·</span>')}</div>
         ${s === S.temp ? '<div class="note">“Comfortable” is our app’s word (20–25 °C, 40–60 %)</div>' : ''}</div>`; } },
-  { name: 'Aura', idea: 'A soft glowing orb whose colour is the reading — warm for heat, cool for cold, green for clean air, calm blue for a dry floor. Emotional and glanceable; numbers stay inside. Made with gradients only (no blur, Safari-safe).', hero: (s) => {
+  { name: 'Aura', idea: 'A soft glowing orb whose colour is the reading — warm for heat, cool for cold, green for clean air, calm blue for a dry floor. Emotional and glanceable; numbers stay inside. Made with gradients only (no blur, Safari-safe). Taken further, with every state of gas, smoke, leak, vibration and air: <a href="sensor-aura.html" style="color:var(--primary)">sensor-aura.html</a>.', hero: (s) => {
       const m = s.main;
       return `<div class="v8" style="--a1:${m.a1};--a2:${m.a2}"><div>${val(m)}<div class="s">${m.word ? m.q : s.sub.map((x) => `${x.v} ${x.u}`).join(' · ')}</div></div></div>`; } },
   { name: 'Rings', idea: 'Each value in its own ring (Apple Fitness style); the ring fill is where it sits in its range, the colour is its zone. Two or three values sit side by side; a state sensor shows one closed ring.', hero: (s) => {

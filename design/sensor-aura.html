@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sensor Aura</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<script src="../js/icons.js"></script>
+<script src="../js/ui.js"></script>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #0b0b0d; color: var(--label-primary); font: var(--body-md); font-family: var(--font); -webkit-font-smoothing: antialiased; padding: 40px 32px 80px; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; letter-spacing: .3px; }
+  h2 { font: 700 22px/28px var(--font); margin: 0; }
+  .lead { color: var(--label-secondary); max-width: 820px; margin: 0 0 8px; font: var(--body-lg); }
+  .lead a { color: var(--primary); text-decoration: none; }
+  .tiny { color: var(--label-tertiary); font: var(--body-sm); margin: 0 0 28px; max-width: 820px; }
+
+  /* controls */
+  .bar { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; padding: 12px 0; margin: 0 0 28px;
+    background: linear-gradient(#0b0b0d 70%, rgba(11, 11, 13, 0)); }
+  .ctl { display: flex; align-items: center; gap: 10px; color: var(--label-secondary); font: var(--body-sm); }
+  .seg { display: inline-flex; padding: 2px; border-radius: 10px; background: var(--fill-tertiary); }
+  .seg button { appearance: none; border: 0; background: transparent; color: var(--label-primary); font: var(--body-sm-accent); font-family: var(--font); height: 30px; padding: 0 12px; border-radius: 8px; cursor: pointer;
+    transition: background-color 200ms cubic-bezier(.23, 1, .32, 1); }
+  .seg button[aria-pressed="true"] { background: var(--segment-active); }
+  .ctl input[type="range"] { width: 120px; accent-color: var(--primary); }
+
+  /* live demo */
+  .live { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 40px; align-items: start; margin: 0 0 64px; }
+  .live .mock { zoom: .92; }
+  .panel { max-width: 520px; padding-top: 8px; }
+  .panel h2 { margin-bottom: 6px; }
+  .panel .sub { color: var(--label-secondary); margin: 0 0 18px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; min-height: 76px; align-content: flex-start; }
+  .pill { appearance: none; border: 0; height: 36px; padding: 0 14px; border-radius: 18px; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); font-family: var(--font); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px; box-shadow: var(--glass-highlight); transition: background-color 200ms cubic-bezier(.23, 1, .32, 1), color 200ms, scale 140ms cubic-bezier(.23, 1, .32, 1); }
+  .pill:active { scale: .96; }
+  .pill[aria-pressed="true"] { background: var(--static-white); color: var(--static-black); }
+  .pill .d { width: 8px; height: 8px; border-radius: 50%; background: var(--dc); }
+  .auto { display: flex; align-items: center; gap: 10px; color: var(--label-secondary); font: var(--body-sm); margin-bottom: 26px; }
+  .notes { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .notes li { color: var(--label-secondary); font: var(--body-md); padding-left: 18px; position: relative; }
+  .notes li::before { content: ''; position: absolute; left: 2px; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+  .notes b { color: var(--label-primary); font-weight: 600; }
+
+  /* sensor rows */
+  section.sn { margin: 0 0 56px; }
+  .sh { display: flex; align-items: baseline; gap: 12px; margin: 0 0 6px; }
+  .sh .k { font: 700 15px/20px var(--font); color: var(--primary); min-width: 28px; }
+  .sidea { color: var(--label-secondary); margin: 0 0 16px 40px; max-width: 780px; }
+  .row { display: flex; gap: 20px; overflow-x: auto; padding: 4px 4px 16px 40px; scrollbar-width: thin; }
+  .row .mock { zoom: .62; }
+  .cap { margin: 10px 0 0 2px; max-width: 232px; }
+  .cap b { display: block; font: var(--body-md-accent); }
+  .cap span { font: var(--body-sm); color: var(--label-tertiary); }
+
+  /* ---------- the phone mock: top of a device page at real size ---------- */
+  /* --c1 / --c2 (state colours) are written by JS every frame while they glide — a CSS @property transition
+     does not repaint the dependent gradients in Safari */
+  .mock { --c1: var(--green); --c2: var(--blue); flex: none; width: 375px; height: 640px; border-radius: 44px; overflow: hidden; position: relative; isolation: isolate; background: #000;
+    box-shadow: 0 0 0 8px #1a1a1d; }
+  /* the app's ambient light, dimmed: on a sensor page the aura is the light source */
+  .mock::before { content: ''; position: absolute; inset: 0; z-index: -3; opacity: .45;
+    background: radial-gradient(420px 420px at 85% 105%, rgba(60, 180, 255, .45), transparent 70%), radial-gradient(300px 380px at 0% 70%, rgba(124, 255, 207, .16), transparent 70%), linear-gradient(rgba(0, 89, 255, .10), rgba(0, 89, 255, .10)); }
+  /* fine grain: hides gradient banding on dark screens, so the glow really fades to nothing */
+  .mock::after { content: ''; position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: .055;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  .tb { display: flex; align-items: center; justify-content: space-between; padding: 54px 16px 0; height: 98px; position: relative; }
+  .gb { width: 44px; height: 44px; border-radius: 50%; background: var(--glass-fill); box-shadow: var(--glass-highlight); display: grid; place-items: center; }
+  .gb svg { width: 22px; height: 22px; color: #fff; }
+  .tt { text-align: center; } .tt b { display: block; font: 600 17px/20px var(--font); } .tt span { font: var(--body-sm); color: var(--label-secondary); }
+
+  .hero { position: relative; height: 330px; margin-top: 14px; }
+  /* glow: four soft lights, each a Gaussian falloff (many eased stops) so there is no visible edge */
+  .aura { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: -1; pointer-events: none; }
+  .aura i { position: absolute; left: 0; top: 0; border-radius: 50%; mix-blend-mode: screen; will-change: transform; }
+  .orb { position: absolute; left: 50%; top: 50%; width: 340px; height: 340px; margin: -170px 0 0 -170px; overflow: visible; }
+  .orb .ring { fill: none; stroke: color-mix(in srgb, var(--c1) 40%, white); stroke-width: 1.1; }
+  .orb .rip { fill: none; stroke: color-mix(in srgb, var(--c1) 55%, white); stroke-width: 1.4; }
+  .txt { position: absolute; left: 50%; top: 50%; width: 184px; transform: translate(-50%, -50%); text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .18), 0 2px 18px rgba(0, 0, 0, .28); text-wrap: balance; }
+  .w { font: 400 46px/52px var(--font); letter-spacing: -1px; }
+  .w.long { font: 400 31px/35px var(--font); letter-spacing: -.4px; }
+  .w.alarm { font-weight: 600; }
+  .s { font: var(--body-md); color: rgba(255, 255, 255, .78); margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .rep { text-align: center; font: var(--body-sm); color: var(--label-tertiary); margin-top: 10px; position: relative; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; margin-top: 22px; position: relative; }
+  .card { min-height: 68px; padding: 12px 16px; border-radius: 16px; background: var(--fill-tertiary); box-shadow: var(--glass-highlight); display: flex; flex-direction: column; justify-content: center; gap: 4px;
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .card span { font: var(--body-sm); color: var(--label-secondary); } .card b { font: var(--body-lg-accent); font-variant-numeric: tabular-nums; }
+
+  /* rolling numbers (copied from components.css so this page stays standalone) */
+  [data-num] { font-variant-numeric: tabular-nums; }
+  .nr { position: relative; display: inline-block; vertical-align: top; overflow: hidden; white-space: pre; -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); }
+  .nr-in { display: inline-block; animation: nr-in var(--nr-dur, 320ms) cubic-bezier(.3, 0, .2, 1) both; }
+  .nr-out { position: absolute; left: 0; top: 0; animation: nr-out var(--nr-dur, 320ms) cubic-bezier(.3, 0, .2, 1) both; pointer-events: none; }
+  @keyframes nr-in { from { transform: translateY(-100%); opacity: .3; filter: blur(1.5px); } to { transform: none; opacity: 1; filter: none; } }
+  @keyframes nr-out { from { transform: none; opacity: 1; filter: none; } to { transform: translateY(100%); opacity: .3; filter: blur(1.5px); } }
+
+  @media (max-width: 900px) {
+    body { padding: 24px 16px 60px; }
+    .bar { position: static; }
+    .live { grid-template-columns: 1fr; gap: 20px; } .live .mock { zoom: .8; margin: 0 auto; }
+    .row, .sidea { padding-left: 0; margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .nr-in, .nr-out { animation: none; } .nr-out { display: none; } }
+</style>
+</head>
+<body>
+<h1>Aura — sensor states</h1>
+<p class="lead">The Aura hero from <a href="sensor-hero.html">sensor hero · 08</a>, taken further for gas, smoke, water leak, vibration and air quality — every state of each. The colour is the state; the glow has no edge and melts into the background; the glass orb, its rings and the light around it move slowly and harmonically all the time.</p>
+<p class="tiny">Colours are design-system tokens only (green · blue · yellow · orange · red · gray). Glows are gradients with a Gaussian falloff plus fine grain — no blur filters, so Safari draws them the same. Off-screen phones stop animating.</p>
+
+<div class="bar" role="toolbar" aria-label="View options">
+  <div class="ctl">Shape <span class="seg" data-opt="shape"><button data-v="adaptive">Adaptive</button><button data-v="circle">Circle</button><button data-v="blob">Blob</button></span></div>
+  <div class="ctl">Motion <span class="seg" data-opt="motion"><button data-v="on">Live</button><button data-v="off">Still</button></span></div>
+  <div class="ctl"><label for="gs">Glow size</label><input id="gs" type="range" min="0.7" max="1.4" step="0.05" value="1"></div>
+</div>
+
+<div class="live">
+  <div id="liveMock"></div>
+  <div class="panel">
+    <h2>Try it live</h2>
+    <p class="sub">Pick a sensor and a state — colour, glass, rings and motion change smoothly, the way they will in the app.</p>
+    <div class="tabs" id="tabs"></div>
+    <div class="chips" id="chips"></div>
+    <label class="auto"><span class="seg" data-opt="auto"><button data-v="on">Play</button><button data-v="off">Pause</button></span> go through every state on its own</label>
+    <ul class="notes">
+      <li><b>Shape = how worried to be.</b> “Adaptive” is a perfect circle when everything is fine and turns into a softly wobbling blob as the danger grows — a safe home looks still and round, a problem looks alive. Circle and Blob are there to compare.</li>
+      <li><b>Rhythm = urgency.</b> Calm states breathe once every 6 seconds (a resting breath). A warning breathes twice as fast, an alarm pulses about once a second and sends rings outward like a siren.</li>
+      <li><b>One aura, five characters.</b> Gas swirls slowly, smoke rises, water spreads in ripples, vibration trembles when something is hit and turns like a drum when the washer runs, air breathes in and out.</li>
+      <li><b>Harmonic, never looping.</b> Every movement is a sum of slow sine waves with golden-ratio speeds, so it never repeats visibly; the rings follow the orb with a delay, like jelly.</li>
+      <li><b>Text stays still.</b> Only the glass and light move — the word and number never shake, so they are always readable. Offline freezes everything and goes gray: no live data, no life.</li>
+    </ul>
+  </div>
+</div>
+
+<div id="rows"></div>
+
+<script>
+/* ---------- data: every state of every sensor (words match js/devices/*.js) ---------- */
+const COL = { green: 'var(--green)', blue: 'var(--blue)', yellow: 'var(--yellow)', orange: 'var(--orange)', red: 'var(--red)', gray: 'var(--gray)' };
+// the same tokens as numbers, read from tokens.css, so JS can blend one state colour into the next
+const RGB = {};
+for (const k in COL) { const h = getComputedStyle(document.documentElement).getPropertyValue('--' + k).trim().replace('#', ''); RGB[k] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); }
+const rgbCss = (c) => `rgb(${c.map((v) => v.toFixed(1)).join(' ')})`;
+const SENS = [
+  { id: 'gas', name: 'Gas', title: 'Kitchen gas', room: 'Kitchen', drift: 'swirl', cards: [['Gas valve', 'Open'], ['Last alarm', '4 days ago']],
+    idea: 'Gas has no shape you can see, so its light swirls slowly around the orb, like a smell spreading in a room.',
+    states: [
+      { k: 'clear', label: 'Clear', w: 'Clear', s: { n: '0', u: ' %LEL' }, c: ['green', 'blue'], m: 'calm', note: 'Round and still, breathes every 6 s' },
+      { k: 'warm', label: 'Warming up', w: 'Warming up', s: 'Ready in 2 min', c: ['blue', 'green'], m: 'busy', note: 'Rings turn slowly while the sensor heats' },
+      { k: 'pre', label: 'A little gas', w: 'A little gas', s: { n: '6', u: ' %LEL' }, c: ['orange', 'yellow'], m: 'warn', note: 'Starts to wobble, breathes faster' },
+      { k: 'gas', label: 'Gas!', w: 'Gas!', s: { n: '18', u: ' %LEL' }, c: ['red', 'orange'], m: 'alarm', cards: [['Gas valve', 'Closed'], ['Siren', 'Sounding']], rep: 'Now', note: 'Blob pulses, rings run outward' },
+      { k: 'off', label: 'Offline', w: 'Unknown', s: 'Last report 2 h ago', c: ['gray', 'gray'], m: 'off', rep: 'No connection', note: 'Gray and frozen' },
+    ] },
+  { id: 'smoke', name: 'Smoke', title: 'Hallway smoke', room: 'Hallway', drift: 'rise', cards: [['Battery', '92 %'], ['Last test', '12 days ago']],
+    idea: 'Smoke goes up: the light drifts upward and settles back, slower when clear, restless in an alarm.',
+    states: [
+      { k: 'clear', label: 'Clear', w: 'Clear', s: 'No smoke', c: ['green', 'blue'], m: 'calm', note: 'Calm, light rises very slowly' },
+      { k: 'pre', label: 'A little smoke', w: 'A little smoke', s: 'Open a window', c: ['orange', 'yellow'], m: 'warn', note: 'Warm orange, faster breath' },
+      { k: 'smoke', label: 'Smoke!', w: 'Smoke!', s: 'In the hallway', c: ['red', 'orange'], m: 'alarm', cards: [['Siren', 'Sounding'], ['Lights', 'Turned on']], rep: 'Now', note: 'Red, pulsing, rings outward' },
+      { k: 'heat', label: 'Heat!', w: 'Heat!', s: { n: '62', u: ' °C' }, c: ['orange', 'red'], m: 'alarm', cards: [['Siren', 'Sounding'], ['Lights', 'Turned on']], rep: 'Now', note: 'Fire-orange core, red edge' },
+      { k: 'test', label: 'Testing…', w: 'Testing…', s: 'Siren check', c: ['blue', 'green'], m: 'busy', note: 'Blue, rings turning' },
+      { k: 'off', label: 'Offline', w: 'Unknown', s: 'Last report 5 h ago', c: ['gray', 'gray'], m: 'off', rep: 'No connection', note: 'Gray and frozen' },
+    ] },
+  { id: 'leak', name: 'Water leak', title: 'Kitchen sink', room: 'Kitchen', drift: 'pool', ripple: true, cards: [['Temperature', '14.2 °C'], ['Last leak', '12 Oct, 07:40']],
+    idea: 'Water makes circles: soft ripples leave the orb even when the floor is dry; a leak turns them red and fast.',
+    states: [
+      { k: 'dry', label: 'Dry', w: 'Dry', s: 'No water on the floor', c: ['blue', 'green'], m: 'calm', rep: 'Checked 3 min ago', note: 'Blue, a slow ripple every 5 s' },
+      { k: 'leak', label: 'Leak!', w: 'Leak!', s: 'Water on the floor', c: ['red', 'orange'], m: 'alarm', cards: [['Water valve', 'Closed'], ['Siren', 'Sounding']], rep: 'Now', note: 'Red, fast ripples' },
+      { k: 'moved', label: 'Moved / opened', w: 'Moved / opened', s: 'Put it back on the floor', c: ['orange', 'yellow'], m: 'warn', note: 'Orange, uneasy' },
+      { k: 'off', label: 'Offline', w: 'Unknown', s: 'Last report 1 day ago', c: ['gray', 'gray'], m: 'off', rep: 'No connection', note: 'Gray and frozen' },
+    ] },
+  { id: 'vib', name: 'Vibration', title: 'Safe', room: 'Bedroom', drift: 'still', cards: [['Sensitivity', 'Medium'], ['Battery', '76 %']],
+    idea: 'Vibration is felt, not seen: the glass trembles for a moment when something is knocked, shakes hard in an alarm, and turns like a drum while the washer runs.',
+    states: [
+      { k: 'calm', label: 'Calm', w: 'Calm', s: 'Nothing moved', c: ['green', 'blue'], m: 'calm', note: 'Still glass, slow breath' },
+      { k: 'knock', label: 'Knocked', w: 'Knocked 3\u00a0times', s: '2 min ago', c: ['yellow', 'orange'], m: 'warn', jit: 1.1, note: 'A light tremble' },
+      { k: 'alarm', label: 'Shaken!', w: 'Shaken!', s: 'The safe was moved', c: ['red', 'orange'], m: 'alarm', jit: 2.6, rep: 'Now', cards: [['Siren', 'Sounding'], ['Battery', '76 %']], note: 'Hard shake, red' },
+      { k: 'run', label: 'Running', title: 'Washing machine', room: 'Bathroom', w: 'Running', s: { n: '42', u: ' min' }, c: ['blue', 'green'], m: 'busy', spin: 44, cards: [['Started', '09:12'], ['Last cycle', '1 h 05 min']], note: 'Rings turn like the drum' },
+      { k: 'done', label: 'Finished', title: 'Washing machine', room: 'Bathroom', w: 'Finished', s: 'Take the laundry out', c: ['green', 'yellow'], m: 'calm', cards: [['Started', '09:12'], ['Took', '58 min']], note: 'Green, at rest' },
+      { k: 'off', label: 'Offline', w: 'Unknown', s: 'Last report 3 h ago', c: ['gray', 'gray'], m: 'off', rep: 'No connection', note: 'Gray and frozen' },
+    ] },
+  { id: 'air', name: 'Air quality', title: 'Living room air', room: 'Living Room', drift: 'breath', breath: true, cards: [['Temperature', '22.4 °C'], ['Humidity', '44 %']],
+    idea: 'Air is breath: the orb and its rings breathe in and out, deeper than the others. Five air levels walk from green through yellow and orange to red.',
+    states: [
+      { k: 'ex', label: 'Excellent', w: 'Excellent', s: { n: '480', u: ' ppm CO₂' }, c: ['green', 'blue'], m: 'calm', note: 'Slow, deep breath' },
+      { k: 'good', label: 'Good', w: 'Good', s: { n: '640', u: ' ppm CO₂' }, c: ['green', 'yellow'], m: 'calm', note: 'Green with a warm edge' },
+      { k: 'mod', label: 'Moderate', w: 'Moderate', s: { n: '1150', u: ' ppm CO₂' }, c: ['yellow', 'orange'], m: 'mild', note: 'Yellow, slightly restless' },
+      { k: 'poor', label: 'Poor', w: 'Poor', s: { n: '1650', u: ' ppm CO₂' }, c: ['orange', 'red'], m: 'warn', note: 'Orange, short breaths' },
+      { k: 'bad', label: 'Unhealthy', w: 'Unhealthy', s: { n: '2300', u: ' ppm CO₂' }, c: ['red', 'orange'], m: 'alarm', rep: 'Fan turned on', note: 'Red, gasping rhythm' },
+      { k: 'off', label: 'Offline', w: 'Unknown', s: 'Last report 40 min ago', c: ['gray', 'gray'], m: 'off', rep: 'No connection', note: 'Gray and frozen' },
+    ] },
+];
+
+/* motion presets: sev = how dangerous (drives the blob), T = breath period (s), br = breath depth,
+   spd = flow speed, pulse = outward rings, ripT = their period, glow = light strength */
+const MOT = {
+  calm:  { sev: 0,   T: 6.2, br: .016, spd: .32, pulse: 0,   ripT: 4.8, glow: 1,    jit: 0, spin: 0 },
+  mild:  { sev: .3,  T: 4.4, br: .02,  spd: .6,  pulse: .2,  ripT: 3.2, glow: 1.05, jit: 0, spin: 0 },
+  busy:  { sev: .12, T: 3.4, br: .014, spd: .55, pulse: 0,   ripT: 3,   glow: 1,    jit: 0, spin: 16 },
+  warn:  { sev: .55, T: 3.1, br: .024, spd: .95, pulse: .4,  ripT: 2.4, glow: 1.1,  jit: 0, spin: 0 },
+  alarm: { sev: 1,   T: 1.15, br: .034, spd: 2.1, pulse: 1,  ripT: 1.25, glow: 1.25, jit: 0, spin: 0 },
+  off:   { sev: 0,   T: 8,   br: 0,    spd: 0,   pulse: 0,   ripT: 4,   glow: .38,  jit: 0, spin: 0 },
+};
+function motionOf(sen, st) {
+  const p = { ...MOT[st.m] };
+  if (st.jit) p.jit = st.jit;
+  if (st.spin) p.spin = st.spin;
+  if (sen.ripple && st.m !== 'off') { p.pulse = Math.max(p.pulse, .45); if (st.m === 'calm') p.ripT = 5; }   // water always ripples
+  if (sen.breath && st.m !== 'off') { p.br *= 2.1; if (st.m === 'calm') p.T = 5.6; }                     // air breathes deeper
+  return p;
+}
+
+/* ---------- view options (remembered per viewer) ---------- */
+const OPT = { shape: 'adaptive', motion: 'on', auto: 'on', gs: 1 };
+try { Object.assign(OPT, JSON.parse(localStorage.getItem('samo-aura-opt') || '{}')); } catch (e) { /* storage blocked */ }
+const save = () => { try { localStorage.setItem('samo-aura-opt', JSON.stringify(OPT)); } catch (e) { /* ignore */ } };
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- rendering ---------- */
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Gaussian falloff written as many gradient stops → the light thins out the way a real blur does, with no ring at the end
+function soft(color, a, k = 4.4, n = 16) {
+  const e = Math.exp(-k), st = [];
+  for (let i = 0; i <= n; i++) { const t = i / n, al = a * (Math.exp(-k * t * t) - e) / (1 - e); st.push(`color-mix(in srgb, ${color} ${(al * 100).toFixed(2)}%, transparent) ${(t * 100).toFixed(1)}%`); }
+  return `radial-gradient(closest-side, ${st.join(', ')})`;
+}
+const GLOW = [   // [size px, colour, strength]
+  [1180, 'var(--c1)', .085],                                          // wash: tints the whole screen, ends far outside
+  [700, 'var(--c1)', .46],                                           // halo
+  [520, 'var(--c2)', .4],                                            // second colour, drifts
+  [360, 'color-mix(in srgb, var(--c1) 75%, white)', .3],             // hot core light, drifts the other way
+];
+const subHTML = (s) => (typeof s === 'string' ? esc(s) : `<span data-num="count">${s.n}</span>${esc(s.u)}`);
+const isLong = (w) => w.length > 8;
+let uid = 0;
+function mockHTML(sen, st) {
+  const id = ++uid, cards = st.cards || sen.cards;
+  return `<div class="mock" data-id="${id}" style="--c1:${COL[st.c[0]]};--c2:${COL[st.c[1]]}">
+    <div class="tb"><span class="gb">${icon('back', 'ic')}</span><span class="tt"><b data-f="title">${esc(st.title || sen.title)}</b><span data-f="room">${esc(st.room || sen.room)}</span></span><span class="gb"><img src="../assets/icons/setting.svg" width="24" height="24" alt=""></span></div>
+    <div class="hero">
+      <div class="aura">${GLOW.map(([d, c, a]) => `<i style="width:${d}px;height:${d}px;margin:${-d / 2}px 0 0 ${-d / 2}px;background:${soft(c, a)}"></i>`).join('')}</div>
+      <svg class="orb" viewBox="-170 -170 340 340" aria-hidden="true">
+        <defs>
+          <radialGradient id="cf${id}" cx=".36" cy=".3" r=".9">
+            <stop offset="0" style="stop-color:color-mix(in srgb, var(--c1) 70%, white)" stop-opacity=".5"/>
+            <stop offset=".55" style="stop-color:var(--c1)" stop-opacity=".3"/>
+            <stop offset="1" style="stop-color:var(--c2)" stop-opacity=".26"/>
+          </radialGradient>
+          <linearGradient id="rim${id}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".22"/>
+          </linearGradient>
+          <linearGradient id="hi${id}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity=".2"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <g class="shake">
+          <path class="rip" opacity="0"/><path class="rip" opacity="0"/>
+          <path class="ring" stroke-opacity=".34"/><path class="ring" stroke-opacity=".2"/><path class="ring" stroke-opacity=".1"/>
+          <path class="core" fill="url(#cf${id})"/>
+          <path class="hi" fill="url(#hi${id})"/>
+          <path class="core-rim" fill="none" stroke="url(#rim${id})" stroke-width="1.2"/>
+        </g>
+      </svg>
+      <div class="txt"><div class="w${isLong(st.w) ? ' long' : ''}${st.m === 'alarm' ? ' alarm' : ''}" data-f="w">${esc(st.w)}</div><div class="s" data-f="s">${subHTML(st.s)}</div></div>
+    </div>
+    <div class="rep" data-f="rep">${esc(st.rep || 'Reported 2 min ago')}</div>
+    <div class="cards">${cards.map(([a, b]) => `<div class="card"><span>${esc(a)}</span><b>${esc(b)}</b></div>`).join('')}</div>
+  </div>`;
+}
+
+/* ---------- animation: one loop for every visible phone ---------- */
+const MOCKS = [];
+const R = 98;   // orb radius
+function attach(el, sen, st) {
+  const m = { el, sen, st, vis: false, tgt: motionOf(sen, st), col: st.c.map((k) => [...RGB[k]]), colT: st.c.map((k) => RGB[k]), p: null, A: 0, ph: [Math.random() * 6, Math.random() * 6, Math.random() * 6], bph: Math.random() * 6, gph: Math.random() * 6, rph: Math.random(), rot: 0,
+    gpos: [[0, 0], [0, 0], [0, 0], [0, 0]], glow: el.querySelectorAll('.aura i'), core: el.querySelector('.core'), rim: el.querySelector('.core-rim'), hi: el.querySelector('.hi'),
+    rings: el.querySelectorAll('.ring'), rips: el.querySelectorAll('.rip'), shake: el.querySelector('.shake') };
+  m.p = { ...m.tgt }; m.A = ampOf(m.p.sev);
+  MOCKS.push(m); io.observe(el); frame(m, 0, performance.now() / 1000);
+  return m;
+}
+const ampOf = (sev) => (OPT.shape === 'circle' ? 0 : OPT.shape === 'blob' ? .05 + sev * .035 : .006 + sev * .07);
+
+// a closed, smooth outline: radius = sum of slow sines over the angle (Catmull-Rom → cubic Bézier)
+function blob(r, A, ph, lag, rot) {
+  const N = 36, P = [];
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2;
+    const d = A * (.62 * Math.sin(2 * a + ph[0] - lag) + .3 * Math.sin(3 * a - ph[1] + lag * .7) + .16 * Math.sin(5 * a + ph[2] - lag * 1.3));
+    const rr = r * (1 + d), b = a + rot;
+    P.push([rr * Math.cos(b), rr * Math.sin(b)]);
+  }
+  let s = `M${P[0][0].toFixed(2)} ${P[0][1].toFixed(2)}`;
+  for (let i = 0; i < N; i++) {
+    const p0 = P[(i - 1 + N) % N], p1 = P[i], p2 = P[(i + 1) % N], p3 = P[(i + 2) % N];
+    s += `C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(2)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(2)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(2)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(2)} ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`;
+  }
+  return s + 'Z';
+}
+// where each light sits — every sensor has its own drift (g grows slowly; ratios are golden, so it never repeats)
+const PHI = 1.618;
+function drift(type, g, i) {
+  const k = i === 3 ? -1 : 1, o = i === 3 ? 2.1 : 0;
+  switch (type) {
+    case 'swirl': return [k * 54 * Math.cos(g + o), 42 * Math.sin(g + o)];
+    case 'rise': return [k * 18 * Math.sin(g * PHI + o), -22 - 38 * Math.sin(g + o)];
+    case 'pool': return [k * 58 * Math.sin(g * .8 + o), 14 * Math.sin(g * PHI + o)];
+    case 'breath': return [k * 26 * Math.sin(g + o), 22 * Math.sin(g * PHI + o)];
+    default: return [k * 22 * Math.sin(g * 1.3 + o), 18 * Math.sin(g * .9 * PHI + o)];
+  }
+}
+function frame(m, dt, t) {
+  const P = m.p, T = m.tgt, live = OPT.motion === 'on' && !reduce;
+  const ease = dt ? 1 - Math.exp(-dt / .7) : 1;
+  // state colours glide (≈1.3 s); written only while they still move
+  const ce = dt ? 1 - Math.exp(-dt / .38) : 1; let moved = !dt;
+  m.col.forEach((c, i) => c.forEach((v, j) => { const d = m.colT[i][j] - v; if (Math.abs(d) > .4) { c[j] = v + d * ce; moved = true; } else if (d) { c[j] = m.colT[i][j]; moved = true; } }));
+  if (moved) { m.el.style.setProperty('--c1', rgbCss(m.col[0])); m.el.style.setProperty('--c2', rgbCss(m.col[1])); }
+  for (const k in T) P[k] += (T[k] - P[k]) * ease;                 // every parameter glides to the new state
+  m.A += (ampOf(P.sev) - m.A) * (dt ? 1 - Math.exp(-dt / .9) : 1);
+  if (live) {
+    m.ph[0] += dt * P.spd * .9; m.ph[1] += dt * P.spd * .9 * PHI; m.ph[2] += dt * P.spd * .9 * PHI * PHI;
+    m.bph += dt * Math.PI * 2 / P.T; m.gph += dt * (.16 + P.spd * .2); m.rph += dt / P.ripT; m.rot += dt * P.spin * Math.PI / 180;
+  }
+  const br = live ? Math.sin(m.bph) : 0;
+  // core: breathing radius, blob outline; rings follow with a delay (jelly), the outer ones a bit wider and wobblier
+  const core = blob(R * (1 + P.br * br), m.A, m.ph, 0, m.rot * .15);
+  m.core.setAttribute('d', core); m.rim.setAttribute('d', core);
+  m.hi.setAttribute('d', blob(R * .9 * (1 + P.br * br), m.A, m.ph, 0, m.rot * .15)); m.hi.setAttribute('transform', 'translate(0 -8)');
+  m.rings.forEach((el, i) => {
+    const j = i + 1, lag = .55 * j, b = live ? Math.sin(m.bph - lag) : 0;
+    el.setAttribute('d', blob(R * (1 + .17 * j) * (1 + P.br * 1.25 * b), m.A * (1 - .12 * j), m.ph, lag * .7, m.rot * (j % 2 ? 1 : -.6) / j));   // outer rings calmer → they never cross
+  });
+  // outward rings (siren / water ripples)
+  m.rips.forEach((el, i) => {
+    const p = live ? ((m.rph + i / 2) % 1 + 1) % 1 : 0, op = P.pulse * Math.pow(1 - p, 1.7) * Math.min(1, p / .06) * .7;
+    el.setAttribute('opacity', op.toFixed(3));
+    if (op > .002) el.setAttribute('d', blob(R * (1.02 + .78 * p), m.A * .6, m.ph, 1 + p, 0));
+  });
+  // tremble (vibration): two fast incommensurate sines — the glass shakes, the text does not
+  if (P.jit > .02 && live) { const x = P.jit * (Math.sin(t * 47) + .6 * Math.sin(t * 71)) / 1.6, y = P.jit * (Math.sin(t * 53 + 1) + .6 * Math.sin(t * 83)) / 1.6; m.shake.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`); }
+  else m.shake.removeAttribute('transform');
+  // light
+  const gs = OPT.gs * (.85 + .15 * P.glow);
+  m.glow.forEach((el, i) => {
+    const [tx, ty] = i === 0 ? [0, 0] : i === 1 ? [0, 6] : drift(m.sen.drift, m.gph, i);
+    const gp = m.gpos[i], f = dt ? 1 - Math.exp(-dt / .8) : 1; gp[0] += (tx - gp[0]) * f; gp[1] += (ty - gp[1]) * f;   // low-pass: switching sensors never jumps
+    const sc = gs * (i === 1 ? 1 + P.br * 3.2 * br : i === 0 ? 1 : 1 + P.br * 2 * Math.sin(m.bph - .8 * i));
+    el.style.transform = `translate(${gp[0].toFixed(1)}px, ${gp[1].toFixed(1)}px) scale(${sc.toFixed(4)})`;
+    el.style.opacity = Math.min(1, P.glow * (i === 0 ? .9 : 1)).toFixed(3);
+  });
+}
+const io = new IntersectionObserver((es) => es.forEach((e) => { const m = MOCKS.find((x) => x.el === e.target); if (m) m.vis = e.isIntersecting; }), { rootMargin: '120px' });
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  for (const m of MOCKS) if (m.vis) frame(m, dt, now / 1000);   // still mode: phases freeze, but state changes still glide
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+const redrawAll = () => MOCKS.forEach((m) => frame(m, 0, performance.now() / 1000));
+
+/* ---------- sensor rows ---------- */
+document.getElementById('rows').innerHTML = SENS.map((sen, i) => `<section class="sn"><div class="sh"><span class="k">${String(i + 1).padStart(2, '0')}</span><h2>${sen.name}</h2></div>
+  <p class="sidea">${sen.idea}</p>
+  <div class="row">${sen.states.map((st) => `<div data-sen="${sen.id}" data-st="${st.k}">${mockHTML(sen, st)}<div class="cap"><b>${esc(st.label)}</b><span>${esc(st.note)}</span></div></div>`).join('')}</div></section>`).join('');
+document.querySelectorAll('#rows [data-sen]').forEach((box) => {
+  const sen = SENS.find((s) => s.id === box.dataset.sen), st = sen.states.find((s) => s.k === box.dataset.st);
+  attach(box.querySelector('.mock'), sen, st);
+});
+
+/* ---------- live phone ---------- */
+let curSen = SENS[0], curSt = SENS[0].states[0];
+const liveBox = document.getElementById('liveMock');
+liveBox.innerHTML = mockHTML(curSen, curSt);
+const LIVE = attach(liveBox.querySelector('.mock'), curSen, curSt);
+const f = (n) => LIVE.el.querySelector(`[data-f="${n}"]`);
+const swap = (el, apply) => {   // quick blur-fade for words that change (numbers roll instead)
+  if (reduce) return apply();
+  el.getAnimations().forEach((a) => a.cancel());
+  el.animate([{ opacity: 1, filter: 'blur(0)', transform: 'scale(1)' }, { opacity: 0, filter: 'blur(6px)', transform: 'scale(.94)' }], { duration: 160, easing: 'cubic-bezier(.4,0,1,1)' })
+    .finished.then(() => { apply(); el.animate([{ opacity: 0, filter: 'blur(6px)', transform: 'scale(1.04)' }, { opacity: 1, filter: 'blur(0)', transform: 'scale(1)' }], { duration: 300, easing: 'cubic-bezier(.23,1,.32,1)' }); }, () => {});
+};
+function setLive(sen, st) {
+  const prev = curSt; curSen = sen; curSt = st;
+  const el = LIVE.el; LIVE.colT = st.c.map((k) => RGB[k]);
+  LIVE.sen = sen; LIVE.st = st; LIVE.tgt = motionOf(sen, st);
+  const txt = (n, v) => { const e = f(n); if (e.textContent !== v) swap(e, () => { e.textContent = v; }); };
+  txt('title', st.title || sen.title); txt('room', st.room || sen.room); txt('rep', st.rep || 'Reported 2 min ago');
+  const w = f('w');
+  if (w.textContent !== st.w) swap(w, () => { w.textContent = st.w; w.className = `w${isLong(st.w) ? ' long' : ''}${st.m === 'alarm' ? ' alarm' : ''}`; });
+  else w.classList.toggle('alarm', st.m === 'alarm');
+  const s = f('s'), num = s.querySelector('[data-num]');
+  if (num && typeof st.s === 'object' && typeof prev.s === 'object' && prev.s.u === st.s.u) UI.setNum(num, st.s.n);   // same unit: the number counts
+  else swap(s, () => { s.innerHTML = subHTML(st.s); });
+  const cards = st.cards || sen.cards;
+  el.querySelectorAll('.card').forEach((c, i) => { const [a, b] = cards[i]; const sp = c.querySelector('span'), bb = c.querySelector('b'); if (sp.textContent !== a) swap(sp, () => { sp.textContent = a; }); if (bb.textContent !== b) swap(bb, () => { bb.textContent = b; }); });
+  paintPanel();
+}
+function paintPanel() {
+  document.getElementById('tabs').innerHTML = SENS.map((s) => `<button class="pill" data-sen="${s.id}" aria-pressed="${s === curSen}">${esc(s.name)}</button>`).join('');
+  document.getElementById('chips').innerHTML = curSen.states.map((s) => `<button class="pill" data-st="${s.k}" aria-pressed="${s === curSt}" style="--dc:${COL[s.c[0]]}"><i class="d"></i>${esc(s.label)}</button>`).join('');
+}
+document.getElementById('tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-sen]'); if (!b) return; const s = SENS.find((x) => x.id === b.dataset.sen); setLive(s, s.states[0]); restartAuto(); });
+document.getElementById('chips').addEventListener('click', (e) => { const b = e.target.closest('[data-st]'); if (!b) return; setLive(curSen, curSen.states.find((x) => x.k === b.dataset.st)); restartAuto(); });
+paintPanel();
+
+// autoplay: every state of a sensor, then the next sensor
+let autoT;
+function step() {
+  const i = curSen.states.indexOf(curSt);
+  if (i < curSen.states.length - 1) setLive(curSen, curSen.states[i + 1]);
+  else { const s = SENS[(SENS.indexOf(curSen) + 1) % SENS.length]; setLive(s, s.states[0]); }
+}
+function restartAuto() { clearInterval(autoT); if (OPT.auto === 'on') autoT = setInterval(step, 3600); }
+
+/* ---------- options bar ---------- */
+function paintOpts() {
+  document.querySelectorAll('.seg[data-opt]').forEach((seg) => seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(OPT[seg.dataset.opt] === b.dataset.v))));
+  document.getElementById('gs').value = OPT.gs;
+}
+document.querySelectorAll('.seg[data-opt]').forEach((seg) => seg.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  OPT[seg.dataset.opt] = b.dataset.v; save(); paintOpts();
+  if (seg.dataset.opt === 'auto') restartAuto();
+  if (seg.dataset.opt === 'motion' || seg.dataset.opt === 'shape') { last = performance.now(); if (OPT.motion !== 'on') MOCKS.forEach((m) => { m.A = ampOf(m.p.sev); }); redrawAll(); }
+}));
+document.getElementById('gs').addEventListener('input', (e) => { OPT.gs = +e.target.value; save(); if (OPT.motion !== 'on' || reduce) redrawAll(); });
+paintOpts(); restartAuto();
+</script>
+</body>
+</html>
