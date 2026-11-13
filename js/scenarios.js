@@ -304,21 +304,80 @@ const Scenarios = (() => {
   }
   const pending = () => (S().scnPending = S().scnPending || []);
   /** Run the actions. Waits and "for X min" are kept in the store, so they still happen after a page change. */
+  /** One action. Returns a problem in words, or null. */
+  function runOne(a, s, depth) {
+    if (a.k === 'dev') {
+      const p = applyDev(a); if (p) return p;
+      if (a.back) pending().push({ at: Date.now() + a.back * 60000, id: a.id, ch: a.ch || 0, to: a.to === 'on' ? 'off' : 'on' });
+    }
+    if (a.k === 'notify') UI.push({ title: s.name, body: a.text || sentence(s), tone: a.critical ? 'danger' : '' });
+    if (a.k === 'auto') { const o = get(a.sid); if (o && !o.manual) o.on = !!a.on; else return 'the automation was removed'; }
+    if (a.k === 'run' && depth < 3) { const o = get(a.sid); if (o && o.id !== s.id) { runActions(o, 0, depth + 1); log(o, { ok: true, cause: `Started by “${s.name}”` }); } }
+    return null;
+  }
   function runActions(s, from = 0, depth = 0) {
     const problems = [];
     for (let i = from; i < s.do.length; i++) {
       const a = s.do[i];
       if (a.k === 'wait') { pending().push({ at: Date.now() + a.min * 60000, sid: s.id, from: i + 1 }); break; }
-      if (a.k === 'dev') {
-        const p = applyDev(a); if (p) problems.push(p);
-        else if (a.back) pending().push({ at: Date.now() + a.back * 60000, id: a.id, ch: a.ch || 0, to: a.to === 'on' ? 'off' : 'on' });
-      }
-      if (a.k === 'notify') UI.push({ title: s.name, body: a.text || sentence(s), tone: a.critical ? 'danger' : '' });
-      if (a.k === 'auto') { const o = get(a.sid); if (o && !o.manual) o.on = !!a.on; else problems.push('the automation was removed'); }
-      if (a.k === 'run' && depth < 3) { const o = get(a.sid); if (o && o.id !== s.id) { runActions(o, 0, depth + 1); log(o, { ok: true, cause: `Started by “${s.name}”` }); } }
+      const p = runOne(a, s, depth); if (p) problems.push(p);
     }
     return problems;
   }
+  /** Run a scene step by step, the way the hub sends its commands — one device after another — and report
+      progress: onStep(done, total, problem). Resolves with { problems }. A scene can't be started twice at once. */
+  const running = new Set();
+  function runScene(s, onStep = () => {}, cause = 'Tapped') {
+    if (running.has(s.id)) return Promise.resolve({ busy: true });
+    running.add(s.id);
+    const steps = s.do, problems = [];
+    const until = steps.findIndex((a) => a.k === 'wait'), now = until < 0 ? steps : steps.slice(0, until);
+    const total = Math.max(1, now.length);
+    return new Promise((resolve) => {
+      let i = 0;
+      const next = () => {
+        if (i >= now.length) {
+          if (until >= 0) pending().push({ at: Date.now() + steps[until].min * 60000, sid: s.id, from: until + 1 });
+          log(s, { ok: !problems.length, cause, text: problems.join(' · ') }); Store.save();
+          running.delete(s.id); resolve({ problems }); return;
+        }
+        const a = now[i++], p = runOne(a, s, 0); if (p) problems.push(p);
+        Store.save(); onStep(i, total, p);
+        setTimeout(next, a.k === 'dev' ? 280 : 80);
+      };
+      setTimeout(next, 120);
+    });
+  }
+  const isRunning = (id) => running.has(id);
+
+  /* ---------- Running a scene from a tile or a Home chip: progress ring + words, shared by both pages ---------- */
+  const prog = {};   // id → { done, total, phase: 'run' | 'done' | 'warn', msg }
+  const RING_R = 13, RING_C = 2 * Math.PI * RING_R;
+  /** The round button: ▶ when idle, a filling ring while the hub sends commands, ✓ (or !) when finished. */
+  function ringHTML(id, idleIcon = 'play-fill') {
+    const p = prog[id], f = p ? (p.phase === 'run' ? p.done / p.total : 1) : 0;
+    const ic = !p ? idleIcon : p.phase === 'done' ? 'check' : p.phase === 'warn' ? 'round-info' : idleIcon;
+    return `<span class="scn-ring ${p ? 'is-' + p.phase : ''}"><svg class="scn-ring-svg" viewBox="0 0 32 32" aria-hidden="true"><circle class="trk" cx="16" cy="16" r="${RING_R}"/><circle class="prg" cx="16" cy="16" r="${RING_R}" stroke-dasharray="${RING_C.toFixed(2)}" stroke-dashoffset="${(RING_C * (1 - f)).toFixed(2)}"/></svg>${icon(ic, 'icon')}</span>`;
+  }
+  function statusText(s) {
+    const p = prog[s.id], n = s.do.length;
+    if (!p) return n ? `${n} action${n > 1 ? 's' : ''}` : 'Nothing to do yet';
+    if (p.phase === 'run') return `${p.done} of ${p.total}…`;
+    return p.phase === 'done' ? 'Done' : p.msg;
+  }
+  function tapScene(id, redraw) {
+    const s = get(id); if (!s || isRunning(id) || !s.do.length) return false;
+    const total = Math.max(1, (s.do.findIndex((a) => a.k === 'wait') + 1 || s.do.length + 1) - 1);
+    prog[id] = { done: 0, total, phase: 'run' }; redraw();
+    runScene(s, (d, t) => { prog[id] = { done: d, total: t, phase: 'run' }; redraw(); }).then((r) => {
+      prog[id] = r.problems && r.problems.length ? { phase: 'warn', msg: r.problems.length > 1 ? `${r.problems.length} problems` : 'Not all done' } : { phase: 'done' };
+      redraw();
+      if (r.problems && r.problems.length) UI.toast(`${s.name} · ${r.problems[0]}`);
+      setTimeout(() => { delete prog[id]; redraw(); }, 1800);
+    });
+    return true;
+  }
+  const isBusy = (id) => !!prog[id];
   function log(s, e) { s.log = [Object.assign({ at: Date.now() }, e), ...(s.log || [])].slice(0, 20); }
   /** Start a scenario. cause = what started it (words). test = "Try it now" (conditions are shown but not enforced). */
   function fire(s, cause, { test = false } = {}) {
@@ -455,6 +514,6 @@ const Scenarios = (() => {
   }
 
   return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
-    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, presence, warnings, next, start, condOk, whyNot };
+    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, presence, warnings, next, start, condOk, whyNot };
 })();
 if (typeof Store !== 'undefined') Scenarios.start();

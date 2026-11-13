@@ -1921,3 +1921,25 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-look .scn-wheel { align-self: center; }
 .scn-look .scn-dots { justify-content: center; gap: 14px; }
 .scn-tone { display: grid; gap: 14px; }
+/* scene run: ▶ in the tile's round button (same place as a device tile's power); ring fills as the hub sends commands */
+.scn-play { padding: 0; }
+.scn-ring { position: relative; width: 32px; height: 32px; display: grid; place-items: center; }
+.scn-ring .scn-ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.scn-ring > .icon { position: relative; }
+.scn-ring circle { fill: none; stroke-width: 2.5; }
+.scn-ring .trk { stroke: transparent; }
+.scn-ring .prg { stroke: var(--primary); stroke-linecap: round; transition: stroke-dashoffset 260ms var(--ease-out), stroke 200ms; }
+.scn-ring.is-run .trk { stroke: rgba(120, 120, 128, 0.24); }
+.scn-ring .icon { width: 16px !important; height: 16px !important; transition: transform 200ms var(--ease-out); }
+.scn-ring.is-done .icon, .scn-ring.is-warn .icon { animation: check-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.scn-ring.is-done .prg { stroke: var(--green); }
+.scn-ring.is-done .icon { color: var(--green); }
+.scn-ring.is-warn .prg { stroke: var(--orange); }
+.scn-ring.is-warn .icon { color: var(--orange); }
+.tile.on .scn-play { background: rgba(120, 120, 128, 0.16); }
+.tile.on .scn-ring.is-run .icon { color: var(--primary); }
+/* Home chip */
+.scn-chip .scn-ring { width: 28px; height: 28px; margin: -2px 0; }
+.scn-chip .scn-ring .icon { width: 14px !important; height: 14px !important; color: var(--primary); }
+@media (prefers-reduced-motion: reduce) { .scn-ring .prg { transition: none; } .scn-ring .icon { animation: none !important; } }
+.quick-chip .scn-ring { display: grid; place-items: center; flex-shrink: 0; }

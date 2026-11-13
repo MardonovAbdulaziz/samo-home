@@ -29,6 +29,13 @@
     return `<button class="quick-chip" data-action="open" data-id="${d.id}" data-ch="0">${icon('chip-temperature')}<span><b>Temperature</b><span data-num>${UI.esc(Devices.climate.chipText(d))}</span></span></button>`;
   }
 
+  /** Scenes chosen for Home ("Show on Home Screen" in the scene): one tap runs them, the icon becomes the progress ring */
+  function sceneChips() {
+    if (typeof Scenarios === 'undefined') return '';
+    return Scenarios.list().filter((x) => x.manual && x.home !== false && x.do.length).map((x) => `<button class="quick-chip scn-chip ${Scenarios.isBusy(x.id) ? 'busy' : ''}" data-action="scene-run" data-id="${x.id}" data-key="qc-${x.id}" aria-label="Run ${UI.esc(x.name)}">
+      ${Scenarios.isBusy(x.id) ? Scenarios.ringHTML(x.id) : icon(x.icon || 'tab-scenarios')}<span><b>${UI.esc(x.name)}</b><span data-num>${UI.esc(Scenarios.isBusy(x.id) ? Scenarios.statusText(x) : 'Scene')}</span></span></button>`).join('');
+  }
+
   function onCount() {
     let n = 0;
     S().devices.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { if (t.on) n++; }));
@@ -46,6 +53,7 @@
         </div></header>
       <div class="chips-row">
         <button class="quick-chip" data-action="all-off">${icon('power')}<span><b>Turn off all</b><span data-num>${n ? `${n} device${n > 1 ? 's' : ''} on` : 'No devices on'}</span></span></button>
+        ${sceneChips()}
         ${tempChip()}
         ${doorChip()}
       </div>`;
@@ -106,6 +114,7 @@
       UI.confirm({ title: 'Turn off all?', text: `${n} device${n > 1 ? 's are' : ' is'} on. Everything can be switched back on from its tile.`, ok: 'Turn off', danger: true,
         onOk: () => { S().devices.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { if (t.on) DeviceAPI(d).toggle(t.ch); })); Store.save(); render(); UI.toast('All devices off'); } });
     },
+    'scene-run': ({ id }) => Scenarios.tapScene(id, render),
     bell: () => UI.toast('Notifications — coming soon'),
     homes: () => UI.toast('Switch home — coming soon'),
     edit: () => UI.toast('Edit home — coming soon'),

@@ -12,16 +12,15 @@
     if (m < 1) return 'just now'; if (m < 60) return `${m} min ago`;
     return new Date().toDateString() === d.toDateString() ? `today ${hm}` : `${d.getDate()} ${d.toLocaleString('en', { month: 'short' })}, ${hm}`;
   };
-  let flash = {};   // tile id → time it was run (tile shows "Done")
 
+  /* Scene tile = a device tile: tap the tile to open it, the round button runs it (Home: tile opens, power toggles) */
   function sceneTile(s) {
-    const done = flash[s.id] && Date.now() - flash[s.id] < 1600;
-    const n = s.do.length;
-    return `<div class="tile scn-tile ${done ? 'on' : ''}" role="button" tabindex="0" data-key="sc-${s.id}" data-action="run" data-id="${s.id}" aria-label="Run ${esc(s.name)}">
-      <span class="tile-icon" style="${done ? 'color:var(--primary)' : ''}">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:28px;height:28px"')}</span>
-      <button class="tile-power scn-more" data-action="edit" data-id="${s.id}" aria-label="Edit ${esc(s.name)}">${icon('pen', 'icon icon-xs')}</button>
+    const busy = Scenarios.isBusy(s.id);
+    return `<div class="tile scn-tile ${busy ? 'on' : ''}" role="button" tabindex="0" data-key="sc-${s.id}" data-action="edit" data-id="${s.id}">
+      <span class="tile-icon" style="${busy ? 'color:var(--primary)' : ''}">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:28px;height:28px"')}</span>
+      <button class="tile-power scn-play" data-action="run" data-id="${s.id}" aria-label="Run ${esc(s.name)}">${Scenarios.ringHTML(s.id)}</button>
       <span class="tile-name">${esc(s.name)}</span>
-      <span class="tile-status">${done ? 'Done' : n ? `${n} action${n > 1 ? 's' : ''}` : 'Nothing to do yet'}</span></div>`;
+      <span class="tile-status"><span data-num>${esc(Scenarios.statusText(s))}</span></span></div>`;
   }
   function lastLine(s) {
     const l = (s.log || [])[0];
@@ -83,15 +82,7 @@
   UI.phone.appendChild(tb);
 
   UI.on({
-    run: ({ id }, el, e) => {
-      if (e && e.target.closest('.scn-more')) return;
-      const s = Scenarios.get(id); if (!s) return;
-      if (!s.do.length) { UI.go(`scenario.html?id=${id}`); return; }
-      const r = Scenarios.fire(s, 'Tapped');
-      flash[id] = Date.now(); render(); UI.pulse(UI.screen.querySelector(`[data-key="sc-${id}"]`), 'just-toggled');
-      setTimeout(render, 1700);
-      UI.toast(r.problems && r.problems.length ? `${s.name} · ${r.problems[0]}` : `${s.name} · done`);
-    },
+    run: ({ id }) => { const s = Scenarios.get(id); if (!s) return; if (!s.do.length) { UI.go(`scenario.html?id=${id}`); return; } Scenarios.tapScene(id, render); },
     edit: ({ id }) => UI.go(`scenario.html?id=${id}`),
     new: ({ manual }) => UI.go(`scenario.html?new=${manual ? 'scene' : 'auto'}`),
     plus: () => UI.popover(`

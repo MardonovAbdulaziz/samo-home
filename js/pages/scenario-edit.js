@@ -34,6 +34,7 @@
     h += `<div style="height:12px"></div><div class="edit-avatar" style="margin:0 auto 24px"><div class="ring">${icon(s.icon || 'tab-scenarios', 'icon', 'style="width:48px;height:48px"')}</div>
         <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
       <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
+      ${s.manual ? `<div class="list" style="margin-top:24px" data-key="home"><button class="cell" data-action="home-toggle"><span class="cell-main cell-title">Show on Home Screen</span><span class="switch" role="switch" aria-checked="${s.home !== false}"></span></button></div>` : ''}
       <div class="scn-plain" data-key="plain"><span class="scn-plain-k">In plain words</span><p>${esc(SC.sentence(s))}</p></div>
 `;
     if (auto) {
@@ -307,6 +308,7 @@
     rename: () => UI.prompt({ title: 'Name', label: 'Scenario name', value: s.name, onOk: (v) => { s.name = v; renamed = true; touch(); } }),
     'pick-icon': () => { UI.sheet({ title: 'Select an icon', render: () => iconPickerHTML(SCN_ICONS, s.icon, 'sc-icon'), footer: ICON_DONE }); },
     'sc-icon': ({ n }) => { s.icon = n; dirty = true; UI.closeSheet(); render(); },
+    'home-toggle': () => { s.home = s.home === false; touch(); },
     mode: ({ v }) => { const m = v === 'scene'; if (m === s.manual) return; s.manual = m; if (!renamed) s.name = m ? 'New scene' : 'New automation'; touch(); },
 
     'trig-add': trigChooser, trig: ({ i }) => openTrig(+i),
