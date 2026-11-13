@@ -1922,8 +1922,8 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-txt { min-width: 0; display: grid; gap: 3px; }
 .scn-txt b { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }
 .scn-sent { font: var(--body-sm); color: var(--label-secondary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.scn-last { display: inline-flex; align-items: center; gap: 4px; font: var(--body-xs); letter-spacing: var(--body-xs-ls); color: var(--label-tertiary); margin-top: 3px; }
-.scn-last .icon { width: 14px; height: 14px; }
+.scn-last { display: flex; align-items: flex-start; gap: 4px; font: var(--body-xs); letter-spacing: var(--body-xs-ls); color: var(--label-tertiary); margin-top: 3px; }
+.scn-last .icon { width: 14px; height: 14px; flex-shrink: 0; margin-top: 0; }
 .scn-last.warn { color: var(--orange); }
 .scn-add { align-items: center; }
 .scn-add .plus { width: 36px; height: 36px; border-radius: 50%; background: var(--fill-tertiary); display: grid; place-items: center; flex-shrink: 0; }
@@ -1983,6 +1983,9 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-backs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--screen-pad); }
 .scn-sheet-k { font: var(--body-sm); color: var(--label-secondary); padding: 24px calc(var(--screen-pad) + 16px) 0; }
 .sheet .sheet-group:first-child > .group-title:empty { display: none; }
+.scn-next { display: flex; gap: 10px; align-items: flex-start; margin: 12px var(--screen-pad) 0; padding: 12px 16px; border-radius: var(--radius-md); background: var(--fill-quaternary); font: var(--body-sm); color: var(--label-secondary); }
+.scn-next .icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--primary); }
+.scn-next b { color: var(--label-primary); font-weight: 500; }
 
 </style>
 </head>
@@ -10069,7 +10072,10 @@ const Store = (() => {
    Trigger   = { k:'time', at:'07:30', days:[1..7] } | { k:'sun', ev:'sunset'|'sunrise', off:min }
              | { k:'dev', id, ch, ev, v? }         | { k:'leave' } | { k:'arrive' }
    Condition = { k:'between', from:'sunset'|'HH:MM', to:'sunrise'|'HH:MM' } | { k:'days', days:[1..7] } | { k:'state', id, ch, is }
-   Action    = { k:'dev', id, ch, to, back? (min) } | { k:'notify', text, critical? } | { k:'wait', min } | { k:'run', sid }
+   Action    = { k:'dev', id, ch, to, back? (min) } | { k:'notify', text, critical? } | { k:'wait', min } | { k:'run', sid } | { k:'auto', sid, on }
+   Chains: what one scenario does to a device can start another automation (like Home Assistant / HomeKit with
+   "dummy switches"). Safe by design: at most 3 steps, each scenario once per chain, loops are flagged in the editor,
+   and the log says "Started by …".
    Days are 1 = Monday … 7 = Sunday. */
 const Scenarios = (() => {
   const esc = (s) => UI.esc(s);
@@ -10217,6 +10223,7 @@ const Scenarios = (() => {
     if (a.k === 'notify') return a.critical ? 'send everyone an urgent alert' : 'send you a notification';
     if (a.k === 'wait') return `wait ${a.min} min`;
     if (a.k === 'run') { const s = get(a.sid); return `run “${s ? s.name : 'a removed scenario'}”`; }
+    if (a.k === 'auto') { const s = get(a.sid); return `${a.on ? 'turn on' : 'pause'} “${s ? s.name : 'a removed automation'}”`; }
     return '';
   }
   /** The whole scenario as one sentence — shown on the card and live at the top of the editor. */
@@ -10342,7 +10349,8 @@ const Scenarios = (() => {
         else if (a.back) pending().push({ at: Date.now() + a.back * 60000, id: a.id, ch: a.ch || 0, to: a.to === 'on' ? 'off' : 'on' });
       }
       if (a.k === 'notify') UI.push({ title: s.name, body: a.text || sentence(s), tone: a.critical ? 'danger' : '' });
-      if (a.k === 'run' && depth < 3) { const o = get(a.sid); if (o && o.id !== s.id) { runActions(o, 0, depth + 1); log(o, { ok: true, cause: `From “${s.name}”` }); } }
+      if (a.k === 'auto') { const o = get(a.sid); if (o && !o.manual) o.on = !!a.on; else problems.push('the automation was removed'); }
+      if (a.k === 'run' && depth < 3) { const o = get(a.sid); if (o && o.id !== s.id) { runActions(o, 0, depth + 1); log(o, { ok: true, cause: `Started by “${s.name}”` }); } }
     }
     return problems;
   }
@@ -10374,20 +10382,30 @@ const Scenarios = (() => {
     if (document.hidden) return;                       // another tab: just follow the state, don't run twice
     busy = true;
     try {
-      const now = Date.now();
-      for (const [k, v] of Object.entries(cur)) { if (v.open && !(was[k] || {}).open) since[k] = now; if (!v.open) delete since[k]; }
-      for (const s of autos()) {
-        for (const t of s.when) {
-          if (t.k !== 'dev') continue;
-          const d = dev(t.id); if (!d) continue;
-          const k = keyOf(d, t.ch || 0), e = evOf(t); if (!e || !e.test || !was[k]) continue;
-          if (e.test(was[k], cur[k], t.v) && guard(s)) fire(s, cap1(triggerText(t)).replace(/^When /, ''));
+      // round 0 = what happened in the home; rounds 1–3 = what the scenarios of the previous round changed
+      let a = was, b = cur, by = null;
+      const ran = new Set();
+      for (let round = 0; round <= MAX_CHAIN; round++) {
+        const now = Date.now();
+        for (const [k, v] of Object.entries(b)) { if (v.open && !(a[k] || {}).open) since[k] = now; if (!v.open) delete since[k]; }
+        const fired = [];
+        for (const s of autos()) {
+          if (ran.has(s.id)) continue;                    // each scenario once per chain: A → B → A stops here
+          const t = s.when.find((t) => { if (t.k !== 'dev') return false; const d = dev(t.id); if (!d) return false;
+            const k = keyOf(d, t.ch || 0), e = evOf(t); return !!(e && e.test && a[k] && b[k] && e.test(a[k], b[k], t.v)); });
+          if (!t || !guard(s, !!by)) continue;
+          ran.add(s.id);
+          const r = fire(s, by ? `Started by “${by.map((x) => x.name).join('”, “')}”` : cap1(triggerText(t)).replace(/^When /, ''));
+          if (!r.skipped) fired.push(s);                  // a skipped run changes nothing, so it starts nothing
         }
+        if (!fired.length) break;
+        const c = snapshot(); a = b; b = c; by = fired;
       }
     } finally { busy = false; prev = snapshot(); }
   }
-  // the same scenario can't run again within 3 s (stops two scenarios switching a light back and forth)
-  const guard = (s) => { const n = Date.now(); if (last[s.id] && n - last[s.id] < 3000) return false; last[s.id] = n; return true; };
+  const MAX_CHAIN = 3;
+  // a scenario started by the home can't run again within 3 s (a flickering sensor); inside a chain the once-per-chain rule applies
+  const guard = (s, chained) => { const n = Date.now(); if (!chained && last[s.id] && n - last[s.id] < 3000) return false; last[s.id] = n; return true; };
   function clock() {
     const st = S(); if (!st.scenarios || document.hidden) return;
     const now = new Date(), n = nowMin(now), key = now.toDateString() + ' ' + n;
@@ -10435,14 +10453,43 @@ const Scenarios = (() => {
         if (a.k === 'dev' && b.k === 'dev' && a.id === b.id && (a.ch || 0) === (b.ch || 0) && a.to !== b.to) out.push(`“${o.name}” starts at the same moment and does the opposite with ${nameOf(a.id, a.ch)}.`);
       }
     }
-    for (const t of s.when) for (const a of s.do) {
-      if (t.k === 'dev' && a.k === 'dev' && t.id === a.id && (t.ch || 0) === (a.ch || 0)) out.push(`${nameOf(a.id, a.ch)} starts this scenario and is changed by it — it could switch itself back and forth.`);
+    if (!s.manual && s.on !== false) {
+      if (starts(s, s)) out.push(`It changes ${nameOf(...selfDev(s))}, which starts it again — it will run only once per start, but check this is what you want.`);
+      const loop = cycle(s);
+      if (loop) out.push(`It and ${loop.map((x) => `“${x.name}”`).join(', ')} start each other in a circle. The hub stops after one round each time — check this is what you want.`);
     }
     return [...new Set(out)];
   }
+  /* Chains: which device events an action makes, and which automations they start */
+  const EV_OF = { on: 'on', off: 'off', lock: 'lock', unlock: 'unlock' };
+  /** Does scenario a (by its device actions or "run a scene") start automation b? */
+  function starts(a, b) {
+    if (b.manual || b.on === false) return false;
+    return a.do.some((x) => (x.k === 'dev' && b.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === EV_OF[x.to]))
+      || (x.k === 'run' && x.sid !== a.id && (() => { const o = get(x.sid); return o && starts(o, b); })()));
+  }
+  function selfDev(s) { const x = s.do.find((x) => x.k === 'dev' && s.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === EV_OF[x.to])); return [x.id, x.ch]; }
+  /** Automations this one starts right after it runs (shown under "Do" in the editor). */
+  function next(s) { return autos().filter((o) => o.id !== s.id && starts(s, o)); }
+  /** A path s → … → s through other automations, or null. */
+  function cycle(s) {
+    const L = autos().map((o) => (o.id === s.id ? s : o)); if (!L.some((o) => o.id === s.id)) L.push(s);
+    const seen = new Set();
+    const walk = (cur, path) => {
+      for (const o of L) {
+        if (!starts(cur, o)) continue;
+        if (o.id === s.id && path.length) return path;
+        if (o.id === s.id || seen.has(o.id)) continue;
+        seen.add(o.id);
+        const r = walk(o, [...path, o]); if (r) return r;
+      }
+      return null;
+    };
+    return walk(s, []);
+  }
 
   return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
-    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, presence, warnings, start, condOk, whyNot };
+    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, presence, warnings, next, start, condOk, whyNot };
 })();
 if (typeof Store !== 'undefined') Scenarios.start();
 
@@ -11039,7 +11086,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
   /* ---------- rows ---------- */
   const tIcon = (t) => (t.k === 'time' ? 'clock' : t.k === 'sun' ? (t.ev === 'sunrise' ? 'sunrise' : 'moon') : t.k === 'dev' ? SC.iconOf(t.id, t.ch) : 'my-location');
   const cIcon = (c) => (c.k === 'between' ? (c.from === 'sunrise' ? 'sun' : 'moon') : c.k === 'days' ? 'clock' : SC.iconOf(c.id, c.ch));
-  const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'bell' : a.k === 'wait' ? 'hourglass' : 'tab-scenarios');
+  const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'bell' : a.k === 'wait' ? 'hourglass' : a.k === 'auto' ? (a.on ? 'power' : 'hand-stop') : 'tab-scenarios');
   const row = (act, i, ic, text, sub = '') => `<button class="cell scn-row" data-action="${act}" data-i="${i}">
       <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(text)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
   const addRow = (act, text) => `<button class="cell scn-add-row" data-action="${act}"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">${esc(text)}</span></button>`;
@@ -11071,6 +11118,8 @@ if (typeof Store !== 'undefined') Scenarios.start();
     h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
       <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', s.do.length ? 'Then…' : 'Add an action')}</div>
       ${s.do.length > 1 ? '<div class="list-footer" data-key="f-do">Done from top to bottom.</div>' : ''}`;
+    const nx = SC.next(s);
+    if (nx.length) h += `<div class="scn-next" data-key="next">${icon('arrow-fork', 'icon')}<span>When this runs, it also starts ${nx.map((x) => `<b>${esc(x.name)}</b>`).join(', ')}.</span></div>`;
     if (warn.length) h += `<div class="pad" data-key="warn" style="margin-top:20px">${warn.map((w) => `<div class="banner warn" style="margin-top:8px">${icon('round-info')}<div>${esc(w)}</div></div>`).join('')}</div>`;
     h += `<div class="pad scn-foot" data-key="foot"><button class="btn btn-glass btn-block" data-action="try" ${s.do.length ? '' : 'disabled'}>Try it now</button>
       ${isNew ? '' : '<button class="btn btn-danger btn-block" data-action="delete">Delete scenario</button>'}</div>`;
@@ -11170,7 +11219,8 @@ if (typeof Store !== 'undefined') Scenarios.start();
     UI.sheet({ title: 'Do', render: () => UI.group('',
       choice('a-notify', 'bell', 'Send a notification', 'To your phone or the whole family') +
       choice('a-wait', 'hourglass', 'Wait', 'Pause before the next action') +
-      (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '')) + `<div class="scn-sheet-k">Or control a device</div>` + deviceList('act', 'a-dev-pick') });
+      (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '') +
+      (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + `<div class="scn-sheet-k">Or control a device</div>` + deviceList('act', 'a-dev-pick') });
   }
   function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
   const BACKS = [0, 1, 2, 5, 10, 30, 60, 90];
@@ -11204,7 +11254,17 @@ if (typeof Store !== 'undefined') Scenarios.start();
     sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Run a scene', render: () => `<div class="list">${Kit.radio('run-pick', a.sid, scenes.map((x) => [x.id, x.name, `${x.do.length} actions`]))}</div>`, footer: done('act', i != null, false) }) };
     reopen();
   }
-  function openAct(i) { const a = s.do[i]; if (a.k === 'dev') actDeviceDo(a.id, a.ch, i); else if (a.k === 'notify') actNotify(i); else if (a.k === 'wait') actWait(i); else actRun(i); }
+  const autosOther = () => SC.list().filter((x) => !x.manual && x.id !== s.id);
+  function actAuto(i) {
+    const L = autosOther();
+    const a = i != null ? clone(s.do[i]) : { k: 'auto', sid: (L[0] || {}).id, on: false };
+    sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Pause or turn on', render: () => `<div class="pad"><div class="segmented scn-mode" style="margin-top:0">
+        <button class="${a.on ? '' : 'on'}" data-action="au-on" data-v="0">Pause it</button><button class="${a.on ? 'on' : ''}" data-action="au-on" data-v="1">Turn it on</button></div></div>
+      <div class="list" style="margin-top:8px">${Kit.radio('au-pick', a.sid, L.map((x) => [x.id, x.name, Scenarios.sentence(x)]))}</div>
+      <div class="list-footer">${a.on ? 'It starts working again.' : 'It stays saved and does nothing until something turns it on again.'}</div>`, footer: done('act', i != null) }) };
+    reopen();
+  }
+  function openAct(i) { const a = s.do[i]; if (a.k === 'dev') actDeviceDo(a.id, a.ch, i); else if (a.k === 'notify') actNotify(i); else if (a.k === 'wait') actWait(i); else if (a.k === 'auto') actAuto(i); else actRun(i); }
 
   function bindTime(el) {
     el.querySelectorAll('input[type="time"]').forEach((inp) => inp.addEventListener('change', () => { if (inp.value) { sh.x[inp.dataset.f] = inp.value; } }));
@@ -11276,6 +11336,9 @@ if (typeof Store !== 'undefined') Scenarios.start();
     'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
     'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },
     'run-pick': ({ v }) => { sh.x.sid = v; commit('act'); },
+    'a-auto': () => actAuto(),
+    'au-on': ({ v }) => { sh.x.on = v === '1'; reopen(); },
+    'au-pick': ({ v }) => { sh.x.sid = v; reopen(); },
     'act-done': () => { if (sh.x.k === 'notify' && !String(sh.x.text || '').trim()) { UI.toast('Write the message'); return; } commit('act'); },
     'act-remove': () => removeItem('act'),
   });

@@ -12,7 +12,10 @@
    Trigger   = { k:'time', at:'07:30', days:[1..7] } | { k:'sun', ev:'sunset'|'sunrise', off:min }
              | { k:'dev', id, ch, ev, v? }         | { k:'leave' } | { k:'arrive' }
    Condition = { k:'between', from:'sunset'|'HH:MM', to:'sunrise'|'HH:MM' } | { k:'days', days:[1..7] } | { k:'state', id, ch, is }
-   Action    = { k:'dev', id, ch, to, back? (min) } | { k:'notify', text, critical? } | { k:'wait', min } | { k:'run', sid }
+   Action    = { k:'dev', id, ch, to, back? (min) } | { k:'notify', text, critical? } | { k:'wait', min } | { k:'run', sid } | { k:'auto', sid, on }
+   Chains: what one scenario does to a device can start another automation (like Home Assistant / HomeKit with
+   "dummy switches"). Safe by design: at most 3 steps, each scenario once per chain, loops are flagged in the editor,
+   and the log says "Started by …".
    Days are 1 = Monday … 7 = Sunday. */
 const Scenarios = (() => {
   const esc = (s) => UI.esc(s);
@@ -160,6 +163,7 @@ const Scenarios = (() => {
     if (a.k === 'notify') return a.critical ? 'send everyone an urgent alert' : 'send you a notification';
     if (a.k === 'wait') return `wait ${a.min} min`;
     if (a.k === 'run') { const s = get(a.sid); return `run “${s ? s.name : 'a removed scenario'}”`; }
+    if (a.k === 'auto') { const s = get(a.sid); return `${a.on ? 'turn on' : 'pause'} “${s ? s.name : 'a removed automation'}”`; }
     return '';
   }
   /** The whole scenario as one sentence — shown on the card and live at the top of the editor. */
@@ -285,7 +289,8 @@ const Scenarios = (() => {
         else if (a.back) pending().push({ at: Date.now() + a.back * 60000, id: a.id, ch: a.ch || 0, to: a.to === 'on' ? 'off' : 'on' });
       }
       if (a.k === 'notify') UI.push({ title: s.name, body: a.text || sentence(s), tone: a.critical ? 'danger' : '' });
-      if (a.k === 'run' && depth < 3) { const o = get(a.sid); if (o && o.id !== s.id) { runActions(o, 0, depth + 1); log(o, { ok: true, cause: `From “${s.name}”` }); } }
+      if (a.k === 'auto') { const o = get(a.sid); if (o && !o.manual) o.on = !!a.on; else problems.push('the automation was removed'); }
+      if (a.k === 'run' && depth < 3) { const o = get(a.sid); if (o && o.id !== s.id) { runActions(o, 0, depth + 1); log(o, { ok: true, cause: `Started by “${s.name}”` }); } }
     }
     return problems;
   }
@@ -317,20 +322,30 @@ const Scenarios = (() => {
     if (document.hidden) return;                       // another tab: just follow the state, don't run twice
     busy = true;
     try {
-      const now = Date.now();
-      for (const [k, v] of Object.entries(cur)) { if (v.open && !(was[k] || {}).open) since[k] = now; if (!v.open) delete since[k]; }
-      for (const s of autos()) {
-        for (const t of s.when) {
-          if (t.k !== 'dev') continue;
-          const d = dev(t.id); if (!d) continue;
-          const k = keyOf(d, t.ch || 0), e = evOf(t); if (!e || !e.test || !was[k]) continue;
-          if (e.test(was[k], cur[k], t.v) && guard(s)) fire(s, cap1(triggerText(t)).replace(/^When /, ''));
+      // round 0 = what happened in the home; rounds 1–3 = what the scenarios of the previous round changed
+      let a = was, b = cur, by = null;
+      const ran = new Set();
+      for (let round = 0; round <= MAX_CHAIN; round++) {
+        const now = Date.now();
+        for (const [k, v] of Object.entries(b)) { if (v.open && !(a[k] || {}).open) since[k] = now; if (!v.open) delete since[k]; }
+        const fired = [];
+        for (const s of autos()) {
+          if (ran.has(s.id)) continue;                    // each scenario once per chain: A → B → A stops here
+          const t = s.when.find((t) => { if (t.k !== 'dev') return false; const d = dev(t.id); if (!d) return false;
+            const k = keyOf(d, t.ch || 0), e = evOf(t); return !!(e && e.test && a[k] && b[k] && e.test(a[k], b[k], t.v)); });
+          if (!t || !guard(s, !!by)) continue;
+          ran.add(s.id);
+          const r = fire(s, by ? `Started by “${by.map((x) => x.name).join('”, “')}”` : cap1(triggerText(t)).replace(/^When /, ''));
+          if (!r.skipped) fired.push(s);                  // a skipped run changes nothing, so it starts nothing
         }
+        if (!fired.length) break;
+        const c = snapshot(); a = b; b = c; by = fired;
       }
     } finally { busy = false; prev = snapshot(); }
   }
-  // the same scenario can't run again within 3 s (stops two scenarios switching a light back and forth)
-  const guard = (s) => { const n = Date.now(); if (last[s.id] && n - last[s.id] < 3000) return false; last[s.id] = n; return true; };
+  const MAX_CHAIN = 3;
+  // a scenario started by the home can't run again within 3 s (a flickering sensor); inside a chain the once-per-chain rule applies
+  const guard = (s, chained) => { const n = Date.now(); if (!chained && last[s.id] && n - last[s.id] < 3000) return false; last[s.id] = n; return true; };
   function clock() {
     const st = S(); if (!st.scenarios || document.hidden) return;
     const now = new Date(), n = nowMin(now), key = now.toDateString() + ' ' + n;
@@ -378,13 +393,42 @@ const Scenarios = (() => {
         if (a.k === 'dev' && b.k === 'dev' && a.id === b.id && (a.ch || 0) === (b.ch || 0) && a.to !== b.to) out.push(`“${o.name}” starts at the same moment and does the opposite with ${nameOf(a.id, a.ch)}.`);
       }
     }
-    for (const t of s.when) for (const a of s.do) {
-      if (t.k === 'dev' && a.k === 'dev' && t.id === a.id && (t.ch || 0) === (a.ch || 0)) out.push(`${nameOf(a.id, a.ch)} starts this scenario and is changed by it — it could switch itself back and forth.`);
+    if (!s.manual && s.on !== false) {
+      if (starts(s, s)) out.push(`It changes ${nameOf(...selfDev(s))}, which starts it again — it will run only once per start, but check this is what you want.`);
+      const loop = cycle(s);
+      if (loop) out.push(`It and ${loop.map((x) => `“${x.name}”`).join(', ')} start each other in a circle. The hub stops after one round each time — check this is what you want.`);
     }
     return [...new Set(out)];
   }
+  /* Chains: which device events an action makes, and which automations they start */
+  const EV_OF = { on: 'on', off: 'off', lock: 'lock', unlock: 'unlock' };
+  /** Does scenario a (by its device actions or "run a scene") start automation b? */
+  function starts(a, b) {
+    if (b.manual || b.on === false) return false;
+    return a.do.some((x) => (x.k === 'dev' && b.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === EV_OF[x.to]))
+      || (x.k === 'run' && x.sid !== a.id && (() => { const o = get(x.sid); return o && starts(o, b); })()));
+  }
+  function selfDev(s) { const x = s.do.find((x) => x.k === 'dev' && s.when.some((t) => t.k === 'dev' && t.id === x.id && (t.ch || 0) === (x.ch || 0) && t.ev === EV_OF[x.to])); return [x.id, x.ch]; }
+  /** Automations this one starts right after it runs (shown under "Do" in the editor). */
+  function next(s) { return autos().filter((o) => o.id !== s.id && starts(s, o)); }
+  /** A path s → … → s through other automations, or null. */
+  function cycle(s) {
+    const L = autos().map((o) => (o.id === s.id ? s : o)); if (!L.some((o) => o.id === s.id)) L.push(s);
+    const seen = new Set();
+    const walk = (cur, path) => {
+      for (const o of L) {
+        if (!starts(cur, o)) continue;
+        if (o.id === s.id && path.length) return path;
+        if (o.id === s.id || seen.has(o.id)) continue;
+        seen.add(o.id);
+        const r = walk(o, [...path, o]); if (r) return r;
+      }
+      return null;
+    };
+    return walk(s, []);
+  }
 
   return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
-    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, presence, warnings, start, condOk, whyNot };
+    triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, presence, warnings, next, start, condOk, whyNot };
 })();
 if (typeof Store !== 'undefined') Scenarios.start();

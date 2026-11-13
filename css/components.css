@@ -1746,8 +1746,8 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-txt { min-width: 0; display: grid; gap: 3px; }
 .scn-txt b { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }
 .scn-sent { font: var(--body-sm); color: var(--label-secondary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.scn-last { display: inline-flex; align-items: center; gap: 4px; font: var(--body-xs); letter-spacing: var(--body-xs-ls); color: var(--label-tertiary); margin-top: 3px; }
-.scn-last .icon { width: 14px; height: 14px; }
+.scn-last { display: flex; align-items: flex-start; gap: 4px; font: var(--body-xs); letter-spacing: var(--body-xs-ls); color: var(--label-tertiary); margin-top: 3px; }
+.scn-last .icon { width: 14px; height: 14px; flex-shrink: 0; margin-top: 0; }
 .scn-last.warn { color: var(--orange); }
 .scn-add { align-items: center; }
 .scn-add .plus { width: 36px; height: 36px; border-radius: 50%; background: var(--fill-tertiary); display: grid; place-items: center; flex-shrink: 0; }
@@ -1807,3 +1807,6 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-backs { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--screen-pad); }
 .scn-sheet-k { font: var(--body-sm); color: var(--label-secondary); padding: 24px calc(var(--screen-pad) + 16px) 0; }
 .sheet .sheet-group:first-child > .group-title:empty { display: none; }
+.scn-next { display: flex; gap: 10px; align-items: flex-start; margin: 12px var(--screen-pad) 0; padding: 12px 16px; border-radius: var(--radius-md); background: var(--fill-quaternary); font: var(--body-sm); color: var(--label-secondary); }
+.scn-next .icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--primary); }
+.scn-next b { color: var(--label-primary); font-weight: 500; }

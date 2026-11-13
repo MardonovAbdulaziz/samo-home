@@ -18,7 +18,7 @@
   /* ---------- rows ---------- */
   const tIcon = (t) => (t.k === 'time' ? 'clock' : t.k === 'sun' ? (t.ev === 'sunrise' ? 'sunrise' : 'moon') : t.k === 'dev' ? SC.iconOf(t.id, t.ch) : 'my-location');
   const cIcon = (c) => (c.k === 'between' ? (c.from === 'sunrise' ? 'sun' : 'moon') : c.k === 'days' ? 'clock' : SC.iconOf(c.id, c.ch));
-  const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'bell' : a.k === 'wait' ? 'hourglass' : 'tab-scenarios');
+  const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'bell' : a.k === 'wait' ? 'hourglass' : a.k === 'auto' ? (a.on ? 'power' : 'hand-stop') : 'tab-scenarios');
   const row = (act, i, ic, text, sub = '') => `<button class="cell scn-row" data-action="${act}" data-i="${i}">
       <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(text)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
   const addRow = (act, text) => `<button class="cell scn-add-row" data-action="${act}"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">${esc(text)}</span></button>`;
@@ -50,6 +50,8 @@
     h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
       <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', s.do.length ? 'Then…' : 'Add an action')}</div>
       ${s.do.length > 1 ? '<div class="list-footer" data-key="f-do">Done from top to bottom.</div>' : ''}`;
+    const nx = SC.next(s);
+    if (nx.length) h += `<div class="scn-next" data-key="next">${icon('arrow-fork', 'icon')}<span>When this runs, it also starts ${nx.map((x) => `<b>${esc(x.name)}</b>`).join(', ')}.</span></div>`;
     if (warn.length) h += `<div class="pad" data-key="warn" style="margin-top:20px">${warn.map((w) => `<div class="banner warn" style="margin-top:8px">${icon('round-info')}<div>${esc(w)}</div></div>`).join('')}</div>`;
     h += `<div class="pad scn-foot" data-key="foot"><button class="btn btn-glass btn-block" data-action="try" ${s.do.length ? '' : 'disabled'}>Try it now</button>
       ${isNew ? '' : '<button class="btn btn-danger btn-block" data-action="delete">Delete scenario</button>'}</div>`;
@@ -149,7 +151,8 @@
     UI.sheet({ title: 'Do', render: () => UI.group('',
       choice('a-notify', 'bell', 'Send a notification', 'To your phone or the whole family') +
       choice('a-wait', 'hourglass', 'Wait', 'Pause before the next action') +
-      (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '')) + `<div class="scn-sheet-k">Or control a device</div>` + deviceList('act', 'a-dev-pick') });
+      (scenes.length ? choice('a-run', 'tab-scenarios', 'Run a scene', scenes.map((x) => x.name).slice(0, 3).join(', ')) : '') +
+      (autosOther().length ? choice('a-auto', 'hand-stop', 'Pause or turn on an automation', 'e.g. stop the morning curtains while you’re away') : '')) + `<div class="scn-sheet-k">Or control a device</div>` + deviceList('act', 'a-dev-pick') });
   }
   function actDevice() { UI.sheet({ title: 'Which device?', render: () => deviceList('act', 'a-dev-pick') }); }
   const BACKS = [0, 1, 2, 5, 10, 30, 60, 90];
@@ -183,7 +186,17 @@
     sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Run a scene', render: () => `<div class="list">${Kit.radio('run-pick', a.sid, scenes.map((x) => [x.id, x.name, `${x.do.length} actions`]))}</div>`, footer: done('act', i != null, false) }) };
     reopen();
   }
-  function openAct(i) { const a = s.do[i]; if (a.k === 'dev') actDeviceDo(a.id, a.ch, i); else if (a.k === 'notify') actNotify(i); else if (a.k === 'wait') actWait(i); else actRun(i); }
+  const autosOther = () => SC.list().filter((x) => !x.manual && x.id !== s.id);
+  function actAuto(i) {
+    const L = autosOther();
+    const a = i != null ? clone(s.do[i]) : { k: 'auto', sid: (L[0] || {}).id, on: false };
+    sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Pause or turn on', render: () => `<div class="pad"><div class="segmented scn-mode" style="margin-top:0">
+        <button class="${a.on ? '' : 'on'}" data-action="au-on" data-v="0">Pause it</button><button class="${a.on ? 'on' : ''}" data-action="au-on" data-v="1">Turn it on</button></div></div>
+      <div class="list" style="margin-top:8px">${Kit.radio('au-pick', a.sid, L.map((x) => [x.id, x.name, Scenarios.sentence(x)]))}</div>
+      <div class="list-footer">${a.on ? 'It starts working again.' : 'It stays saved and does nothing until something turns it on again.'}</div>`, footer: done('act', i != null) }) };
+    reopen();
+  }
+  function openAct(i) { const a = s.do[i]; if (a.k === 'dev') actDeviceDo(a.id, a.ch, i); else if (a.k === 'notify') actNotify(i); else if (a.k === 'wait') actWait(i); else if (a.k === 'auto') actAuto(i); else actRun(i); }
 
   function bindTime(el) {
     el.querySelectorAll('input[type="time"]').forEach((inp) => inp.addEventListener('change', () => { if (inp.value) { sh.x[inp.dataset.f] = inp.value; } }));
@@ -255,6 +268,9 @@
     'nt-crit': () => { sh.x.critical = !sh.x.critical; reopen(); },
     'wait-v': ({ d }) => { const m = sh.x.min; const st = m < 5 || (m === 5 && +d < 0) ? 1 : m < 30 || (m === 30 && +d < 0) ? 5 : 15; sh.x.min = Math.max(1, Math.min(120, m + st * +d)); reopen(); },
     'run-pick': ({ v }) => { sh.x.sid = v; commit('act'); },
+    'a-auto': () => actAuto(),
+    'au-on': ({ v }) => { sh.x.on = v === '1'; reopen(); },
+    'au-pick': ({ v }) => { sh.x.sid = v; reopen(); },
     'act-done': () => { if (sh.x.k === 'notify' && !String(sh.x.text || '').trim()) { UI.toast('Write the message'); return; } commit('act'); },
     'act-remove': () => removeItem('act'),
   });

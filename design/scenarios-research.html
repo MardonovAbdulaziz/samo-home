@@ -89,7 +89,7 @@
   <li><b>Scenarios tab</b> — Tap to run tiles (tap runs it, pen edits), Automatic cards (sentence, last run, switch), Ideas carousel, Built into your devices.</li>
   <li><b>Starts</b>: at a time (days), sunrise / sunset ± minutes, a device (door opens / closes / <b>stays open for X min</b>, motion, someone comes in / room empty, water, smoke, gas, lock / unlock, warmer / colder than, air gets worse, washer starts / finishes / is shaken, power above X kW, any light / relay / plug / curtain / valve on or off), people leave / arrive.</li>
   <li><b>Only if</b>: at night / in the daytime / between two times, days of the week, a device is in a state.</li>
-  <li><b>Do</b>: control a device (with “for X min”), send a notification (or an urgent alert), wait, run a scene.</li>
+  <li><b>Do</b>: control a device (with “for X min”), send a notification (or an urgent alert), wait, run a scene, pause or turn on an automation.</li>
   <li><b>Real engine</b>: scenarios really switch the prototype’s devices. Sensor events from each device page’s test panel start them; waits and “for X min” survive a page change.</li>
 </ul>
 <div class="sent">Try it: open <a href="../device.html?id=d-contact">Front door</a>, open the door in the test panel → “Light when I come in” runs at night, or is skipped in the daytime and says why on the Scenarios page.</div>
@@ -128,12 +128,26 @@
 <h3>Still open</h3>
 <ul>
   <li>Sentences use channel names as they are (“turn on Hall”) — clear only if channels are named well.</li>
-  <li>An automation’s own action doesn’t start another automation (stops loops). Some people may expect chains — decide.</li>
   <li>In the prototype, time starts run while a page is open; on the real hub they always run.</li>
   <li>Location (leave / arrive) is simulated from the desktop test panel.</li>
 </ul>
 
-<h2><span class="k">06</span>Rules for the real app</h2>
+<h2><span class="k">06</span>Chains — one scenario starting another</h2>
+<p>Asked after the first round: should what one automation does start another? Other apps do it — Home Assistant always (with run “modes” and a limit of 10 queued runs against loops), HomeKit and SmartThings through “dummy switches” people add just for this, Tuya with “run Tap-to-Run / turn an automation on or off” actions. People clearly want it; the risk is a circle that never stops. Our version:</p>
+<ul>
+  <li><b>Chains work</b>: door opens → “Lamp when the door opens” turns the lamp on → “Tell me the lamp is on” starts. Its log says <i>Started by “Lamp when the door opens”</i>.</li>
+  <li><b>Never endless</b>: at most 3 steps after the real event, and each scenario runs once per chain. A skipped run starts nothing.</li>
+  <li><b>Seen before saving</b>: the editor says “When this runs, it also starts …”, and warns when two automations start each other in a circle.</li>
+  <li><b>New action</b>: “Pause or turn on an automation” — e.g. a Holiday scene pauses the morning curtains.</li>
+</ul>
+<div class="tw"><table>
+  <tr><th>Task</th><th>Result</th><th>Taps</th><th>Notes</th></tr>
+  <tr><td>Chain: door → lamp on → notification</td><td class="ok">Pass</td><td>0</td><td>Both ran once; log “Started by …”</td></tr>
+  <tr><td>Loop A ↔ B</td><td class="ok">Pass</td><td>0</td><td>Each ran once, then stopped; editor warning shown</td></tr>
+  <tr><td>A scene pauses an automation</td><td class="ok">Pass</td><td>1</td><td>“Pause “Morning test”.”</td></tr>
+</table></div>
+
+<h2><span class="k">07</span>Rules for the real app</h2>
 <ul>
   <li>Words: Scenarios · Tap to run · Automatic · Starts when · Only if · Do. Never: trigger, condition, precondition, routine, any/all.</li>
   <li>Every scenario is shown as its sentence. If something can’t be said in a short sentence, it doesn’t belong in the simple editor.</li>
@@ -141,7 +155,7 @@
   <li>Safety: no automatic unlock; urgent alerts only for leaks, smoke, gas, break-ins.</li>
 </ul>
 
-<h2><span class="k">07</span>Next: a real test with 5 people</h2>
+<h2><span class="k">08</span>Next: a real test with 5 people</h2>
 <p>Five people from the target group (not designers), 20 minutes each, on a phone with the live prototype, thinking aloud:</p>
 <ol>
   <li>“Make the hall light come on when you come home at night.” (success = via Ideas or from zero; time; errors)</li>
@@ -152,12 +166,13 @@
 </ol>
 <p>Measure: done without help, taps, time, and one question after each task — “what will this scenario do?” (they read it back in their own words; it should match the sentence).</p>
 
-<h2><span class="k">08</span>Sources</h2>
+<h2><span class="k">09</span>Sources</h2>
 <ul class="src">
   <li><a href="https://support.google.com/googlehome/answer/15684394">Google Home — supported automation starters, conditions &amp; actions</a> · <a href="https://support.google.com/googlenest/answer/16214649">Manage smart home automations</a> · <a href="https://9to5google.com/2026/01/12/google-home-update-automations/">9to5Google, Jan 2026 update</a> · <a href="https://9to5google.com/2026/05/05/google-home-update-delivers-huge-automation-expansion-nest-cam-upgrades-for-all/">May 2026 update</a></li>
   <li><a href="https://9to5mac.com/2025/09/16/ios-26-gives-apples-home-app-new-automation-features/">9to5Mac — iOS 26 Home automation features</a> · <a href="https://www.matteralpha.com/how-to/how-to-automate-your-matter-devices-with-apple-home">Matter Alpha — automations in Apple Home</a> · <a href="https://discussions.apple.com/thread/256164892">Apple Community — location automations after iOS 26</a></li>
   <li><a href="https://support.smartthings.com/hc/en-us/articles/360051931952-Routines-in-SmartThings">SmartThings — Routines</a> · <a href="https://developer.smartthings.com/docs/automations/rules">SmartThings rules (preconditions)</a> · <a href="https://community.smartthings.com/t/what-is-precondition/269612.md">Community — “What is precondition?”</a></li>
   <li><a href="https://support.tuya.com/en/help/_detail/K9hutfnqcnby1">Tuya help — Tap-to-Run and Automation</a></li>
+  <li><a href="https://www.home-assistant.io/docs/automation/modes/">Home Assistant — automation modes</a> · <a href="https://linkdhome.com/articles/homebridge-dummy-switch-how-to">Homebridge dummy switch to link automations</a> · <a href="https://thecssninja.com/automation/smarter-dummy-switches">Smarter automations with dummy switches</a></li>
   <li><a href="https://www.techadvisor.com/article/743299/how-to-create-alexa-routines-automate-your-smart-home.html">Tech Advisor — Alexa routines</a> · <a href="https://www.howtogeek.com/732897/the-5-most-useful-actions-for-alexa-routines/">How-To Geek — Alexa routine actions</a></li>
   <li><a href="https://typeset.io/pdf/practical-trigger-action-programming-in-the-smart-home-3k8docpusg.pdf">Ur et al., Practical trigger-action programming in the smart home (CHI 2014)</a> · <a href="https://usenix.org/conference/soups2023/presentation/mccall">McCall et al., SOUPS 2023</a> · <a href="https://par.nsf.gov/biblio/10189821">Trace2TAP</a> · <a href="https://www.x-mol.com/paper/1389673494699073536">Block-based smart-home rules study (2021)</a></li>
 </ul>
