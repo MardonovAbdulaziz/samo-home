@@ -11265,7 +11265,8 @@ if (typeof Store !== 'undefined') Scenarios.start();
   const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'bell' : a.k === 'wait' ? 'hourglass' : a.k === 'auto' ? (a.on ? 'power' : 'hand-stop') : 'tab-scenarios');
   const row = (act, i, ic, text, sub = '') => `<button class="cell scn-row" data-action="${act}" data-i="${i}">
       <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(text)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
-  const addBtn = (act, text, key) => `<div class="pad scn-addbtn" data-key="${key}"><button class="btn btn-glass btn-block" data-action="${act}">${icon('plus')} ${esc(text)}</button></div>`;   // = valve “Add a plan”
+  /* add row inside the list card: blue plus + title (user's pick, 2026-11-13) */
+  const addRow = (act, text) => `<button class="cell scn-add-row" data-action="${act}"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">${esc(text)}</span></button>`;
   const condLabel = (c) => cap1(SC.condText(c).replace(/^only (if )?/, (m, f) => (f ? 'if ' : '')));
   const actSub = (a) => (a.k === 'notify' ? `“${a.text}”` : '');
 
@@ -11284,14 +11285,14 @@ if (typeof Store !== 'undefined') Scenarios.start();
         <div class="scn-mode-note">${s.manual ? 'Runs when you tap it on the Scenarios page.' : 'Runs on its own — the hub keeps working even when your phone is off.'}</div></div>`;
     if (auto) {
       h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>
-        ${s.when.length ? `<div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}</div>` : ''}${addBtn('trig-add', s.when.length ? 'Or when…' : 'Add a start', 'b-when')}
+        <div class="list" data-key="l-when">${s.when.map((t, i) => row('trig', i, tIcon(t), cap1(SC.triggerText(t).replace(/^when /, '')))).join('')}${addRow('trig-add', s.when.length ? 'Or when…' : 'Add a start')}</div>
         ${s.when.length > 1 ? '<div class="list-footer" data-key="f-when">Any one of these starts it.</div>' : ''}
         <div class="list-header scn-lh" data-key="h-only">Only if <span class="scn-opt">optional</span></div>
-        ${s.only.length ? `<div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}</div>` : ''}${addBtn('cond-add', s.only.length ? 'And only if…' : 'Add a condition', 'b-only')}
+        <div class="list" data-key="l-only">${s.only.map((c, i) => row('cond', i, cIcon(c), condLabel(c))).join('')}${addRow('cond-add', s.only.length ? 'And only if…' : 'Add a condition')}</div>
         <div class="list-footer" data-key="f-only">${s.only.length ? 'All of these must be true — otherwise it skips this time, and says why.' : 'For example: only at night, only on weekdays, only if the door is locked.'}</div>`;
     }
     h += `<div class="list-header scn-lh" data-key="h-do">Do</div>
-      ${s.do.length ? `<div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}</div>` : ''}${addBtn('act-add', s.do.length ? 'Then…' : 'Add an action', 'b-do')}
+      <div class="list" data-key="l-do">${s.do.map((a, i) => row('act', i, aIcon(a), cap1(SC.actionText(a)), actSub(a))).join('')}${addRow('act-add', s.do.length ? 'Then…' : 'Add an action')}</div>
       ${s.do.length > 1 ? '<div class="list-footer" data-key="f-do">Done from top to bottom.</div>' : ''}`;
     const nx = SC.next(s);
     if (nx.length) h += `<div class="scn-next" data-key="next">${icon('arrow-fork', 'icon')}<span>When this runs, it also starts ${nx.map((x) => `<b>${esc(x.name)}</b>`).join(', ')}.</span></div>`;
