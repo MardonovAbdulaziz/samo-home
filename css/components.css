@@ -2045,3 +2045,6 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .tw-wheel span { font: 400 17px/40px var(--font); letter-spacing: var(--body-lg-ls); text-align: center; padding-right: 0; }
 .tw-wheel span.on { font-weight: 600; }
 .tw-colon { font: 600 17px/40px var(--font); }
+/* day buttons stay round: never squeezed by the row (user, 2026-11-14) */
+.scn-day { flex: 0 1 40px; width: 40px; min-width: 0; height: auto; aspect-ratio: 1 / 1; padding: 0; }   /* shrink together on narrow phones, still round */
+.sheet .list > .cell.scn-days { gap: 4px !important; }
