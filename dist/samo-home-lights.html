@@ -2217,6 +2217,10 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-day { width: 40px; height: 40px; border-radius: 50%; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); display: grid; place-items: center; transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast) var(--ease); }
 .scn-day[aria-pressed="true"] { background: var(--primary); color: #fff; }
 .scn-day:active { transform: scale(0.92); }
+/* wheel numbers = Figma DS: body/lg 17 Regular, the chosen one Body Accent/lg-accent 17 Semibold (user, 2026-11-14: Figma wins) */
+.tw-wheel span { font: 400 17px/40px var(--font); letter-spacing: var(--body-lg-ls); text-align: center; padding-right: 0; }
+.tw-wheel span.on { font-weight: 600; }
+.tw-colon { font: 600 17px/40px var(--font); }
 
 </style>
 </head>
