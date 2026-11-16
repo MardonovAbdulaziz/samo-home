@@ -130,7 +130,7 @@ Devices.presence = (() => {
     if (has(d, 'battery') && d.battery <= 20) return { text: 'Battery low', tone: 'warn' };
     return { text: d.st.occ ? (has(d, 'zones') && d.st.zone ? `Someone · ${d.st.zone}` : 'Someone here') : 'Empty' };
   }
-  const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: 'radar-fill', on: false, status: s.text, tone: s.tone, controllable: false, offline: !d.online }]; };
+  const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: 'person', on: false, status: s.text, tone: s.tone, controllable: false, offline: !d.online }]; };
 
   /* ---------- The room plan ---------- */
   const W = 320, CW = 76, CH = 40, X0 = 8, Y0 = 18;   // 4 × 76 = 304 wide, 7 × 40 = 280 deep
@@ -243,7 +243,7 @@ Devices.presence = (() => {
 
   return {
     label: 'Presence sensor', F, PRESETS, GROUPS, create, applyDefaults, defaultName: 'Presence sensor',
-    icon: () => 'radar-fill', describe: (p) => `${p.manufacturer} · presence radar`,
+    icon: () => 'person', describe: (p) => `${p.manufacturer} · presence radar`,
     historyValue: (d) => (has(d, 'history') ? word(d) : null),
     homeTiles, page, bindPage, live, settings, bindSettings, about, tick, busy: (d) => d.st.occ || !!d.st.learnUntil,
     protoPanel, bindProto,

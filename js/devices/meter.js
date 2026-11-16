@@ -147,7 +147,7 @@ Devices.meter = (() => {
     if (has(d, 'prepay') && S(d, 'prepay').on && d.st.balance <= S(d, 'prepay').low) return { text: `${d.st.balance.toFixed(1)} kWh left`, tone: 'warn' };
     return { text: on(d) ? kw(totalW(d)) : 'Off' };
   }
-  const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: 'dashboard-3-fill', on: false, status: s.text, tone: s.tone, alert: d.online && !!d.st.trip && has(d, 'relayState') && !d.st.relay, controllable: false, offline: !d.online }]; };
+  const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: 'bolt', on: false, status: s.text, tone: s.tone, alert: d.online && !!d.st.trip && has(d, 'relayState') && !d.st.relay, controllable: false, offline: !d.online }]; };
 
   /* ---------- Device page ---------- */
   function gauge(d) {
@@ -258,7 +258,7 @@ Devices.meter = (() => {
 
   return {
     label: 'Energy meter', F, PRESETS, GROUPS, create, applyDefaults, defaultName: 'Energy meter',
-    icon: () => 'dashboard-3-fill', describe: (p) => `${p.manufacturer} · energy meter`,
+    icon: () => 'bolt', describe: (p) => `${p.manufacturer} · energy meter`,
     historyValue: (d) => (has(d, 'history') ? `${d.st.today.toFixed(1)} kWh today` : null),
     homeTiles, page, bindPage, live, settings, bindSettings, about, tick, busy: () => true,
     protoPanel, bindProto,
