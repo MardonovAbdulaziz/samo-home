@@ -56,7 +56,7 @@
 </head>
 <body>
 <h1>Presence sensor — radar</h1>
-<p class="lead">The room seen from above. A soft radar wave sweeps out from the sensor; the person is a glowing spot that shows roughly where they are, and lights up each time the wave passes. Areas you mark in the room (Sofa, Desk, Door) light up blue when someone is in them.</p>
+<p class="lead">Just the room, seen from above. A very soft radar light slowly turns around the room — you barely notice it. The person is a soft glowing spot that shows roughly where they are. Areas in the room (Sofa, Desk, Door) turn blue when someone is in them.</p>
 
 <div class="wrap">
   <div class="mock">
@@ -68,18 +68,21 @@
 
   <div class="side">
     <h2>Try it</h2>
-    <p class="sub">Tap anywhere in the room — the person walks there.</p>
+    <p class="sub">Tap anywhere in the room — the nearest person walks there.</p>
     <div class="grp"><div class="gl">State</div><div class="pills" id="st">
       <button class="pill" data-s="tour" aria-pressed="true">Walking around</button><button class="pill" data-s="still">Sitting still</button><button class="pill" data-s="small">Moving a little</button>
+      <button class="pill" data-s="two">2 people</button><button class="pill" data-s="three">3 people</button>
       <button class="pill" data-s="leaving">Leaving…</button><button class="pill" data-s="empty">Empty</button><button class="pill" data-s="off">Offline</button></div></div>
     <div class="grp"><div class="gl">Areas in the room</div><div class="pills" id="zn">
       <button class="pill" data-z="on" aria-pressed="true">Sofa, Desk, Door</button><button class="pill" data-z="off">No areas (sensor without zones)</button></div></div>
     <ul class="notes">
-      <li><b>Roughly where:</b> a soft spot, not a sharp dot — the radar knows the part of the room, not the exact centimetre.</li>
-      <li><b>Radar wave:</b> sweeps slowly from side to side; the spot flares when the wave touches it. Calm and slow when the room is empty, stopped when offline.</li>
-      <li><b>Sitting still:</b> the spot breathes slowly — the radar still sees them.</li>
-      <li><b>Areas:</b> quiet glass tiles with their name; the one with someone in it turns blue. The text below says “At the sofa”. Without areas it says “Near the sensor / In the middle / On the far side”.</li>
-      <li>Top corners stay dark — the sensor can’t see there. One colour (app blue), hairline walls, door = a gap in the wall.</li>
+      <li><b>Roughly where:</b> a soft glow with a dot — the radar knows the part of the room, not the exact spot.</li>
+      <li><b>Radar:</b> one very soft light turning once every 16 s, no edges or lines. Fainter when the room is empty, stopped when offline.</li>
+      <li><b>Sitting still:</b> the glow breathes very slowly.</li>
+      <li><b>Walking:</b> one soft streak of light behind the dot that thins out and melts away when they stop — no separate dots.</li>
+      <li><b>Several people</b> (FP2-type sensors see up to 5): one spot each, every occupied area lights up; the headline becomes “2 people here” and the line below lists the places (“Sofa, Desk”). Sensors that can’t count just say “Someone here”.</li>
+      <li><b>Areas:</b> quiet glass tiles; the one with someone in it turns blue. Text below: “At the sofa”. Without areas: “Near the sensor / In the middle / On the far side”.</li>
+      <li>One unbroken wall line — nothing cut off, the door is just an area by the wall. No sensor drawn.</li>
     </ul>
   </div>
 </div>
@@ -88,168 +91,202 @@
 document.querySelector('.hd .b').innerHTML = icon('back');
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const W = 343, H = 300, DPR = 2; ctx.scale(DPR, DPR);
-const RM = { x: 10, y: 14, w: 323, h: 276, r: 26 };           // the room
-const SX = RM.x + RM.w / 2, SY = RM.y;                         // sensor on the top wall
-const HALF = 60 * Math.PI / 180, RANGE = 330;                  // ±60° field of view
-const DOOR = [0.43, 0.61];                                     // gap in the bottom wall (0..1 of the width)
+const RM = { x: 8, y: 8, w: 327, h: 284, r: 28 };              // the room — one unbroken outline
+const CX = RM.x + RM.w / 2, CY = RM.y + RM.h / 2;               // the radar turns around the middle of the room
 const ZONES = [
   { name: 'Sofa', u: 0.05, v: 0.55, w: 0.38, h: 0.27 },
-  { name: 'Desk', u: 0.68, v: 0.24, w: 0.27, h: 0.31 },
-  { name: 'Door', u: 0.40, v: 0.84, w: 0.24, h: 0.13 },
+  { name: 'Desk', u: 0.67, v: 0.08, w: 0.28, h: 0.33 },
+  { name: 'Door', u: 0.40, v: 0.85, w: 0.24, h: 0.115 },
 ].map((z) => Object.assign(z, { k: 0 }));
 const px = (u) => RM.x + u * RM.w, py = (v) => RM.y + v * RM.h;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ---------- state ---------- */
-const P = { u: 0.25, v: 0.66, tu: 0.25, tv: 0.66, a: 1, ta: 1, flare: 0, trail: [] };
-let mode = 'tour', zonesOn = true, sweepA = 1, tourI = 0, tourWait = 0;
-const TOUR = [[0.25, 0.66, 2.6], [0.52, 0.45, 0.2], [0.80, 0.38, 2.6], [0.62, 0.62, 0.2], [0.52, 0.90, 1.6], [0.34, 0.40, 0.2]];
+/* ---------- state: everyone the radar sees (FP2-type sensors report up to 5; simple ones report just “someone”) ---------- */
+const mkP = (u, v) => ({ u, v, tu: u, tv: v, a: 0, ta: 1, flare: 0, hist: [], act: 'stand' });
+let people = [mkP(0.25, 0.66)]; people[0].a = 1;
+let mode = 'tour', zonesOn = true, sweepA = 1;
+const ROUTE = [[0.25, 0.66, 4], [0.50, 0.50, 0.3], [0.80, 0.26, 4], [0.62, 0.62, 0.3], [0.52, 0.90, 2.5], [0.34, 0.40, 0.3]];
 const zoneAt = (u, v) => zonesOn ? ZONES.find((z) => u >= z.u && u <= z.u + z.w && v >= z.v && v <= z.v + z.h) : null;
 
 /* ---------- drawing helpers ---------- */
 function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-function glow(x, y, r, rgb, a) {   // eased radial stops — no hard disc edge, no banding
-  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+function glow(c, x, y, r, rgb, a) {   // eased radial stops — no hard disc edge, no banding
+  const g = c.createRadialGradient(x, y, 0, x, y, r);
   [[0, 1], [.18, .82], [.36, .56], [.54, .32], [.72, .14], [.88, .04], [1, 0]].forEach(([o, k]) => g.addColorStop(o, `rgba(${rgb},${(a * k).toFixed(4)})`));
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
 }
-function fanPath() { ctx.beginPath(); ctx.moveTo(SX, SY); ctx.arc(SX, SY, RANGE, Math.PI / 2 - HALF, Math.PI / 2 + HALF); ctx.closePath(); }
-const inZone = (x, y) => zonesOn && ZONES.some((z) => x > px(z.u) - 3 && x < px(z.u + z.w) + 3 && y > py(z.v) - 3 && y < py(z.v + z.h) + 3);
+const inZone = (x, y) => zonesOn && ZONES.some((z) => x > px(z.u) - 4 && x < px(z.u + z.w) + 4 && y > py(z.v) - 4 && y < py(z.v + z.h) + 4);
+const inRoom = (x, y, m) => x > RM.x + m && x < RM.x + RM.w - m && y > RM.y + m && y < RM.y + RM.h - m;
 const mix = (a, b, k) => a + (b - a) * k;
+const smooth = (cur, to, dt, tau) => cur + (to - cur) * (1 - Math.exp(-dt / tau));
+const TAU = Math.PI * 2;
+// the radar light is drawn off-screen, then faded out near the middle so its front never reads as a line
+const off = document.createElement('canvas'); off.width = cv.width; off.height = cv.height; const oc = off.getContext('2d'); oc.scale(DPR, DPR);
 
-function wall() {   // hairline walls with a door gap at the bottom
-  const { x, y, w, h, r } = RM, d0 = x + DOOR[0] * w, d1 = x + DOOR[1] * w;
-  ctx.beginPath(); ctx.moveTo(d1, y + h); ctx.arcTo(x + w, y + h, x + w, y, r); ctx.arcTo(x + w, y, x, y, r); ctx.arcTo(x, y, x, y + h, r); ctx.arcTo(x, y + h, x + w, y + h, r); ctx.lineTo(d0, y + h);
-  ctx.strokeStyle = 'rgba(255,255,255,.26)'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.stroke();
+/* a walking person leaves one soft, tapered streak of light (a single filled shape — no beads, no dots) */
+function streak(p) {
+  const pts = p.hist; if (pts.length < 3) return;
+  const head = pts[pts.length - 1], tail = pts[0], len = pts.length;
+  const L = [], R = [];
+  for (let i = 0; i < len; i++) {
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(len - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], n = Math.hypot(dx, dy) || 1;
+    const k = i / (len - 1), w = 5.5 * Math.pow(k, 0.8);
+    L.push([pts[i][0] - dy / n * w, pts[i][1] + dx / n * w]); R.push([pts[i][0] + dy / n * w, pts[i][1] - dx / n * w]);
+  }
+  ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]);
+  for (let i = 1; i < len; i++) ctx.lineTo(L[i][0], L[i][1]);
+  for (let i = len - 1; i >= 0; i--) ctx.lineTo(R[i][0], R[i][1]);
+  ctx.closePath();
+  const g = ctx.createLinearGradient(tail[0], tail[1], head[0], head[1]);
+  g.addColorStop(0, 'rgba(10,132,255,0)'); g.addColorStop(.5, `rgba(10,132,255,${(.07 * p.a).toFixed(3)})`); g.addColorStop(1, `rgba(64,156,255,${(.26 * p.a).toFixed(3)})`);
+  ctx.fillStyle = g; ctx.fill();
 }
 
 function draw(t, dt) {
   ctx.clearRect(0, 0, W, H);
-  const off = mode === 'off', empty = mode === 'empty', occ = !off && !empty;
-  ctx.globalAlpha = off ? 0.45 : 1;
+  const offline = mode === 'off', empty = mode === 'empty';
+  ctx.globalAlpha = offline ? 0.5 : 1;
 
-  // floor
-  rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.fillStyle = 'rgba(255,255,255,.035)'; ctx.fill();
+  ctx.save(); rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.clip();
+  ctx.fillStyle = 'rgba(255,255,255,.03)'; ctx.fillRect(RM.x, RM.y, RM.w, RM.h);
+  glow(ctx, CX, CY, 210, '10,132,255', offline ? 0.03 : 0.07);
+  [[34, .12], [72, .095], [110, .07], [148, .045]].forEach(([r, a]) => {   // distance rings: fine dots, fading outwards, kept off walls and areas
+    ctx.fillStyle = `rgba(255,255,255,${a})`; const n = Math.round(TAU * r / 8);
+    for (let i = 0; i < n; i++) { const an = TAU * i / n, x = CX + Math.cos(an) * r, y = CY + Math.sin(an) * r; if (!inRoom(x, y, 12) || inZone(x, y)) continue; ctx.beginPath(); ctx.arc(x, y, .85, 0, TAU); ctx.fill(); }
+  });
 
-  // radar field (clipped to the room and the field of view)
-  ctx.save(); rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.clip(); fanPath(); ctx.clip();
-  glow(SX, SY, RANGE, '10,132,255', off ? 0.06 : 0.13);
-  // distance rings: fine dots
-  ctx.fillStyle = 'rgba(255,255,255,.16)';
-  for (const rk of [0.25, 0.5, 0.75]) { const r = RANGE * rk, n = Math.round(r * 2 * HALF / 7); for (let i = 0; i <= n; i++) { const a = Math.PI / 2 - HALF + (2 * HALF) * i / n; const dx = SX + Math.cos(a) * r, dy = SY + Math.sin(a) * r; if (inZone(dx, dy)) continue; ctx.beginPath(); ctx.arc(dx, dy, .9, 0, Math.PI * 2); ctx.fill(); } }
-  ctx.restore();
-  // areas
-  const here = occ && mode !== 'leaving' ? zoneAt(P.u, P.v) : null;
+  // areas — every area with someone in it turns blue
+  const busy = new Set(empty || offline || mode === 'leaving' ? [] : people.filter((p) => p.ta > 0).map((p) => zoneAt(p.u, p.v)).filter(Boolean));
   ZONES.forEach((z) => {
-    z.k += ((zonesOn ? (z === here ? 1 : 0) : 0) - z.k) * (1 - Math.exp(-dt / 0.18));
+    z.k = smooth(z.k, zonesOn && busy.has(z) ? 1 : 0, dt, 0.28);
     if (!zonesOn) return;
     const x = px(z.u), y = py(z.v), w = z.w * RM.w, h = z.h * RM.h;
     rr(x, y, w, h, 14);
-    ctx.fillStyle = `rgba(${Math.round(mix(255, 10, z.k))},${Math.round(mix(255, 132, z.k))},255,${mix(.045, .16, z.k).toFixed(3)})`; ctx.fill();
-    ctx.strokeStyle = `rgba(${Math.round(mix(255, 64, z.k))},${Math.round(mix(255, 156, z.k))},255,${mix(.10, .55, z.k).toFixed(3)})`; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = `rgba(${Math.round(mix(255, 10, z.k))},${Math.round(mix(255, 132, z.k))},255,${mix(.045, .14, z.k).toFixed(3)})`; ctx.fill();
+    ctx.strokeStyle = `rgba(${Math.round(mix(255, 64, z.k))},${Math.round(mix(255, 156, z.k))},255,${mix(.10, .42, z.k).toFixed(3)})`; ctx.lineWidth = 1; ctx.stroke();
     ctx.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; ctx.textBaseline = 'top';
-    ctx.fillStyle = `rgba(255,255,255,${mix(.5, 1, z.k).toFixed(3)})`; ctx.fillText(z.name, x + 10, y + 9);
+    ctx.fillStyle = `rgba(255,255,255,${mix(.5, .95, z.k).toFixed(3)})`; ctx.fillText(z.name, x + 10, y + 9);
   });
 
-  ctx.save(); rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.clip(); fanPath(); ctx.clip();
-  // sweep — a soft wave going side to side; its tail is longer when it moves fast
-  sweepA += ((off ? 0 : empty ? 0.55 : 1) - sweepA) * (1 - Math.exp(-dt / 0.5));
-  let beam = Math.PI / 2, vel = 0;
+  // radar: one very soft light slowly turning around the room — no edges, no line, barely there
+  sweepA = smooth(sweepA, offline ? 0 : empty ? 0.6 : 1, dt, 0.8);
+  const beam = (t / 16) * TAU % TAU;   // one turn in 16 s
   if (!reduce && sweepA > 0.01) {
-    const T = 6.4, ph = (t / T) * Math.PI * 2;
-    beam = Math.PI / 2 + HALF * 0.98 * Math.sin(ph); vel = Math.cos(ph);
-    const tail = (0.06 + 0.5 * Math.abs(vel)), dir = Math.sign(vel) || 1, f = tail / (Math.PI * 2);
-    const start = dir > 0 ? beam - tail : beam;
-    const g = ctx.createConicGradient(start, SX, SY), A = 0.24 * sweepA;
-    if (dir > 0) { g.addColorStop(0, 'rgba(10,132,255,0)'); g.addColorStop(f * .5, `rgba(10,132,255,${A * .25})`); g.addColorStop(f * .85, `rgba(10,132,255,${A * .7})`); g.addColorStop(f, `rgba(64,156,255,${A})`); g.addColorStop(Math.min(1, f + .0015), 'rgba(10,132,255,0)'); g.addColorStop(1, 'rgba(10,132,255,0)'); }
-    else { g.addColorStop(0, `rgba(64,156,255,${A})`); g.addColorStop(f * .15, `rgba(10,132,255,${A * .7})`); g.addColorStop(f * .5, `rgba(10,132,255,${A * .25})`); g.addColorStop(f, 'rgba(10,132,255,0)'); g.addColorStop(1, 'rgba(10,132,255,0)'); }
-    ctx.fillStyle = g; fanPath(); ctx.fill();
-    // the wave front: a fine line that fades with distance
-    const lg = ctx.createLinearGradient(SX, SY, SX + Math.cos(beam) * RANGE, SY + Math.sin(beam) * RANGE);
-    lg.addColorStop(0, `rgba(140,195,255,${.55 * sweepA})`); lg.addColorStop(.7, `rgba(140,195,255,${.18 * sweepA})`); lg.addColorStop(1, 'rgba(140,195,255,0)');
-    ctx.strokeStyle = lg; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(SX, SY); ctx.lineTo(SX + Math.cos(beam) * RANGE, SY + Math.sin(beam) * RANGE); ctx.stroke();
-  }
-  ctx.restore();
-  // what the sensor can't see (top corners) stays plain floor; field edges as faint dotted rays
-  ctx.save(); rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.clip(); ctx.fillStyle = 'rgba(255,255,255,.10)';
-  for (const a of [Math.PI / 2 - HALF, Math.PI / 2 + HALF]) for (let r = 16; r < RANGE; r += 7) { ctx.beginPath(); ctx.arc(SX + Math.cos(a) * r, SY + Math.sin(a) * r, .8, 0, Math.PI * 2); ctx.fill(); }
-  ctx.restore();
-
-  // the person: a soft “roughly here” spot + a clear dot
-  P.a += (P.ta - P.a) * (1 - Math.exp(-dt / 0.35));
-  if (P.a > 0.01) {
-    const x = px(P.u), y = py(P.v), ang = Math.atan2(y - SY, x - SX);
-    let d = Math.abs(beam - ang); const hit = sweepA > .3 && !reduce ? Math.exp(-((d / 0.09) ** 2)) : 0;
-    P.flare = Math.max(P.flare * Math.exp(-dt / 0.9), hit);
-    const leaving = mode === 'leaving', still = mode === 'still', breathe = still && !reduce ? (Math.sin(t * Math.PI * 2 / 4.2) + 1) / 2 : 0;
-    // trail while walking
-    P.trail.forEach((q, i) => { const k = (i + 1) / P.trail.length; ctx.fillStyle = `rgba(64,156,255,${(0.28 * k * P.a).toFixed(3)})`; ctx.beginPath(); ctx.arc(px(q[0]), py(q[1]), 1.6 + 1.6 * k, 0, Math.PI * 2); ctx.fill(); });
-    const ga = (leaving ? 0.10 : 0.30 + 0.22 * P.flare + 0.08 * breathe) * P.a;
-    glow(x, y, 40 + 10 * P.flare + 6 * breathe, '10,132,255', ga);
-    glow(x, y + 2, 13, '0,0,0', 0.35 * P.a);                           // soft contact shadow under the dot
-    ctx.globalAlpha = (off ? .45 : 1) * P.a * (leaving ? 0.55 : 1);
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 8.5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = leaving ? '#8e8e93' : '#0A84FF'; ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = off ? 0.45 : 1;
+    oc.clearRect(0, 0, W, H); oc.globalCompositeOperation = 'source-over';
+    const tail = 1.9, f = tail / TAU, A = 0.075 * sweepA, g = oc.createConicGradient(beam - tail, CX, CY);
+    [[0, 0], [.35, .06], [.6, .2], [.8, .48], [.93, .8], [1, 1]].forEach(([o, k]) => g.addColorStop(o * f, `rgba(10,132,255,${(A * k).toFixed(4)})`));
+    [[.012, .55], [.03, .15], [.05, 0]].forEach(([o, k]) => g.addColorStop(f + o, `rgba(10,132,255,${(A * k).toFixed(4)})`));
+    g.addColorStop(1, 'rgba(10,132,255,0)');
+    oc.fillStyle = g; oc.fillRect(0, 0, W, H);
+    oc.globalCompositeOperation = 'destination-in';   // nothing at the very middle, full from ~70 px, softer at the far walls
+    const m = oc.createRadialGradient(CX, CY, 0, CX, CY, 230);
+    [[0, 0], [.08, .05], [.18, .35], [.3, .8], [.42, 1], [.75, .85], [1, .5]].forEach(([o, k]) => m.addColorStop(o, `rgba(0,0,0,${k})`));
+    oc.fillStyle = m; oc.fillRect(0, 0, W, H);
+    ctx.drawImage(off, 0, 0, W, H);
   }
 
-  wall();
-  // the sensor on the top wall
-  rr(SX - 16, SY - 4.5, 32, 9, 4.5); ctx.fillStyle = '#e9edf2'; ctx.fill();
-  if (!off) glow(SX, SY + 1, 9, '10,132,255', .9);
-  ctx.fillStyle = off ? '#6b7280' : '#5fb0ff'; ctx.beginPath(); ctx.arc(SX, SY + 1, 1.7, 0, Math.PI * 2); ctx.fill();
+  // people: a soft “roughly here” glow + a clear dot; a gentle lift when the radar passes
+  people.forEach((p) => {
+    if (p.a < 0.01) return;
+    const x = px(p.u), y = py(p.v), ang = (Math.atan2(y - CY, x - CX) + TAU) % TAU;
+    const d = Math.min(Math.abs(beam - ang), TAU - Math.abs(beam - ang)), hit = sweepA > .3 && !reduce ? Math.exp(-((d / 0.35) ** 2)) : 0;
+    p.flare = smooth(p.flare, hit, dt, 0.6);
+    const leaving = mode === 'leaving', still = p.act === 'still', breathe = still && !reduce ? (1 - Math.cos(t * TAU / 5.5 + p.u * 9)) / 2 : 0;
+    if (!leaving) streak(p);
+    glow(ctx, x, y, 42 + 4 * breathe, '10,132,255', (leaving ? 0.08 : 0.24 + 0.07 * p.flare + 0.05 * breathe) * p.a);
+    glow(ctx, x, y + 2, 13, '0,0,0', 0.3 * p.a);
+    ctx.globalAlpha = (offline ? .5 : 1) * p.a * (leaving ? 0.6 : 1);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 8, 0, TAU); ctx.fill();
+    ctx.fillStyle = leaving ? '#8e8e93' : '#0A84FF'; ctx.beginPath(); ctx.arc(x, y, 5.75, 0, TAU); ctx.fill();
+    ctx.globalAlpha = offline ? 0.5 : 1;
+  });
+  ctx.restore();
+
+  rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 1.5; ctx.stroke();   // one unbroken wall line
   ctx.globalAlpha = 1;
 }
 
 /* ---------- behaviour ---------- */
-let last = performance.now(), trailT = 0, frozenT = 0;
+let last = performance.now(), frozenT = 0;
 function step(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   const t = mode === 'off' ? frozenT : (frozenT = now / 1000);
-  if (mode === 'tour') {
-    const [tu, tv, wait] = TOUR[tourI]; P.tu = tu; P.tv = tv;
-    if (Math.hypot(P.u - tu, P.v - tv) < 0.01) { tourWait += dt; if (tourWait > wait) { tourWait = 0; tourI = (tourI + 1) % TOUR.length; } }
-  }
-  if (mode === 'small') { P.tu = P.bu + Math.sin(now / 900) * 0.012; P.tv = P.bv + Math.cos(now / 1300) * 0.01; }
-  if (mode !== 'off') {   // walking pace: a steady speed with soft start / stop
-    const du = P.tu - P.u, dv = P.tv - P.v, dist = Math.hypot(du, dv), sp = Math.min(dist, Math.max(0.0, 0.22 * dt) * Math.min(1, dist / 0.05 + .25));
-    if (dist > 1e-4) { P.u += du / dist * sp; P.v += dv / dist * sp; }
-    trailT += dt; if (trailT > 0.09) { trailT = 0; P.trail.push([P.u, P.v]); if (P.trail.length > 10 || dist < 0.004) P.trail.shift(); if (dist < 0.004 && P.trail.length) P.trail.shift(); }
-  }
+  people.forEach((p) => {
+    if (p.route) {   // walking from place to place, resting a little at each
+      const [tu, tv, wait] = p.route[p.ri]; p.tu = tu; p.tv = tv;
+      if (Math.hypot(p.u - tu, p.v - tv) < 0.01) { p.wait = (p.wait || 0) + dt; if (p.wait > wait) { p.wait = 0; p.ri = (p.ri + 1) % p.route.length; } }
+    }
+    if (p.act === 'small') { p.tu = p.bu + Math.sin(now / 1600) * 0.008; p.tv = p.bv + Math.cos(now / 2100) * 0.006; }
+    if (mode !== 'off') {   // walking pace: steady, with a soft start and stop
+      const du = p.tu - p.u, dv = p.tv - p.v, dist = Math.hypot(du, dv), sp = Math.min(dist, 0.16 * dt * Math.min(1, dist / 0.08 + .2));
+      if (dist > 1e-4) { p.u += du / dist * sp; p.v += dv / dist * sp; }
+      // the streak follows the last ~0.7 s of walking and melts away when they stop
+      const walking = dist > 0.01 && p.act !== 'small';
+      const xy = [px(p.u), py(p.v)], lastPt = p.hist[p.hist.length - 1];
+      if (walking && (!lastPt || Math.hypot(xy[0] - lastPt[0], xy[1] - lastPt[1]) > 1.5)) p.hist.push(xy);
+      if (p.hist.length > (walking ? 26 : 0)) p.hist.shift();
+      if (!walking && p.hist.length) { p.hist.shift(); if (p.hist.length) p.hist[p.hist.length - 1] = xy; }
+    }
+    p.a = smooth(p.a, p.ta, dt, 0.45);
+  });
+  people = people.filter((p) => p.ta > 0 || p.a > 0.01);
   draw(t, dt); text();
   requestAnimationFrame(step);
 }
-function where() {
-  const z = zoneAt(P.u, P.v); if (z) return `At the ${z.name.toLowerCase()}`;
-  return P.v < 0.33 ? 'Near the sensor' : P.v < 0.66 ? 'In the middle of the room' : 'On the far side';
+function placeOf(p) {
+  const z = zoneAt(p.u, p.v); if (z) return `At the ${z.name.toLowerCase()}`;
+  return p.v < 0.33 ? 'Near the sensor' : p.v < 0.66 ? 'In the middle of the room' : 'On the far side';
 }
+const doing = (p) => p.act === 'still' ? 'sitting still' : p.act === 'small' ? 'moving a little' : Math.hypot(p.tu - p.u, p.tv - p.v) > 0.01 ? 'walking' : 'standing';
 let leaveAt = 0, lastTxt = '';
 function text() {
   let w = 'Someone here', s = '', on = true;
-  const moving = Math.hypot(P.tu - P.u, P.tv - P.v) > 0.01;
+  const here = people.filter((p) => p.ta > 0);
   if (mode === 'empty') { w = 'Empty'; s = 'Empty since 9:12'; on = false; }
   else if (mode === 'off') { w = 'Unknown'; s = 'Last report 8:40'; on = false; }
   else if (mode === 'leaving') { w = 'Leaving…'; s = `Empty in ${Math.max(0, Math.ceil((leaveAt - performance.now()) / 1000))} s if nobody moves`; on = false; }
-  else s = `${where()} · ${mode === 'still' ? 'sitting still · for 47 min' : mode === 'small' ? 'moving a little · for 12 min' : moving ? 'walking' : 'standing'}`;
+  else if (here.length > 1) {   // several people: the count is the headline, the places go underneath
+    w = `${here.length} people here`;
+    const by = new Map(); here.forEach((p) => { const z = zoneAt(p.u, p.v), k = z ? `at the ${z.name.toLowerCase()}` : doing(p) === 'walking' ? 'walking' : 'in the room'; by.set(k, (by.get(k) || 0) + 1); });
+    s = [...by].map(([k, n]) => `${n} ${k}`).join(' · ');
+  }
+  else if (here.length) { const p = here[0]; s = `${placeOf(p)} · ${doing(p)}${p.act === 'still' ? ' · for 47 min' : p.act === 'small' ? ' · for 12 min' : ''}`; }
   const key = w + s + on; if (key === lastTxt) return; lastTxt = key;
   const we = document.getElementById('w'); we.textContent = w; we.classList.toggle('on', on); document.getElementById('s').textContent = s;
 }
+function crowd(list) {   // keep whoever is already there (no jumping), add or fade out the rest
+  list.forEach((c, i) => {
+    let p = people.filter((q) => q.ta > 0)[i];
+    if (!p) { p = mkP(c.u0 ?? c.u, c.v0 ?? c.v); people.push(p); }
+    Object.assign(p, { ta: 1, act: c.act || 'stand', route: c.route || null, ri: 0, wait: 0, bu: c.u, bv: c.v }); if (!c.route) { p.tu = c.u; p.tv = c.v; }
+  });
+  people.filter((q) => q.ta > 0).slice(list.length).forEach((q) => { q.ta = 0; });
+}
 function setMode(m) {
-  mode = m; P.ta = m === 'empty' || m === 'off' ? (m === 'off' ? 0 : 0) : 1;
-  if (m === 'still') { P.tu = 0.22; P.tv = 0.68; }
-  if (m === 'small') { P.bu = 0.82; P.bv = 0.40; P.tu = P.bu; P.tv = P.bv; }
-  if (m === 'leaving') { leaveAt = performance.now() + 24000; P.tu = P.u; P.tv = P.v; }
-  if (m === 'empty') P.trail = [];
+  mode = m;
+  if (m === 'tour') crowd([{ route: ROUTE }]);
+  if (m === 'still') crowd([{ u: 0.22, v: 0.68, act: 'still' }]);
+  if (m === 'small') crowd([{ u: 0.81, v: 0.25, act: 'small' }]);
+  if (m === 'two') crowd([{ u: 0.22, v: 0.68, act: 'still' }, { u: 0.81, v: 0.25, act: 'small' }]);
+  if (m === 'three') crowd([{ u: 0.18, v: 0.70, act: 'still' }, { u: 0.33, v: 0.66, act: 'still' }, { route: [[0.80, 0.26, 3], [0.55, 0.55, 0.3], [0.52, 0.90, 3], [0.5, 0.4, 0.3]], u0: 0.8, v0: 0.26 }]);
+  if (m === 'leaving') { leaveAt = performance.now() + 24000; people.forEach((p) => { p.route = null; p.tu = p.u; p.tv = p.v; }); }
+  if (m === 'empty' || m === 'off') people.forEach((p) => { p.ta = 0; p.route = null; });
   document.querySelectorAll('#st .pill').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === m));
 }
 document.getElementById('st').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (b) setMode(b.dataset.s); });
 document.getElementById('zn').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (!b) return; zonesOn = b.dataset.z === 'on'; document.querySelectorAll('#zn .pill').forEach((x) => x.setAttribute('aria-pressed', x === b)); });
-cv.addEventListener('pointerdown', (e) => {
+cv.addEventListener('pointerdown', (e) => {   // tap: the nearest person walks there
   const r = cv.getBoundingClientRect(), u = ((e.clientX - r.left) / r.width * W - RM.x) / RM.w, v = ((e.clientY - r.top) / r.height * H - RM.y) / RM.h;
   if (u < 0.03 || u > 0.97 || v < 0.03 || v > 0.97) return;
-  if (mode !== 'tour') setMode('walk'); P.ta = 1; P.tu = u; P.tv = v;
+  if (['empty', 'off', 'leaving'].includes(mode)) { mode = 'walk'; crowd([{ u, v }]); }
+  const live = people.filter((p) => p.ta > 0); if (!live.length) return;
+  const p = live.reduce((a, b) => Math.hypot(a.u - u, a.v - v) < Math.hypot(b.u - u, b.v - v) ? a : b);
+  Object.assign(p, { route: null, act: 'stand', tu: u, tv: v });
+  if (mode !== 'two' && mode !== 'three') mode = 'walk';
+  document.querySelectorAll('#st .pill').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === mode));
 });
-window.PR = { setMode, P, get mode() { return mode; } };
+window.PR = { setMode, get people() { return people; }, get mode() { return mode; } };
+setMode('tour');
 requestAnimationFrame(step);
 </script>
 </body>
