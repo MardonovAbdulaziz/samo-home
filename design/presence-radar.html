@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presence Radar</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<script src="../js/icons.js"></script>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #0b0b0d; color: var(--label-primary); font: var(--body-md); font-family: var(--font); -webkit-font-smoothing: antialiased; padding: 40px 32px 80px; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; letter-spacing: .3px; }
+  .lead { color: var(--label-secondary); max-width: 820px; margin: 0 0 32px; font: var(--body-lg); }
+  .wrap { display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; }
+
+  /* phone: device page top */
+  .mock { flex: none; width: 375px; height: 812px; border-radius: 44px; overflow: hidden; position: relative;
+    background: radial-gradient(120% 45% at 50% 105%, rgba(20,150,160,.5) 0%, rgba(20,150,160,.31) 30%, rgba(20,150,160,.15) 55%, rgba(20,150,160,.045) 78%, rgba(20,150,160,0) 100%), linear-gradient(180deg, #03070f 0%, #071a33 55%, #0a2f4a 100%); }
+  .hd { display: flex; align-items: center; justify-content: space-between; padding: 56px 16px 0; }
+  .hd .b { width: 44px; height: 44px; border-radius: 22px; background: rgba(153,153,153,.17); display: grid; place-items: center; color: #fff; box-shadow: var(--glass-highlight); }
+  .hd .b svg, .hd .b img { width: 24px; height: 24px; }
+  .hd .t { text-align: center; } .hd .t b { display: block; font: 600 15px/18px var(--font); } .hd .t span { font: var(--body-sm); color: var(--label-secondary); }
+  .pic { padding: 20px 16px 0; }
+  .pic canvas { display: block; width: 343px; max-width: 100%; height: auto; aspect-ratio: 343 / 300; touch-action: none; cursor: pointer; }
+  .ro { padding: 18px 20px 14px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .ro .w { font: 700 34px/40px var(--font); letter-spacing: .4px; color: var(--label-primary); transition: color 300ms var(--ease-out); }
+  .ro .w.on { color: var(--primary); }
+  .ro .s { font: var(--body-md); color: var(--label-secondary); margin-top: 2px; min-height: 18px; }
+  .ro .h { font: var(--body-sm); color: var(--label-tertiary); white-space: nowrap; }
+  .card { margin: 10px 16px 0; padding: 14px 16px 16px; border-radius: 20px; background: var(--fill-tertiary); }
+  .card .l { font: var(--body-sm); color: var(--label-secondary); margin-bottom: 12px; }
+  .bar { position: relative; height: 8px; border-radius: 4px; background: rgba(255,255,255,.08); }
+  .bar i { position: absolute; top: 0; bottom: 0; border-radius: 4px; background: var(--primary); }
+  .bar b { position: absolute; top: -3px; width: 2px; height: 14px; border-radius: 1px; background: #fff; }
+  .axis { display: flex; justify-content: space-between; font: var(--body-xs); color: var(--label-tertiary); margin-top: 8px; }
+
+  /* controls */
+  .side { max-width: 460px; padding-top: 8px; }
+  .side h2 { font: 700 22px/28px var(--font); margin: 0 0 6px; }
+  .side .sub { color: var(--label-secondary); margin: 0 0 20px; }
+  .grp { margin: 0 0 22px; }
+  .grp .gl { font: var(--body-sm); color: var(--label-tertiary); margin-bottom: 8px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { appearance: none; border: 0; height: 36px; padding: 0 14px; border-radius: 18px; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-md-accent); font-family: var(--font); cursor: pointer;
+    box-shadow: var(--glass-highlight); transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out), scale 140ms var(--ease-out); }
+  .pill:active { scale: .96; }
+  .pill[aria-pressed="true"] { background: var(--static-white); color: var(--static-black); }
+  .notes { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 10px; }
+  .notes li { color: var(--label-secondary); padding-left: 16px; position: relative; }
+  .notes li::before { content: ''; position: absolute; left: 2px; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--primary); }
+  .notes b { color: var(--label-primary); font-weight: 600; }
+  @media (max-width: 480px) { body { padding: 24px 0 60px; } h1, .lead, .side { padding: 0 16px; } .mock { width: 100%; border-radius: 0; } }
+</style>
+</head>
+<body>
+<h1>Presence sensor — radar</h1>
+<p class="lead">The room seen from above. A soft radar wave sweeps out from the sensor; the person is a glowing spot that shows roughly where they are, and lights up each time the wave passes. Areas you mark in the room (Sofa, Desk, Door) light up blue when someone is in them.</p>
+
+<div class="wrap">
+  <div class="mock">
+    <div class="hd"><span class="b"></span><span class="t"><b>Living room presence</b><span>Living Room</span></span><span class="b"><img src="../assets/icons/setting.svg" alt=""></span></div>
+    <div class="pic"><canvas id="cv" width="686" height="600" aria-label="Room radar"></canvas></div>
+    <div class="ro"><div><div class="w" id="w">Someone here</div><div class="s" id="s"></div></div><div class="h">5 times today</div></div>
+    <div class="card"><div class="l">Occupied today · 2.5 h</div><div class="bar"><i style="left:12%;width:5%"></i><i style="left:30%;width:6%"></i><i style="left:47%;width:6%"></i><b style="left:53%"></b></div><div class="axis"><span>0:00</span><span>12:00</span><span>24:00</span></div></div>
+  </div>
+
+  <div class="side">
+    <h2>Try it</h2>
+    <p class="sub">Tap anywhere in the room — the person walks there.</p>
+    <div class="grp"><div class="gl">State</div><div class="pills" id="st">
+      <button class="pill" data-s="tour" aria-pressed="true">Walking around</button><button class="pill" data-s="still">Sitting still</button><button class="pill" data-s="small">Moving a little</button>
+      <button class="pill" data-s="leaving">Leaving…</button><button class="pill" data-s="empty">Empty</button><button class="pill" data-s="off">Offline</button></div></div>
+    <div class="grp"><div class="gl">Areas in the room</div><div class="pills" id="zn">
+      <button class="pill" data-z="on" aria-pressed="true">Sofa, Desk, Door</button><button class="pill" data-z="off">No areas (sensor without zones)</button></div></div>
+    <ul class="notes">
+      <li><b>Roughly where:</b> a soft spot, not a sharp dot — the radar knows the part of the room, not the exact centimetre.</li>
+      <li><b>Radar wave:</b> sweeps slowly from side to side; the spot flares when the wave touches it. Calm and slow when the room is empty, stopped when offline.</li>
+      <li><b>Sitting still:</b> the spot breathes slowly — the radar still sees them.</li>
+      <li><b>Areas:</b> quiet glass tiles with their name; the one with someone in it turns blue. The text below says “At the sofa”. Without areas it says “Near the sensor / In the middle / On the far side”.</li>
+      <li>Top corners stay dark — the sensor can’t see there. One colour (app blue), hairline walls, door = a gap in the wall.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+document.querySelector('.hd .b').innerHTML = icon('back');
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const W = 343, H = 300, DPR = 2; ctx.scale(DPR, DPR);
+const RM = { x: 10, y: 14, w: 323, h: 276, r: 26 };           // the room
+const SX = RM.x + RM.w / 2, SY = RM.y;                         // sensor on the top wall
+const HALF = 60 * Math.PI / 180, RANGE = 330;                  // ±60° field of view
+const DOOR = [0.43, 0.61];                                     // gap in the bottom wall (0..1 of the width)
+const ZONES = [
+  { name: 'Sofa', u: 0.05, v: 0.55, w: 0.38, h: 0.27 },
+  { name: 'Desk', u: 0.68, v: 0.24, w: 0.27, h: 0.31 },
+  { name: 'Door', u: 0.40, v: 0.84, w: 0.24, h: 0.13 },
+].map((z) => Object.assign(z, { k: 0 }));
+const px = (u) => RM.x + u * RM.w, py = (v) => RM.y + v * RM.h;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- state ---------- */
+const P = { u: 0.25, v: 0.66, tu: 0.25, tv: 0.66, a: 1, ta: 1, flare: 0, trail: [] };
+let mode = 'tour', zonesOn = true, sweepA = 1, tourI = 0, tourWait = 0;
+const TOUR = [[0.25, 0.66, 2.6], [0.52, 0.45, 0.2], [0.80, 0.38, 2.6], [0.62, 0.62, 0.2], [0.52, 0.90, 1.6], [0.34, 0.40, 0.2]];
+const zoneAt = (u, v) => zonesOn ? ZONES.find((z) => u >= z.u && u <= z.u + z.w && v >= z.v && v <= z.v + z.h) : null;
+
+/* ---------- drawing helpers ---------- */
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function glow(x, y, r, rgb, a) {   // eased radial stops — no hard disc edge, no banding
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  [[0, 1], [.18, .82], [.36, .56], [.54, .32], [.72, .14], [.88, .04], [1, 0]].forEach(([o, k]) => g.addColorStop(o, `rgba(${rgb},${(a * k).toFixed(4)})`));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+}
+function fanPath() { ctx.beginPath(); ctx.moveTo(SX, SY); ctx.arc(SX, SY, RANGE, Math.PI / 2 - HALF, Math.PI / 2 + HALF); ctx.closePath(); }
+const inZone = (x, y) => zonesOn && ZONES.some((z) => x > px(z.u) - 3 && x < px(z.u + z.w) + 3 && y > py(z.v) - 3 && y < py(z.v + z.h) + 3);
+const mix = (a, b, k) => a + (b - a) * k;
+
+function wall() {   // hairline walls with a door gap at the bottom
+  const { x, y, w, h, r } = RM, d0 = x + DOOR[0] * w, d1 = x + DOOR[1] * w;
+  ctx.beginPath(); ctx.moveTo(d1, y + h); ctx.arcTo(x + w, y + h, x + w, y, r); ctx.arcTo(x + w, y, x, y, r); ctx.arcTo(x, y, x, y + h, r); ctx.arcTo(x, y + h, x + w, y + h, r); ctx.lineTo(d0, y + h);
+  ctx.strokeStyle = 'rgba(255,255,255,.26)'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.stroke();
+}
+
+function draw(t, dt) {
+  ctx.clearRect(0, 0, W, H);
+  const off = mode === 'off', empty = mode === 'empty', occ = !off && !empty;
+  ctx.globalAlpha = off ? 0.45 : 1;
+
+  // floor
+  rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.fillStyle = 'rgba(255,255,255,.035)'; ctx.fill();
+
+  // radar field (clipped to the room and the field of view)
+  ctx.save(); rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.clip(); fanPath(); ctx.clip();
+  glow(SX, SY, RANGE, '10,132,255', off ? 0.06 : 0.13);
+  // distance rings: fine dots
+  ctx.fillStyle = 'rgba(255,255,255,.16)';
+  for (const rk of [0.25, 0.5, 0.75]) { const r = RANGE * rk, n = Math.round(r * 2 * HALF / 7); for (let i = 0; i <= n; i++) { const a = Math.PI / 2 - HALF + (2 * HALF) * i / n; const dx = SX + Math.cos(a) * r, dy = SY + Math.sin(a) * r; if (inZone(dx, dy)) continue; ctx.beginPath(); ctx.arc(dx, dy, .9, 0, Math.PI * 2); ctx.fill(); } }
+  ctx.restore();
+  // areas
+  const here = occ && mode !== 'leaving' ? zoneAt(P.u, P.v) : null;
+  ZONES.forEach((z) => {
+    z.k += ((zonesOn ? (z === here ? 1 : 0) : 0) - z.k) * (1 - Math.exp(-dt / 0.18));
+    if (!zonesOn) return;
+    const x = px(z.u), y = py(z.v), w = z.w * RM.w, h = z.h * RM.h;
+    rr(x, y, w, h, 14);
+    ctx.fillStyle = `rgba(${Math.round(mix(255, 10, z.k))},${Math.round(mix(255, 132, z.k))},255,${mix(.045, .16, z.k).toFixed(3)})`; ctx.fill();
+    ctx.strokeStyle = `rgba(${Math.round(mix(255, 64, z.k))},${Math.round(mix(255, 156, z.k))},255,${mix(.10, .55, z.k).toFixed(3)})`; ctx.lineWidth = 1; ctx.stroke();
+    ctx.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; ctx.textBaseline = 'top';
+    ctx.fillStyle = `rgba(255,255,255,${mix(.5, 1, z.k).toFixed(3)})`; ctx.fillText(z.name, x + 10, y + 9);
+  });
+
+  ctx.save(); rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.clip(); fanPath(); ctx.clip();
+  // sweep — a soft wave going side to side; its tail is longer when it moves fast
+  sweepA += ((off ? 0 : empty ? 0.55 : 1) - sweepA) * (1 - Math.exp(-dt / 0.5));
+  let beam = Math.PI / 2, vel = 0;
+  if (!reduce && sweepA > 0.01) {
+    const T = 6.4, ph = (t / T) * Math.PI * 2;
+    beam = Math.PI / 2 + HALF * 0.98 * Math.sin(ph); vel = Math.cos(ph);
+    const tail = (0.06 + 0.5 * Math.abs(vel)), dir = Math.sign(vel) || 1, f = tail / (Math.PI * 2);
+    const start = dir > 0 ? beam - tail : beam;
+    const g = ctx.createConicGradient(start, SX, SY), A = 0.24 * sweepA;
+    if (dir > 0) { g.addColorStop(0, 'rgba(10,132,255,0)'); g.addColorStop(f * .5, `rgba(10,132,255,${A * .25})`); g.addColorStop(f * .85, `rgba(10,132,255,${A * .7})`); g.addColorStop(f, `rgba(64,156,255,${A})`); g.addColorStop(Math.min(1, f + .0015), 'rgba(10,132,255,0)'); g.addColorStop(1, 'rgba(10,132,255,0)'); }
+    else { g.addColorStop(0, `rgba(64,156,255,${A})`); g.addColorStop(f * .15, `rgba(10,132,255,${A * .7})`); g.addColorStop(f * .5, `rgba(10,132,255,${A * .25})`); g.addColorStop(f, 'rgba(10,132,255,0)'); g.addColorStop(1, 'rgba(10,132,255,0)'); }
+    ctx.fillStyle = g; fanPath(); ctx.fill();
+    // the wave front: a fine line that fades with distance
+    const lg = ctx.createLinearGradient(SX, SY, SX + Math.cos(beam) * RANGE, SY + Math.sin(beam) * RANGE);
+    lg.addColorStop(0, `rgba(140,195,255,${.55 * sweepA})`); lg.addColorStop(.7, `rgba(140,195,255,${.18 * sweepA})`); lg.addColorStop(1, 'rgba(140,195,255,0)');
+    ctx.strokeStyle = lg; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(SX, SY); ctx.lineTo(SX + Math.cos(beam) * RANGE, SY + Math.sin(beam) * RANGE); ctx.stroke();
+  }
+  ctx.restore();
+  // what the sensor can't see (top corners) stays plain floor; field edges as faint dotted rays
+  ctx.save(); rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.clip(); ctx.fillStyle = 'rgba(255,255,255,.10)';
+  for (const a of [Math.PI / 2 - HALF, Math.PI / 2 + HALF]) for (let r = 16; r < RANGE; r += 7) { ctx.beginPath(); ctx.arc(SX + Math.cos(a) * r, SY + Math.sin(a) * r, .8, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+
+  // the person: a soft “roughly here” spot + a clear dot
+  P.a += (P.ta - P.a) * (1 - Math.exp(-dt / 0.35));
+  if (P.a > 0.01) {
+    const x = px(P.u), y = py(P.v), ang = Math.atan2(y - SY, x - SX);
+    let d = Math.abs(beam - ang); const hit = sweepA > .3 && !reduce ? Math.exp(-((d / 0.09) ** 2)) : 0;
+    P.flare = Math.max(P.flare * Math.exp(-dt / 0.9), hit);
+    const leaving = mode === 'leaving', still = mode === 'still', breathe = still && !reduce ? (Math.sin(t * Math.PI * 2 / 4.2) + 1) / 2 : 0;
+    // trail while walking
+    P.trail.forEach((q, i) => { const k = (i + 1) / P.trail.length; ctx.fillStyle = `rgba(64,156,255,${(0.28 * k * P.a).toFixed(3)})`; ctx.beginPath(); ctx.arc(px(q[0]), py(q[1]), 1.6 + 1.6 * k, 0, Math.PI * 2); ctx.fill(); });
+    const ga = (leaving ? 0.10 : 0.30 + 0.22 * P.flare + 0.08 * breathe) * P.a;
+    glow(x, y, 40 + 10 * P.flare + 6 * breathe, '10,132,255', ga);
+    glow(x, y + 2, 13, '0,0,0', 0.35 * P.a);                           // soft contact shadow under the dot
+    ctx.globalAlpha = (off ? .45 : 1) * P.a * (leaving ? 0.55 : 1);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 8.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = leaving ? '#8e8e93' : '#0A84FF'; ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = off ? 0.45 : 1;
+  }
+
+  wall();
+  // the sensor on the top wall
+  rr(SX - 16, SY - 4.5, 32, 9, 4.5); ctx.fillStyle = '#e9edf2'; ctx.fill();
+  if (!off) glow(SX, SY + 1, 9, '10,132,255', .9);
+  ctx.fillStyle = off ? '#6b7280' : '#5fb0ff'; ctx.beginPath(); ctx.arc(SX, SY + 1, 1.7, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- behaviour ---------- */
+let last = performance.now(), trailT = 0, frozenT = 0;
+function step(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const t = mode === 'off' ? frozenT : (frozenT = now / 1000);
+  if (mode === 'tour') {
+    const [tu, tv, wait] = TOUR[tourI]; P.tu = tu; P.tv = tv;
+    if (Math.hypot(P.u - tu, P.v - tv) < 0.01) { tourWait += dt; if (tourWait > wait) { tourWait = 0; tourI = (tourI + 1) % TOUR.length; } }
+  }
+  if (mode === 'small') { P.tu = P.bu + Math.sin(now / 900) * 0.012; P.tv = P.bv + Math.cos(now / 1300) * 0.01; }
+  if (mode !== 'off') {   // walking pace: a steady speed with soft start / stop
+    const du = P.tu - P.u, dv = P.tv - P.v, dist = Math.hypot(du, dv), sp = Math.min(dist, Math.max(0.0, 0.22 * dt) * Math.min(1, dist / 0.05 + .25));
+    if (dist > 1e-4) { P.u += du / dist * sp; P.v += dv / dist * sp; }
+    trailT += dt; if (trailT > 0.09) { trailT = 0; P.trail.push([P.u, P.v]); if (P.trail.length > 10 || dist < 0.004) P.trail.shift(); if (dist < 0.004 && P.trail.length) P.trail.shift(); }
+  }
+  draw(t, dt); text();
+  requestAnimationFrame(step);
+}
+function where() {
+  const z = zoneAt(P.u, P.v); if (z) return `At the ${z.name.toLowerCase()}`;
+  return P.v < 0.33 ? 'Near the sensor' : P.v < 0.66 ? 'In the middle of the room' : 'On the far side';
+}
+let leaveAt = 0, lastTxt = '';
+function text() {
+  let w = 'Someone here', s = '', on = true;
+  const moving = Math.hypot(P.tu - P.u, P.tv - P.v) > 0.01;
+  if (mode === 'empty') { w = 'Empty'; s = 'Empty since 9:12'; on = false; }
+  else if (mode === 'off') { w = 'Unknown'; s = 'Last report 8:40'; on = false; }
+  else if (mode === 'leaving') { w = 'Leaving…'; s = `Empty in ${Math.max(0, Math.ceil((leaveAt - performance.now()) / 1000))} s if nobody moves`; on = false; }
+  else s = `${where()} · ${mode === 'still' ? 'sitting still · for 47 min' : mode === 'small' ? 'moving a little · for 12 min' : moving ? 'walking' : 'standing'}`;
+  const key = w + s + on; if (key === lastTxt) return; lastTxt = key;
+  const we = document.getElementById('w'); we.textContent = w; we.classList.toggle('on', on); document.getElementById('s').textContent = s;
+}
+function setMode(m) {
+  mode = m; P.ta = m === 'empty' || m === 'off' ? (m === 'off' ? 0 : 0) : 1;
+  if (m === 'still') { P.tu = 0.22; P.tv = 0.68; }
+  if (m === 'small') { P.bu = 0.82; P.bv = 0.40; P.tu = P.bu; P.tv = P.bv; }
+  if (m === 'leaving') { leaveAt = performance.now() + 24000; P.tu = P.u; P.tv = P.v; }
+  if (m === 'empty') P.trail = [];
+  document.querySelectorAll('#st .pill').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === m));
+}
+document.getElementById('st').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (b) setMode(b.dataset.s); });
+document.getElementById('zn').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (!b) return; zonesOn = b.dataset.z === 'on'; document.querySelectorAll('#zn .pill').forEach((x) => x.setAttribute('aria-pressed', x === b)); });
+cv.addEventListener('pointerdown', (e) => {
+  const r = cv.getBoundingClientRect(), u = ((e.clientX - r.left) / r.width * W - RM.x) / RM.w, v = ((e.clientY - r.top) / r.height * H - RM.y) / RM.h;
+  if (u < 0.03 || u > 0.97 || v < 0.03 || v > 0.97) return;
+  if (mode !== 'tour') setMode('walk'); P.ta = 1; P.tu = u; P.tv = v;
+});
+window.PR = { setMode, P, get mode() { return mode; } };
+requestAnimationFrame(step);
+</script>
+</body>
+</html>
