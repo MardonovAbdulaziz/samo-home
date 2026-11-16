@@ -1959,9 +1959,6 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-name { flex: 1; min-width: 0; text-align: left; border-radius: var(--radius-md); background: var(--bg-elevation-1); padding: 10px 16px; }
 .scn-name .field-label { font: var(--body-sm); color: var(--label-secondary); display: block; }
 .scn-name b { font: var(--body-lg); letter-spacing: var(--body-lg-ls); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.scn-plain { margin: 16px var(--screen-pad) 0; padding: 14px 16px; border-radius: var(--radius-md); background: var(--blue-soft); }
-.scn-plain-k { font: var(--body-xs); letter-spacing: var(--body-xs-ls); color: var(--primary); text-transform: uppercase; font-weight: 600; }
-.scn-plain p { margin: 4px 0 0; font: var(--body-md); letter-spacing: var(--body-md-ls); }
 .scn-mode { margin-top: 20px; }
 .scn-mode button { height: 32px; font: var(--body-md-accent); }
 .scn-mode-note { font: var(--body-sm); color: var(--label-tertiary); padding: 8px 4px 0; }
@@ -11607,7 +11604,6 @@ if (typeof Store !== 'undefined') Scenarios.start();
         <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
       <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
       ${settingsCard()}
-      <div class="scn-plain" data-key="plain"><span class="scn-plain-k">In plain words</span><p>${esc(SC.sentence(s))}</p></div>
 `;
     if (auto) {
       h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>

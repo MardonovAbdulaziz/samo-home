@@ -35,7 +35,6 @@
         <button class="pen" data-action="pick-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
       <div class="field static" role="button" tabindex="0" data-action="rename"><span class="field-label">Scenario Name</span><div class="t-lg">${esc(s.name)}</div></div>
       ${settingsCard()}
-      <div class="scn-plain" data-key="plain"><span class="scn-plain-k">In plain words</span><p>${esc(SC.sentence(s))}</p></div>
 `;
     if (auto) {
       h += `<div class="list-header scn-lh" data-key="h-when">Starts when</div>
