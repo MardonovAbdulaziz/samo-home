@@ -1927,6 +1927,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-card-main:active { transform: scale(.98); }
 .scn-ic { width: 36px; height: 36px; border-radius: 50%; background: var(--fill-tertiary); display: grid; place-items: center; flex-shrink: 0; color: var(--label-primary); }
 .scn-ic .icon { width: 20px; height: 20px; }
+.scn-card .scn-ic { width: 40px; height: 40px; }   /* fixed 40×40 circle (Figma), emoji or icon */
 .scn-txt { min-width: 0; display: grid; gap: 3px; }
 .scn-txt b { font: var(--body-md-accent); letter-spacing: var(--body-md-ls); }
 .scn-sent { font: var(--body-sm); color: var(--label-secondary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -2090,8 +2091,9 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-wheel.dragging .scn-knob { transform: scale(1.25); }
 .scn-wheel-row .scn-dots { justify-content: center; gap: 14px; }
 .scn-wheel-row, .scn-slider-head, .scn-disclose { -webkit-user-select: none; user-select: none; }
-.scn-ct::-webkit-slider-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important; }
-.scn-ct::-moz-range-thumb { background: #fff !important; border: 0 !important; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important; }
+/* tone knob: the tone it is on inside a white ring, like the colour wheel's knob (blue is only for blue-filled sliders) */
+.scn-ct::-webkit-slider-thumb { background: var(--cur, #fff) !important; border: 3px solid var(--static-white, #fff) !important; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important; box-sizing: border-box; }
+.scn-ct::-moz-range-thumb { background: var(--cur, #fff) !important; border: 3px solid var(--static-white, #fff) !important; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important; box-sizing: border-box; }
 /* clock time on the shared wheel (scenarios): 07 : 30 */
 .tw.tw-clock { gap: 8px; }
 .tw-clock .tw-wheel span { text-align: center; padding-right: 0; }
@@ -2206,7 +2208,9 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .sheet.open.behind { transform: translateY(-10px) scale(0.94); transform-origin: 50% 0; }
 /* Turn off after: the Timer's wheels on top, the usual times as chips under them */
 .scn-after { padding-top: 4px; }
-.scn-after-chips { justify-content: center; margin-top: 20px; }
+.scn-after-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 20px calc(-1 * var(--screen-pad)) 0; padding: 0 var(--screen-pad); }   /* one row that scrolls, as in Figma 7002:1492 */
+.scn-after-chips::-webkit-scrollbar { display: none; }
+.scn-after-chips .chip { flex-shrink: 0; height: 36px; }
 .scn-after .tw { gap: 12px; }
 
 /* Repeat: seven round day buttons in one row */
@@ -11808,7 +11812,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
           <div class="scn-dots">${Devices.light.SWATCH.filter((x) => x.n !== 'white').map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.hex}" role="radio" aria-checked="${(a.col || '').toLowerCase() === x.hex}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</div>`;
       } else if (lc.ct) {
         const [k0, k1] = lc.k, k = a.kel || 2700;
-        look += `<div class="scn-tone"><span class="scn-slider-head"><span class="cell-title">Tone</span><span class="cell-value" data-out="kel">${k} K</span></span><input class="range scn-ct" type="range" min="${k0}" max="${k1}" step="100" value="${k}" data-r="kel" style="--v:${(k - k0) / (k1 - k0)};--warm:${kColour(k0, k0, k1)};--cool:${kColour(k1, k0, k1)}" aria-label="White tone"></div>`;
+        look += `<div class="scn-tone"><span class="scn-slider-head"><span class="cell-title">Tone</span><span class="cell-value" data-out="kel">${k} K</span></span><input class="range scn-ct" type="range" min="${k0}" max="${k1}" step="100" value="${k}" data-r="kel" style="--v:${(k - k0) / (k1 - k0)};--warm:${kColour(k0, k0, k1)};--cool:${kColour(k1, k0, k1)};--cur:${kColour(k, k0, k1)}" aria-label="White tone"></div>`;
       }
       if (look) body += `<div class="cell scn-look">${look}</div>`;
       if (lc.fx.length) body += valueRow('fx', 'Effect', a.fx ? (lc.fx.find((x) => x[0] === a.fx) || [])[1] : 'None');
@@ -11834,6 +11838,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
     el.querySelectorAll('input[data-r]').forEach((r) => r.addEventListener('input', () => {
       const k = r.dataset.r, v = +r.value; a[k] = v;
       const out = el.querySelector(`[data-out="${k}"]`); if (out) out.textContent = k === 'kel' ? `${v} K` : `${v} %`;
+      if (k === 'kel') r.style.setProperty('--cur', kColour(v, +r.min, +r.max));   // the knob shows the tone it is on
     }));
     const wh = el.querySelector('.scn-wheel[data-wheel]'); if (!wh) return;
     const knob = wh.querySelector('.scn-knob');

@@ -213,7 +213,7 @@
           <div class="scn-dots">${Devices.light.SWATCH.filter((x) => x.n !== 'white').map((x) => `<button class="scn-dot" data-action="do-col" data-v="${x.hex}" role="radio" aria-checked="${(a.col || '').toLowerCase() === x.hex}" aria-label="${x.n}" style="--dot:${x.hex}"></button>`).join('')}</div>`;
       } else if (lc.ct) {
         const [k0, k1] = lc.k, k = a.kel || 2700;
-        look += `<div class="scn-tone"><span class="scn-slider-head"><span class="cell-title">Tone</span><span class="cell-value" data-out="kel">${k} K</span></span><input class="range scn-ct" type="range" min="${k0}" max="${k1}" step="100" value="${k}" data-r="kel" style="--v:${(k - k0) / (k1 - k0)};--warm:${kColour(k0, k0, k1)};--cool:${kColour(k1, k0, k1)}" aria-label="White tone"></div>`;
+        look += `<div class="scn-tone"><span class="scn-slider-head"><span class="cell-title">Tone</span><span class="cell-value" data-out="kel">${k} K</span></span><input class="range scn-ct" type="range" min="${k0}" max="${k1}" step="100" value="${k}" data-r="kel" style="--v:${(k - k0) / (k1 - k0)};--warm:${kColour(k0, k0, k1)};--cool:${kColour(k1, k0, k1)};--cur:${kColour(k, k0, k1)}" aria-label="White tone"></div>`;
       }
       if (look) body += `<div class="cell scn-look">${look}</div>`;
       if (lc.fx.length) body += valueRow('fx', 'Effect', a.fx ? (lc.fx.find((x) => x[0] === a.fx) || [])[1] : 'None');
@@ -239,6 +239,7 @@
     el.querySelectorAll('input[data-r]').forEach((r) => r.addEventListener('input', () => {
       const k = r.dataset.r, v = +r.value; a[k] = v;
       const out = el.querySelector(`[data-out="${k}"]`); if (out) out.textContent = k === 'kel' ? `${v} K` : `${v} %`;
+      if (k === 'kel') r.style.setProperty('--cur', kColour(v, +r.min, +r.max));   // the knob shows the tone it is on
     }));
     const wh = el.querySelector('.scn-wheel[data-wheel]'); if (!wh) return;
     const knob = wh.querySelector('.scn-knob');
