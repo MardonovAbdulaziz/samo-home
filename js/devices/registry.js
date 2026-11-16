@@ -56,7 +56,7 @@ const DEVICE_ICONS = [
   ['Security', ['dev-lock-pin', 'dev-lock', 'dev-cctv']],
   ['Home Appliances', ['dev-fridge', 'dev-washing-2', 'dev-microwave', 'dev-oven', 'dev-dishwasher', 'dev-kettle', 'dev-blender', 'dev-vacuum', 'dev-robot', 'dev-iron']],
   ['Multimedia', ['dev-tv-1', 'dev-tv-2', 'dev-projector', 'dev-remote', 'dev-speaker', 'dev-gamepad', 'dev-speaker-2']],
-  ['Sensors', ['dev-drop', 'dev-flame', 'dev-smoke', 'dev-temperature', 'dev-motion']],
+  ['Sensors', ['dev-drop', 'dev-flame', 'dev-smoke', 'dev-temperature', 'dev-motion', 'dev-presence']],
 ];
 /** The icon groups of a picker sheet (Figma 5303:19456): group title in label/secondary, 4 icon cards of 64 px,
     the chosen one in non-opaque blue with a color/blue border. Groups keep their order — nothing jumps when you pick. */

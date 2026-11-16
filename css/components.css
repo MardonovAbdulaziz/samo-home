@@ -1526,40 +1526,30 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
    on the top wall with the part of the room it watches (a soft fan of light). Places the user painted are soft
    colour patches with their name; the occupied one lights up. The person is a small figure: it glides when they
    walk (transform transition), breathes when they sit still, fades while the room empties. No metres anywhere. ---------- */
-.pr-map { position: relative; margin-top: 12px; padding: 10px 8px 4px; border-radius: 24px; background: var(--fill-quaternary); }
+/* presence — device page: the radar canvas (drawn in js/devices/presence.js); zone-painting sheets: the same calm room as SVG */
+.pr-radar { margin-top: 12px; }
+.pr-radar canvas { display: block; width: 100%; aspect-ratio: 343 / 300; }
+.pr-map { position: relative; margin-top: 12px; padding: 10px 8px 6px; border-radius: 24px; background: var(--fill-quaternary); }
 .pr-map.edit { margin-top: 4px; }
 .pr-plan { display: block; width: 100%; height: auto; overflow: visible; }
 .pr-floor { fill: rgba(255, 255, 255, .03); }
-.pr-wall { fill: none; stroke: var(--label-tertiary); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
-.pr-door { fill: none; stroke: var(--label-quaternary); stroke-width: 1.5; stroke-dasharray: 3 4; }
-.pr-win { stroke: var(--primary); stroke-width: 4; stroke-linecap: round; opacity: .55; }
-.pr-dev { fill: var(--label-primary); }
-.pr-fan { fill: var(--primary); opacity: .07; }
-.pr-off { fill: rgba(0, 0, 0, .32); }
-.pr-z rect { fill: var(--zc); fill-opacity: .16; stroke: var(--zc); stroke-opacity: .35; stroke-width: 1; transition: fill-opacity 400ms var(--ease-out), stroke-opacity 400ms var(--ease-out); }
-.pr-z text { fill: var(--label-secondary); font: 590 12px/1 var(--font); text-anchor: middle; transition: fill 400ms var(--ease-out); }
-.pr-z.on rect { fill-opacity: .38; stroke-opacity: .9; } .pr-z.on text { fill: var(--label-primary); }
-.pr-z.sel rect { fill-opacity: .34; stroke-opacity: 1; stroke-width: 2; } .pr-z.sel text { fill: var(--label-primary); }
-.t-green { --zc: var(--green); } .t-orange { --zc: var(--orange); } .t-purple { --zc: var(--purple, #BF5AF2); } .t-teal { --zc: var(--teal, #64D2FF); } .t-pink { --zc: var(--pink, #FF375F); } .t-yellow { --zc: var(--yellow); }
+.pr-wall { fill: none; stroke: var(--label-quaternary); stroke-width: 1.5; }
+.pr-off { fill: rgba(0, 0, 0, .22); }
+.pr-z rect { fill: var(--label-primary); fill-opacity: .06; stroke: var(--label-primary); stroke-opacity: .14; stroke-width: 1; transition: fill-opacity 300ms var(--ease-out), stroke-opacity 300ms var(--ease-out); }
+.pr-z text { fill: var(--label-secondary); font: 600 12px/1 var(--font); text-anchor: middle; transition: fill 300ms var(--ease-out); }
+.pr-z.sel rect { fill: var(--primary); fill-opacity: .22; stroke: var(--primary); stroke-opacity: .8; } .pr-z.sel text { fill: var(--label-primary); }
 .pr-cell { fill: transparent; stroke: var(--label-quaternary); stroke-width: 1; stroke-dasharray: 3 3; cursor: pointer; }
 .pr-cell:active { fill: rgba(255, 255, 255, .06); }
-.pr-dot { transition: transform 1100ms cubic-bezier(0.32, 0.72, 0, 1), opacity 600ms var(--ease-out); }
-.pr-core { fill: var(--primary); }
-.pr-halo { fill: var(--primary); opacity: .2; transform-box: fill-box; transform-origin: center; }
-.pr-map.is-still .pr-halo { animation: pr-breathe 3200ms ease-in-out infinite; }
-.pr-map.is-leaving .pr-dot { opacity: .35 !important; }
-@keyframes pr-breathe { 0%, 100% { transform: scale(0.8); opacity: .26; } 50% { transform: scale(1.2); opacity: .1; } }
 .pr-stripbtn { fill: transparent; stroke: var(--label-quaternary); stroke-dasharray: 3 3; cursor: pointer; transition: fill 200ms var(--ease-out); }
 .pr-stripbtn.on { fill: rgba(0, 0, 0, .34); stroke: var(--label-tertiary); stroke-dasharray: none; }
 .pr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .pr-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border-radius: 17px; background: var(--fill-tertiary); color: var(--label-secondary); font: var(--body-sm-accent); border: 1.5px solid transparent; }
-.pr-chip i { width: 10px; height: 10px; border-radius: 3px; background: var(--zc); }
-.pr-chip.on { color: var(--label-primary); border-color: var(--zc); }
+.pr-chip i { display: none; }
+.pr-chip.on { color: var(--label-primary); border-color: var(--primary); }
 .pr-chip.add { color: var(--primary); }
 .pr-names { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 4px; padding-bottom: 4px; }
 .pr-names .va-chip { height: 40px; font: var(--body-sm-accent); }
 .pr-strip-card .ct-strip .bar { background: var(--fill-tertiary); } .pr-strip-card .ct-strip .bar i { background: var(--primary); } .pr-strip-card .ct-strip .bar b { background: var(--label-primary); }   /* blue segments here, so “now” stays neutral */
-@media (prefers-reduced-motion: reduce) { .pr-map.is-still .pr-halo { animation: none; } .pr-dot { transition: opacity 200ms; } }
 
 .cw-hint { white-space: nowrap; }
 

@@ -71,16 +71,18 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
 
   // ---- presence
   await go('device.html?id=d-presence');
-  ok('Presence: “Someone here”, the dot is on the map', (await word()) === 'Someone here' && await ev(() => getComputedStyle(document.querySelector('.pr-dot')).opacity === '1'));
+  await sl(600);
+  ok('Presence: “Someone here”, the dot is on the radar', (await word()) === 'Someone here' && await ev(() => /^here\|/.test(document.querySelector('.pr-radar canvas').dataset.state || '')), await ev(() => document.querySelector('.pr-radar canvas').dataset.state));
   await click('[data-action="pp-leave"]'); await sl(1300);
   ok('Presence: leaves → “Leaving…” with a countdown', (await word()) === 'Leaving…' && /Empty in \d+ s/.test(await sub()), await sub());
   await ev(() => { const d = Store.device('d-presence'); d.st.emptyAt = Date.now() - 1; Store.save(); }); await sl(1300);
-  ok('Presence: then “Empty”', (await word()) === 'Empty');
+  await sl(900);
+  ok('Presence: then “Empty”, the dot fades away', (await word()) === 'Empty' && await ev(() => /^none\|/.test(document.querySelector('.pr-radar canvas').dataset.state || '')));
   s = await ev(() => document.querySelector('.screen').textContent);
   ok('Presence: no metres on the page (words instead)', !/\d\s?m\b/.test(s.replace(/\d+ min/g, '')), (s.match(/\d\s?m\b/) || [''])[0]);
   await ev(() => { const d = Store.device('d-presence'), T = Devices.presence, p = T.PRESETS.find((x) => x.id === 'fp1'); Object.assign(d, { preset: 'fp1', features: p.feats.slice(), settings: {} }); T.applyDefaults(d); Store.save(); });
   await go('device.html?id=d-presence'); await click('[data-action="pp-sofa"]'); await sl(1300);
-  s = await ev(() => ({ sub: document.querySelector('[data-live="sub"]').textContent, lit: [...document.querySelectorAll('.pr-z.on text')].map((x) => x.textContent).join(',') }));
+  s = await ev(() => ({ sub: document.querySelector('[data-live="sub"]').textContent, lit: (document.querySelector('.pr-radar canvas').dataset.state || '').split('|')[1] }));
   ok('Presence (FP1): on the sofa → “At the sofa”, the Sofa place lights up', /^At the sofa/.test(s.sub) && s.lit === 'Sofa', JSON.stringify(s));
   await click('[data-action="pr-zones"]'); await sl(400); await click('[data-action="pr-znew"]'); await sl(250);
   await ev(() => document.querySelector('[data-action="pr-cell"][data-c="3,1"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); await sl(250);
