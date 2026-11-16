@@ -73,6 +73,8 @@
       <button class="pill" data-s="tour" aria-pressed="true">Walking around</button><button class="pill" data-s="still">Sitting still</button><button class="pill" data-s="small">Moving a little</button>
       <button class="pill" data-s="two">2 people</button><button class="pill" data-s="three">3 people</button>
       <button class="pill" data-s="leaving">Leaving…</button><button class="pill" data-s="empty">Empty</button><button class="pill" data-s="off">Offline</button></div></div>
+    <div class="grp"><div class="gl">Person shown as</div><div class="pills" id="lk">
+      <button class="pill" data-l="dot" aria-pressed="true">Dot</button><button class="pill" data-l="icon">Person icon</button></div></div>
     <div class="grp"><div class="gl">Areas in the room</div><div class="pills" id="zn">
       <button class="pill" data-z="on" aria-pressed="true">Sofa, Desk, Door</button><button class="pill" data-z="off">No areas (sensor without zones)</button></div></div>
     <ul class="notes">
@@ -104,7 +106,8 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* ---------- state: everyone the radar sees (FP2-type sensors report up to 5; simple ones report just “someone”) ---------- */
 const mkP = (u, v) => ({ u, v, tu: u, tv: v, a: 0, ta: 1, flare: 0, hist: [], act: 'stand' });
 let people = [mkP(0.25, 0.66)]; people[0].a = 1;
-let mode = 'tour', zonesOn = true, sweepA = 1;
+let mode = 'tour', zonesOn = true, sweepA = 1, look = 'dot';
+const PERSON = new Path2D('M12 14C17.5 14 22 17.3333 22 20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20C2 17.3333 6.5 14 12 14Z M12 2C14.7614 2 17 4.2386 17 7C17 9.7614 14.7614 12 12 12C9.2386 12 7 9.7614 7 7C7 4.2386 9.2386 2 12 2Z');
 const ROUTE = [[0.25, 0.66, 4], [0.50, 0.50, 0.3], [0.80, 0.26, 4], [0.62, 0.62, 0.3], [0.52, 0.90, 2.5], [0.34, 0.40, 0.3]];
 const zoneAt = (u, v) => zonesOn ? ZONES.find((z) => u >= z.u && u <= z.u + z.w && v >= z.v && v <= z.v + z.h) : null;
 
@@ -196,13 +199,19 @@ function draw(t, dt) {
     glow(ctx, x, y, 42 + 4 * breathe, '10,132,255', (leaving ? 0.08 : 0.24 + 0.07 * p.flare + 0.05 * breathe) * p.a);
     glow(ctx, x, y + 2, 13, '0,0,0', 0.3 * p.a);
     ctx.globalAlpha = (offline ? .5 : 1) * p.a * (leaving ? 0.6 : 1);
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 8, 0, TAU); ctx.fill();
-    ctx.fillStyle = leaving ? '#8e8e93' : '#0A84FF'; ctx.beginPath(); ctx.arc(x, y, 5.75, 0, TAU); ctx.fill();
+    if (look === 'icon') {   // blue disc with the app's person glyph (Hamroh `person`)
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 12, 0, TAU); ctx.fill();
+      ctx.fillStyle = leaving ? '#8e8e93' : '#0A84FF'; ctx.beginPath(); ctx.arc(x, y, 10.25, 0, TAU); ctx.fill();
+      ctx.save(); ctx.translate(x - 7, y - 7.4); ctx.scale(14 / 24, 14 / 24); ctx.fillStyle = '#fff'; ctx.fill(PERSON); ctx.restore();
+    } else {
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, 8, 0, TAU); ctx.fill();
+      ctx.fillStyle = leaving ? '#8e8e93' : '#0A84FF'; ctx.beginPath(); ctx.arc(x, y, 5.75, 0, TAU); ctx.fill();
+    }
     ctx.globalAlpha = offline ? 0.5 : 1;
   });
   ctx.restore();
 
-  rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 1.5; ctx.stroke();   // one unbroken wall line
+  rr(RM.x, RM.y, RM.w, RM.h, RM.r); ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1.5; ctx.stroke();   // one unbroken wall line
   ctx.globalAlpha = 1;
 }
 
@@ -285,7 +294,8 @@ cv.addEventListener('pointerdown', (e) => {   // tap: the nearest person walks t
   if (mode !== 'two' && mode !== 'three') mode = 'walk';
   document.querySelectorAll('#st .pill').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === mode));
 });
-window.PR = { setMode, get people() { return people; }, get mode() { return mode; } };
+document.getElementById('lk').addEventListener('click', (e) => { const b = e.target.closest('.pill'); if (!b) return; look = b.dataset.l; document.querySelectorAll('#lk .pill').forEach((x) => x.setAttribute('aria-pressed', x === b)); });
+window.PR = { setLook: (l) => { look = l; }, setMode, get people() { return people; }, get mode() { return mode; } };
 setMode('tour');
 requestAnimationFrame(step);
 </script>
