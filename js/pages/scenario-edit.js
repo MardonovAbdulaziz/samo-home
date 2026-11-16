@@ -16,7 +16,7 @@
 
   /* ---------- rows ---------- */
   const tIcon = (t) => (t.k === 'time' ? 'clock' : t.k === 'sun' ? (t.ev === 'sunrise' ? 'sunrise' : 'sunset') : t.k === 'dev' ? SC.iconOf(t.id, t.ch) : 'my-location');
-  const cIcon = (c) => (c.k === 'between' ? (c.from === 'sunrise' ? 'sun' : 'moon') : c.k === 'days' ? 'clock' : SC.iconOf(c.id, c.ch));
+  const cIcon = (c) => (c.k === 'between' ? (c.from === 'sunrise' ? 'sun' : 'moon-fill') : c.k === 'days' ? 'clock' : SC.iconOf(c.id, c.ch));
   const aIcon = (a) => (a.k === 'dev' ? SC.iconOf(a.id, a.ch) : a.k === 'notify' ? 'notification-bell' : a.k === 'wait' ? 'hourglass' : a.k === 'auto' ? (a.on ? 'power' : 'hand-stop') : 'tab-scenarios');
   const row = (act, i, ic, text, sub = '') => `<button class="cell scn-row" data-action="${act}" data-i="${i}">
       <span class="cell-icon">${icon(ic, 'icon')}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(text)}</span>${sub ? `<span class="cell-sub" style="display:block">${esc(sub)}</span>` : ''}</span>${icon('chevron-right', 'chev')}</button>`;
@@ -145,7 +145,7 @@
   /* ---------- Only if ---------- */
   function condChooser() {
     UI.sheet({ title: 'Only if', render: () => UI.group('',
-      choice('c-time', 'moon', 'Time of day', 'At night, in the daytime, or between two times') +
+      choice('c-time', 'moon-fill', 'Time of day', 'At night, in the daytime, or between two times') +
       choice('c-days', 'clock', 'Days of the week', 'e.g. only on weekdays')) + deviceList('st', 'c-dev-pick') });
   }
   function condTime(i) {
@@ -293,7 +293,7 @@
 
   /* ---------- actions ---------- */
   const SCN_ICONS = [
-    ['Scenarios', ['tab-scenarios', 'moon', 'sun', 'sunrise', 'sunset', 'tab-home', 'lock', 'notification-bell', 'clock', 'power', 'shield-check', 'temperature', 'my-location']],
+    ['Scenarios', ['tab-scenarios', 'moon-fill', 'sun', 'sunrise', 'sunset', 'tab-home', 'lock', 'notification-bell', 'clock', 'power', 'shield-check', 'temperature', 'my-location']],
     ['Devices', ['dev-bulb', 'dev-lamp', 'dev-curtains', 'dev-door-02', 'dev-tv-1', 'dev-washing', 'dev-radiator', 'dev-drop', 'dev-motion', 'dev-fan', 'dev-ac', 'dev-kettle']],
   ];
   function leave() { UI.go(s.sys ? 'index.html' : 'scenarios.html'); }   // “Turn off all” is edited from Home

@@ -252,8 +252,8 @@ const Scenarios = (() => {
     const lampIsLight = (l) => { const d = dev(l.id); return d && d.type === 'light' && Devices.light.sceneCaps(d).color; };
     const base = (o) => Object.assign({ manual: false, on: true, when: [], only: [], do: [] }, o);
     const L = [
-      lights.length && { key: 'goodnight', title: 'Good night', sub: 'One tap: lights off, door locked, curtains closed', icon: 'moon',
-        make: () => base({ name: 'Good night', icon: 'moon', manual: true, do: [...lights.map((l) => ({ k: 'dev', id: l.id, ch: l.ch, to: 'off' })), lock && { k: 'dev', id: lock.id, ch: 0, to: 'lock' }, curtain && { k: 'dev', id: curtain.id, ch: 0, to: 'off' }].filter(Boolean) }) },
+      lights.length && { key: 'goodnight', title: 'Good night', sub: 'One tap: lights off, door locked, curtains closed', icon: 'moon-fill',
+        make: () => base({ name: 'Good night', icon: 'moon-fill', manual: true, do: [...lights.map((l) => ({ k: 'dev', id: l.id, ch: l.ch, to: 'off' })), lock && { k: 'dev', id: lock.id, ch: 0, to: 'lock' }, curtain && { k: 'dev', id: curtain.id, ch: 0, to: 'off' }].filter(Boolean) }) },
       lights.length && { key: 'leaving', title: 'I’m leaving', sub: 'Everything off and the door locked as you go', icon: 'tab-home',
         make: () => base({ name: 'I’m leaving', icon: 'tab-home', manual: true, do: [...lights.map((l) => ({ k: 'dev', id: l.id, ch: l.ch, to: 'off' })), lock && { k: 'dev', id: lock.id, ch: 0, to: 'lock' }].filter(Boolean) }) },
       door && hall && { key: 'nightdoor', title: 'Light when I come in at night', sub: `${door.name} opens after dark → ${nameOf(hall.id, hall.ch)} on for 5 min`, icon: 'dev-door-02',
