@@ -1529,26 +1529,21 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* presence — device page: the radar canvas (drawn in js/devices/presence.js); zone-painting sheets: the same calm room as SVG */
 .pr-radar { margin-top: 12px; }
 .pr-radar canvas { display: block; width: 100%; aspect-ratio: 343 / 300; }
-.pr-map { position: relative; margin-top: 12px; padding: 10px 8px 6px; border-radius: 24px; background: var(--fill-quaternary); }
-.pr-map.edit { margin-top: 4px; }
+/* room drawings (Places pages, Parts not to watch): no card behind — the wall is the shape; places = fill only */
+.pr-room { margin-top: 0; }
 .pr-plan { display: block; width: 100%; height: auto; overflow: visible; }
-.pr-floor { fill: rgba(255, 255, 255, .03); }
+.pr-floor { fill: var(--fill-quaternary); fill-opacity: .5; }
 .pr-wall { fill: none; stroke: var(--label-quaternary); stroke-width: 1.5; }
-.pr-off { fill: rgba(0, 0, 0, .22); }
-.pr-z rect { fill: var(--label-primary); fill-opacity: .06; stroke: var(--label-primary); stroke-opacity: .14; stroke-width: 1; transition: fill-opacity 300ms var(--ease-out), stroke-opacity 300ms var(--ease-out); }
-.pr-z text { fill: var(--label-secondary); font: 600 12px/1 var(--font); text-anchor: middle; transition: fill 300ms var(--ease-out); }
-.pr-z.sel rect { fill: var(--primary); fill-opacity: .22; stroke: var(--primary); stroke-opacity: .8; } .pr-z.sel text { fill: var(--label-primary); }
-.pr-cell { fill: transparent; stroke: var(--label-quaternary); stroke-width: 1; stroke-dasharray: 3 3; cursor: pointer; }
-.pr-cell:active { fill: rgba(255, 255, 255, .06); }
-.pr-stripbtn { fill: transparent; stroke: var(--label-quaternary); stroke-dasharray: 3 3; cursor: pointer; transition: fill 200ms var(--ease-out); }
-.pr-stripbtn.on { fill: rgba(0, 0, 0, .34); stroke: var(--label-tertiary); stroke-dasharray: none; }
-.pr-places .pr-place { padding: 0; gap: 0; }
-.pr-place-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; align-self: stretch; padding: 0; text-align: left; color: inherit; background: none; border: 0; font: inherit; }
-.pr-place-del { flex: none; width: 48px; margin-right: -12px; align-self: stretch; display: grid; place-items: center; color: var(--red); background: none; border: 0; }
-.pr-place-del .icon { width: 24px; height: 24px; }
+.pr-grid line { stroke: var(--separator); stroke-width: 1; }
+.pr-z rect { fill: var(--fill-tertiary); transition: fill 240ms var(--ease-out); }
+.pr-z text { fill: var(--label-secondary); font: 600 12px/1 var(--font); transition: fill 240ms var(--ease-out); }
+.pr-z.sel rect { fill: var(--primary); fill-opacity: .28; } .pr-z.sel text { fill: var(--label-primary); }
+.pr-cell { fill: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pr-cell:active { fill: var(--fill-quaternary); }
+.pr-stripbtn { fill: transparent; cursor: pointer; transition: fill 200ms var(--ease-out); }
+.pr-stripbtn.on { fill: var(--fill-tertiary); }
 /* name suggestions under a name field — Figma “Add room” chips (5439:58025): 36 px pill, fills/tertiary, 13/16, 6 px apart */
-.name-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 24px; }
-.pr-preview { display: flex; justify-content: center; } .pr-preview .pr-plan { width: auto; height: 210px; }
+.name-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 24px; }   /* Figma Add room: 24 under the field */
 .name-chip { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-sm); letter-spacing: var(--body-sm-ls); border: 0; }
 .name-chip:active { transform: scale(.96); }
 .pr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }

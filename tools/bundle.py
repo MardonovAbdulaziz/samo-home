@@ -247,6 +247,7 @@ PAGES = {  # route → page script
     'device.html': 'js/pages/device.js',
     'device-settings.html': 'js/pages/device-settings.js',
     'about-device.html': 'js/pages/about-device.js',
+    'places.html': 'js/pages/places.js',
     'add-device.html': 'js/pages/add-device.js',
     'scenarios.html': 'js/pages/scenarios.js',
     'scenario.html': 'js/pages/scenario-edit.js',

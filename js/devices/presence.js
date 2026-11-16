@@ -133,26 +133,33 @@ Devices.presence = (() => {
   const homeTiles = (d) => { const s = tileStatus(d); return [{ ch: 0, name: d.name, icon: 'dev-presence', on: false, status: s.text, tone: s.tone, controllable: false, offline: !d.online }]; };
 
   /* ---------- The room plan (only in the zone-painting sheets; the device page shows the radar below) ---------- */
-  const W = 320, CW = 76, CH = 40, X0 = 8, Y0 = 8;    // 4 × 76 = 304 wide, 7 × 40 = 280 deep (zone painting sheets)
-  const cx = (x) => X0 + x * CW, cy = (y) => Y0 + y * CH;
+  // one look for every room drawing (radar on the device page, Places pages, Parts not to watch):
+  // the wall = one hairline; places = a soft fill, no border; the chosen / occupied place = blue; squares = hairlines
+  const W = 343, PD = 6, CW = (W - PD * 2) / COLS, CH = 40, H = PD * 2 + ROWS * CH;
+  const cx = (x) => PD + x * CW, cy = (y) => PD + y * CH;
   function plan(d, o = {}) {
-    const R = reach(d), H = Y0 + ROWS * CH + 8;
-    const ign = has(d, 'ignore') ? S(d, 'ignore') : [];
-    const cells = (z) => {   // a full rectangle of squares = one tile (like the radar); any other shape = its squares
+    const R = reach(d), ign = has(d, 'ignore') ? S(d, 'ignore') : [], uid = `pr${Math.random().toString(36).slice(2, 7)}`;
+    const shape = (z) => {   // a full rectangle of squares = one tile; any other shape = its squares
       const r = zoneRects(z); if (!r) return '';
-      if (r.full) { const [a0, b0] = [Math.round(r.box.u * COLS), Math.round(r.box.v * ROWS)], w = Math.round(r.box.w * COLS), h = Math.round(r.box.h * ROWS); return `<rect x="${cx(a0) + 1}" y="${cy(b0) + 1}" width="${CW * w - 2}" height="${CH * h - 2}" rx="10"/>`; }
-      return z.cells.map((c) => { const [a, b] = c.split(',').map(Number); return `<rect x="${cx(a - 1) + 1}" y="${cy(b - 1) + 1}" width="${CW - 2}" height="${CH - 2}" rx="8"/>`; }).join('');
+      if (r.full) { const a0 = Math.round(r.box.u * COLS), b0 = Math.round(r.box.v * ROWS), w = Math.round(r.box.w * COLS), h = Math.round(r.box.h * ROWS); return `<rect x="${(cx(a0) + 3).toFixed(1)}" y="${cy(b0) + 3}" width="${(CW * w - 6).toFixed(1)}" height="${CH * h - 6}" rx="12"/>`; }
+      return z.cells.map((c) => { const [a, b] = c.split(',').map(Number); return `<rect x="${(cx(a - 1) + 3).toFixed(1)}" y="${cy(b - 1) + 3}" width="${(CW - 6).toFixed(1)}" height="${CH - 6}" rx="10"/>`; }).join('');
     };
-    const label = (z) => { if (!z.cells.length) return ''; const pts = z.cells.map((c) => c.split(',').map(Number)); const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length - 0.5, my = pts.reduce((s, p) => s + p[1], 0) / pts.length - 0.5; return `<text x="${cx(mx).toFixed(0)}" y="${(cy(my) + 4).toFixed(0)}">${esc(z.name)}</text>`; };
-    const zones = has(d, 'zones') || o.edit ? d.zones.map((z, i) => `<g class="pr-z t-${TONES[i % TONES.length]} ${o.sel === i ? 'sel' : ''}">${cells(z)}${label(z)}</g>`).join('') : '';
-    const unwatched = [];
-    for (let r = 0; r < ROWS; r++) if (ign[r] || r + 1 <= R.min || r >= R.max) unwatched.push(`<rect x="${X0}" y="${cy(r)}" width="${COLS * CW}" height="${CH}" class="pr-off"/>`);
-    const grid = o.edit ? Array.from({ length: COLS * ROWS }, (_, i) => { const a = i % COLS + 1, b = Math.floor(i / COLS) + 1; return `<rect x="${cx(a - 1) + 1}" y="${cy(b - 1) + 1}" width="${CW - 2}" height="${CH - 2}" rx="6" class="pr-cell" data-action="pr-cell" data-c="${a},${b}"/>`; }).join('') : '';
-    const strips = o.strips ? ign.map((on, r) => `<rect x="${X0}" y="${cy(r) + 1}" width="${COLS * CW}" height="${CH - 2}" rx="6" class="pr-stripbtn ${on ? 'on' : ''}" data-action="pr-band" data-i="${r}"/>`).join('') : '';
-    const RX = 4, RR = 22, room = `x="${X0 - RX}" y="${Y0 - RX}" width="${COLS * CW + RX * 2}" height="${ROWS * CH + RX * 2}" rx="${RR}"`;   // one rounded hairline, like the radar on the device page
-    return `<svg viewBox="0 0 ${W} ${H}" class="pr-plan" aria-hidden="true"><defs><clipPath id="pr-room-${o.strips ? 's' : 'z'}"><rect ${room}/></clipPath></defs>
-      <rect ${room} class="pr-floor"/><g clip-path="url(#pr-room-${o.strips ? 's' : 'z'})">${unwatched.join('')}</g>${zones}${grid}${strips}
-      <rect ${room} class="pr-wall"/></svg>`;
+    const label = (z) => { const r = zoneRects(z); if (!r) return ''; const a0 = Math.round(r.box.u * COLS), b0 = Math.round(r.box.v * ROWS); return `<text x="${(cx(a0) + 13).toFixed(1)}" y="${cy(b0) + 21}">${esc(z.name)}</text>`; };
+    const zones = o.strips ? '' : d.zones.map((z, i) => `<g class="pr-z ${o.sel === i ? 'sel' : ''}">${shape(z)}${label(z)}</g>`).join('');
+    // square edges as hairlines from wall to wall — but never through a place (an edge between two squares of one place is skipped)
+    const owner = {}; d.zones.forEach((z, k) => z.cells.forEach((c) => { owner[c] = k; }));
+    const same = (a, b) => owner[a] != null && owner[a] === owner[b];
+    let lines = '';
+    if (o.edit) {
+      for (let a = 1; a < COLS; a++) for (let b = 1; b <= ROWS; b++) if (!same(`${a},${b}`, `${a + 1},${b}`)) lines += `<line x1="${cx(a).toFixed(1)}" y1="${b === 1 ? 0 : cy(b - 1)}" x2="${cx(a).toFixed(1)}" y2="${b === ROWS ? H : cy(b)}"/>`;
+      for (let b = 1; b < ROWS; b++) for (let a = 1; a <= COLS; a++) if (!same(`${a},${b}`, `${a},${b + 1}`)) lines += `<line x1="${a === 1 ? 0 : cx(a - 1).toFixed(1)}" y1="${cy(b)}" x2="${a === COLS ? W : cx(a).toFixed(1)}" y2="${cy(b)}"/>`;
+    }
+    const taps = o.edit ? Array.from({ length: COLS * ROWS }, (_, i) => { const a = i % COLS + 1, b = Math.floor(i / COLS) + 1; return `<rect x="${cx(a - 1).toFixed(1)}" y="${cy(b - 1)}" width="${CW.toFixed(1)}" height="${CH}" class="pr-cell" data-action="pr-cell" data-c="${a},${b}"/>`; }).join('') : '';
+    const strips = o.strips ? ign.map((on, r) => `<rect x="${PD}" y="${cy(r) + 2}" width="${W - PD * 2}" height="${CH - 4}" rx="10" class="pr-stripbtn ${on || r + 1 <= R.min || r >= R.max ? 'on' : ''}" data-action="pr-band" data-i="${r}"/>`).join('') : '';
+    return `<svg viewBox="0 0 ${W} ${H}" class="pr-plan" aria-hidden="true"><defs><clipPath id="${uid}"><rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="28"/></clipPath></defs>
+      <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="28" class="pr-floor"/>
+      <g clip-path="url(#${uid})"><g class="pr-grid">${lines}</g>${strips}${zones}${taps}</g>
+      <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="28" class="pr-wall"/></svg>`;
   }
 
   /* ---------- The radar (device page) ----------
@@ -235,18 +242,6 @@ Devices.presence = (() => {
     c.save(); rr(c, RM.x, RM.y, RM.w, RM.h, RM.r); c.clip();
     c.fillStyle = 'rgba(255,255,255,.03)'; c.fillRect(RM.x, RM.y, RM.w, RM.h);
     glow(c, CXR, CYR, 210, '10,132,255', sc.off ? 0.03 : 0.07);
-    // parts the sensor doesn't watch (range / “Parts not to watch”): a quiet darker strip
-    const R = reach(d), ign = has(d, 'ignore') ? S(d, 'ignore') : [];
-    // parts not watched: one shade per run of strips, fading in softly (no hard edge, no seams between strips)
-    const offRow = (r) => ign[r] || r + 1 <= R.min || r >= R.max;
-    for (let r = 0; r < ROWS; r++) {
-      if (!offRow(r) || (r > 0 && offRow(r - 1))) continue;
-      let e = r; while (e + 1 < ROWS && offRow(e + 1)) e++;
-      const y0 = rpy(r / ROWS), y1 = rpy((e + 1) / ROWS), F = 22, g = c.createLinearGradient(0, y0 - (r ? F / 2 : 0), 0, y1 + (e < ROWS - 1 ? F / 2 : 0));
-      const top = r ? F / (y1 - y0 + F) : 0, bot = e < ROWS - 1 ? 1 - F / (y1 - y0 + F) : 1;
-      g.addColorStop(0, `rgba(0,0,0,${r ? 0 : .2})`); g.addColorStop(top, 'rgba(0,0,0,.2)'); g.addColorStop(bot, 'rgba(0,0,0,.2)'); g.addColorStop(1, `rgba(0,0,0,${e < ROWS - 1 ? 0 : .2})`);
-      c.fillStyle = g; c.fillRect(RM.x, y0 - (r ? F / 2 : 0), RM.w, y1 - y0 + (r ? F / 2 : 0) + (e < ROWS - 1 ? F / 2 : 0));
-    }
     // areas
     const Z = has(d, 'zones') ? d.zones.map((z) => ({ z, r: zoneRects(z) })).filter((x) => x.r) : [];
     const inZone = (x, y) => Z.some(({ r }) => x > rpx(r.box.u) - 4 && x < rpx(r.box.u + r.box.w) + 4 && y > rpy(r.box.v) - 4 && y < rpy(r.box.v + r.box.h) + 4);
@@ -258,9 +253,9 @@ Devices.presence = (() => {
     Z.forEach(({ z, r }) => {
       const kz = A.zk[z.name] = smooth(A.zk[z.name] || 0, sc.zone === z.name ? 1 : 0, dt, 0.28);
       if (sc.zone === z.name) lit.push(z.name);
-      const fill = `rgba(${Math.round(mix(255, 10, kz))},${Math.round(mix(255, 132, kz))},255,${mix(.045, .14, kz).toFixed(3)})`;
+      const fill = `rgba(${Math.round(mix(255, 10, kz))},${Math.round(mix(255, 132, kz))},255,${mix(.06, .22, kz).toFixed(3)})`;
       const box = r.box, x = rpx(box.u), y = rpy(box.v), w = box.w * RM.w, h = box.h * RM.h;
-      if (r.full) { rr(c, x, y, w, h, 14); c.fillStyle = fill; c.fill(); c.strokeStyle = `rgba(${Math.round(mix(255, 64, kz))},${Math.round(mix(255, 156, kz))},255,${mix(.10, .42, kz).toFixed(3)})`; c.lineWidth = 1; c.stroke(); }
+      if (r.full) { rr(c, x, y, w, h, 14); c.fillStyle = fill; c.fill(); }
       else { c.fillStyle = fill; r.cells.forEach((q) => { rr(c, rpx(q.u), rpy(q.v), q.w * RM.w, q.h * RM.h, 10); c.fill(); }); }
       c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top';
       c.fillStyle = `rgba(255,255,255,${mix(.5, .95, kz).toFixed(3)})`; c.fillText(z.name, x + 10, y + 9);
@@ -337,74 +332,22 @@ Devices.presence = (() => {
   }
   function live(d, root) { UI.setNum(root.querySelector('[data-live="sub"]'), subText(d)); }
 
-  /* ---------- Places in the room ----------
-     Sheet = the room on top (every place with its name) + a list under it: tap a place to change it, the red cross
-     removes it, “Add place” at the end of the list. Changing a place opens a second sheet over it (iOS stacked):
-     name field + suggestion chips (Figma “Add room” 5439:58025) and the room grid where only this place is blue. */
+  /* ---------- Places in the room: its own pages (places.html) — list + one page per place ---------- */
   const MAX_PLACES = 10;   // FP1 keeps up to 10 regions
-  const squares = (n) => (n ? `${n} square${n > 1 ? 's' : ''}` : 'No squares yet — tap to mark it');
-  function openZones(d, ctx) {
-    let sub = null, cur = null, mode = 'paint', isNew = false;   // cur = the place open in the second sheet
-    const s = UI.sheet({
-      title: 'Places in the room', sub: 'Mark where the sofa, desk or door is — the sensor then tells which place someone is in.',
-      footer: '',
-      render: () => `<div class="pad"><div class="pr-map pr-preview">${plan(d, {})}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Top = the wall with the sensor.</div></div>
-        <div class="list pr-places">${d.zones.map((z, i) => `<div class="cell pr-place"><button class="pr-place-main" data-action="pr-zedit" data-i="${i}"><span class="cell-main"><span class="cell-title" style="display:block">${esc(z.name)}</span><span class="cell-sub" style="display:block">${squares(z.cells.length)}</span></span>${icon('chevron-right', 'chev')}</button>
-          <button class="pr-place-del" data-action="pr-zdel" data-i="${i}" aria-label="Remove ${esc(z.name)}">${icon('cross-24', 'icon')}</button></div>`).join('')}
-          ${d.zones.length < MAX_PLACES ? `<button class="cell scn-add-row" data-action="pr-znew"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">Add place</span></button>` : ''}</div>
-        ${d.zones.length >= MAX_PLACES ? `<div class="list-footer">This sensor keeps up to ${MAX_PLACES} places.</div>` : ''}`,
-    });
-    const commit = () => { Store.save(); ctx.render(); s.refresh(); if (sub) sub.refresh(); };
-    // step 1 “name”: Figma Add room — name field + suggestion chips + one button; step 2 “paint”: Name row + the room grid
-    const nameView = () => `<label class="field"><span class="field-label">Place name</span>
-        <input id="prName" value="${esc(cur.name)}" maxlength="24" autocomplete="off">
-        <button class="field-clear" data-action="pr-nclear" aria-label="Clear">${icon('close-circle', 'icon icon-sm')}</button></label>
-      <div class="field-error" id="prNameErr"></div>
-      <div class="pad name-chips">${NAMES.map((n) => `<button class="name-chip" data-action="pr-zname" data-n="${n}">${n}</button>`).join('')}</div>`;
-    const paintView = () => `<div class="list"><button class="cell" data-action="pr-rename"><span class="cell-main cell-title">Name</span><span class="cell-value">${esc(cur.name)}</span>${icon('chevron-right', 'chev')}</button></div>
-      <div class="pad" style="margin-top:20px"><div class="pr-map edit">${plan(d, { edit: true, sel: d.zones.indexOf(cur) })}</div>
-      <div class="list-footer" style="padding-left:4px;padding-right:4px">Tap the squares where ${esc(cur.name)} is — tap again to clear.</div></div>`;
-    function open(z, startMode, fresh) {
-      cur = z; mode = startMode; isNew = fresh;
-      sub = UI.subSheet({
-        get title() { return mode === 'name' ? (isNew ? 'New place' : 'Name') : cur.name; },
-        get footer() { return mode === 'name' ? `<button class="btn btn-primary btn-block" data-action="pr-nameok">${isNew ? 'Next' : 'Save'}</button>` : '<button class="btn btn-primary btn-block" data-action="sub-close">Done</button>'; },
-        render: () => (mode === 'name' ? nameView() : paintView()),
-        onMount: (el) => { const i = el.querySelector('#prName'); if (i && !i._b) { i._b = true; i.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameOk(); }); } },
-        onClose: () => { const z0 = cur; sub = null; cur = null; if (isNew && z0 && !z0.cells.length) d.zones.splice(d.zones.indexOf(z0), 1); Store.save(); ctx.render(); s.refresh(); },
-      });
-      if (mode === 'name') setTimeout(() => { const i = document.querySelector('#prName'); if (i) { i.focus(); i.select(); } }, 320);
-    }
-    function nameOk() {
-      const i = document.querySelector('#prName'), v = i ? i.value.trim() : '';
-      const err = !v ? 'Enter a name' : d.zones.some((z) => z !== cur && z.name.toLowerCase() === v.toLowerCase()) ? 'There is already a place with this name' : '';
-      if (err) { document.querySelector('#prNameErr').textContent = err; return; }
-      cur.name = v; mode = 'paint'; commit();
-    }
-    UI.on({
-      'pr-zedit': ({ i }) => open(d.zones[+i], 'paint', false),
-      'pr-znew': () => { const used = d.zones.map((z) => z.name); d.zones.push({ name: NAMES.find((n) => !used.includes(n)) || 'Other', cells: [] }); Store.save(); s.refresh(); open(d.zones[d.zones.length - 1], 'name', true); },
-      'pr-rename': () => { mode = 'name'; sub.refresh(); setTimeout(() => { const i = document.querySelector('#prName'); if (i) i.focus(); }, 60); },
-      'pr-zname': ({ n }) => { const i = document.querySelector('#prName'); if (i) { i.value = n; document.querySelector('#prNameErr').textContent = ''; } },
-      'pr-nclear': () => { const i = document.querySelector('#prName'); if (i) { i.value = ''; i.focus(); } },
-      'pr-nameok': nameOk,
-      'pr-cell': ({ c }) => { if (!cur) return; const had = cur.cells.includes(c); d.zones.forEach((x) => { x.cells = x.cells.filter((k) => k !== c); }); if (!had) cur.cells.push(c); commit(); },
-      'pr-zdel': ({ i }) => { const z = d.zones[+i]; if (!z) return; d.zones.splice(+i, 1); commit(); UI.toast(`${z.name} removed`); },
-    });
-  }
+  const openPlaces = (d, from) => UI.go(`places.html?id=${encodeURIComponent(d.id)}&from=${from}`);
   function openIgnore(d, ctx) {
     const s = UI.sheet({
       title: 'Parts not to watch', sub: 'Tap a strip of the room where a fan or a curtain moves — the radar will ignore it (a person there won’t be seen either)',
-      render: () => `<div class="pad"><div class="pr-map edit">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Dark strips are not watched. Top = the wall with the sensor.</div></div>`,
+      render: () => `<div class="pad"><div class="pr-room">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Dark strips are not watched. Top = the wall with the sensor.</div></div>`,
     });
     UI.on({ 'pr-band': ({ i }) => { S(d, 'ignore')[+i] = !S(d, 'ignore')[+i]; Store.save(); ctx.render(); s.refresh(); } });
   }
-  function bindPage(d, ctx) { UI.on({ 'pr-zones': () => openZones(d, ctx) }); }
+  function bindPage(d) { UI.on({ 'pr-zones': () => openPlaces(d, 'device') }); }
   const settings = (d) => Kit.settingsHTML(F, GROUPS, d, { foot: { Detection: 'Stored in the sensor.', 'Zones & areas': 'Shown on the room on the device page.' } });
   const EV = { in: (e) => `Someone came in${e.z ? ' · ' + e.z : ''}`, out: 'Room empty', zone: (e) => `Moved to the ${e.z.toLowerCase()}`, relay: (e) => `Light ${e.on ? 'on' : 'off'}`, learned: 'Learned the empty room', offline: 'Stopped answering' };
   function bindSettings(d, ctx) {
     Kit.bindSettings(F, d, ctx, { learn: () => { d.st.learnUntil = Date.now() + 8000; Store.save(); ctx.render(); UI.toast('Leave the room — learning for a moment'); } });
-    UI.on({ 'pr-zones': () => openZones(d, ctx), 'pr-ignore': () => openIgnore(d, ctx), 'rs-history': () => Kit.historySheet(d, EV, 'When the room was occupied') });
+    UI.on({ 'pr-zones': () => openPlaces(d, 'settings'), 'pr-ignore': () => openIgnore(d, ctx), 'rs-history': () => Kit.historySheet(d, EV, 'When the room was occupied') });
   }
   const about = (d) => [['Room', word(d)], ...(has(d, 'zones') && d.st.zone ? [['Place', d.st.zone]] : [])];
 
@@ -437,5 +380,6 @@ Devices.presence = (() => {
     historyValue: (d) => (has(d, 'history') ? word(d) : null),
     homeTiles, page, bindPage, live, afterRender, settings, bindSettings, about, tick, busy: (d) => d.st.occ || !!d.st.learnUntil,
     protoPanel, bindProto,
+    places: { plan, NAMES, MAX: MAX_PLACES },
   };
 })();
