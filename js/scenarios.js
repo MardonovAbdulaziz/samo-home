@@ -189,7 +189,7 @@ const Scenarios = (() => {
     if (a.k === 'auto') { const s = get(a.sid); return `${a.on ? 'turn on' : 'pause'} “${s ? s.name : 'a removed automation'}”`; }
     return '';
   }
-  /** The whole scenario as one sentence — shown on the card and live at the top of the editor. */
+  /** The whole scenario as one sentence — notifications and history. */
   function sentence(s) {
     const acts = s.do.map(actionText).filter(Boolean);
     if (s.manual) return acts.length ? cap1(`${listJoin(acts)}.`) : 'Add what it should do — one tap will do all of it.';
@@ -198,6 +198,22 @@ const Scenarios = (() => {
     const whenPart = s.when.length ? listJoin(s.when.map(triggerText), 'or') : 'when … (add a start)';
     const onlyPart = s.only.length ? ', ' + listJoin(s.only.map(condText)) : '';
     return cap1(`${whenPart}${onlyPart}, ${doPart}.`);
+  }
+  /** Short version for the Scenarios page card (user, 2026-11-16): the first start ("or 2 more"),
+      up to two actions without brightness/colour/effect details ("and 3 more"; "off after" only for a single action), so it stays within 3 lines. */
+  function shortAction(a, back) {
+    if (a.k !== 'dev') return actionText(a);
+    const x = findIn(cap(dev(a.id)).act, a.to);
+    if (a.to === 'pos') return `set ${nameOf(a.id, a.ch)} to ${a.pos} % open`;
+    return `${x ? x.s : a.to} ${nameOf(a.id, a.ch)}${back && a.back ? `, off after ${backWord(a.back)}` : ''}`;
+  }
+  function summary(s) {
+    const acts = s.do.map((a) => shortAction(a, s.do.length === 1)).filter(Boolean);   // "off after" only when it is the one action
+    const doPart = acts.length > 2 ? `${acts.slice(0, 2).join(', ')} and ${acts.length - 2} more` : listJoin(acts);
+    if (s.manual) return acts.length ? cap1(`${doPart}.`) : 'Add what it should do — one tap will do all of it.';
+    if (!s.when.length && !acts.length) return 'Choose when it starts and what it does.';
+    const whenPart = s.when.length ? triggerText(s.when[0]) + (s.when.length > 1 ? ` or ${s.when.length - 1} more` : '') : 'when … (add a start)';
+    return cap1(`${whenPart}, ${acts.length ? doPart : '… (add what it should do)'}.`);
   }
   const cap1 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
@@ -554,6 +570,6 @@ const Scenarios = (() => {
   }
 
   return { SUN, DAY, ALL, CAP, cap, pickable, sig, nameOf, iconOf, evOf, findIn,
-    backWord, triggerText, condText, actionText, sentence, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, ic, EMOJI, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
+    backWord, triggerText, condText, actionText, sentence, summary, daysText, list, get, upsert, remove, ideas, builtIn, fire, runScene, isRunning, tapScene, ringHTML, statusText, isBusy, tileHTML, ic, EMOJI, homeOf, ALL_OFF, presence, warnings, next, start, condOk, whyNot };
 })();
 if (typeof Store !== 'undefined') Scenarios.start();

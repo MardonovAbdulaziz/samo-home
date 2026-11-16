@@ -1,6 +1,5 @@
 /* Scenario editor — one screen for scenes (tap to run) and automations.
-   Reads top to bottom like the sentence it builds: Starts when … · Only if … · Do …
-   The sentence itself is always visible at the top, so the user can check the logic in words. */
+   Reads top to bottom: Starts when … · Do … (the "In plain words" card was dropped, 2026-11-16). */
 (() => {
   UI.mount({ variant: 'elevated' });
   const esc = UI.esc, P = UI.param, SC = Scenarios;
@@ -64,6 +63,8 @@
   /* settings card under the name (Device Settings pattern): Show on Home Screen + Event History */
   function settingsCard() {
     const rows = [];
+    // an automation can be paused here too, not only with the switch on its card (user, 2026-11-16)
+    if (!s.manual) rows.push(`<button class="cell" data-action="on-toggle"><span class="cell-main cell-title">Turned on</span><span class="switch" role="switch" aria-checked="${s.on !== false}"></span></button>`);
     if (s.manual && !s.sys) rows.push(`<button class="cell" data-action="home-toggle"><span class="cell-main cell-title">Show on Home Screen</span><span class="switch" role="switch" aria-checked="${s.home !== false}"></span></button>`);
     if (!isNew) { const l = (s.log || [])[0]; rows.push(`<button class="cell" data-action="history"><span class="cell-main cell-title">Event History</span><span class="cell-value">${l ? esc(when(l.at)) : 'Nothing yet'}</span>${icon('chevron-right', 'chev')}</button>`); }
     return rows.length ? `<div class="list" style="margin-top:24px" data-key="settings">${rows.join('')}</div>` : '';
@@ -275,7 +276,7 @@
     const a = i != null ? clone(s.do[i]) : { k: 'auto', sid: (L[0] || {}).id, on: false };
     sh = { kind: 'act', i, x: a, open: () => UI.sheet({ title: 'Pause or turn on', render: () => `<div class="pad"><div class="segmented scn-mode" style="margin-top:0">
         <button class="${a.on ? '' : 'on'}" data-action="au-on" data-v="0">Pause it</button><button class="${a.on ? 'on' : ''}" data-action="au-on" data-v="1">Turn it on</button></div></div>
-      <div class="list" style="margin-top:8px">${Kit.radio('au-pick', a.sid, L.map((x) => [x.id, x.name, Scenarios.sentence(x)]))}</div>
+      <div class="list" style="margin-top:8px">${Kit.radio('au-pick', a.sid, L.map((x) => [x.id, x.name, Scenarios.summary(x)]))}</div>
       <div class="list-footer">${a.on ? 'It starts working again.' : 'It stays saved and does nothing until something turns it on again.'}</div>`, footer: done('act', i != null) }) };
     reopen();
   }
@@ -327,6 +328,7 @@
     },
     'sc-icon': ({ n }) => { s.icon = n; dirty = true; UI.closeSheet(); render(); },
     'home-toggle': () => { s.home = s.home === false; touch(); },
+    'on-toggle': () => { s.on = s.on === false; touch(); },
     history: () => openHistory(),
     mode: ({ v }) => { const m = v === 'scene'; if (m === s.manual) return; s.manual = m; if (!renamed) s.name = m ? 'New scene' : 'New automation'; touch(); },
 

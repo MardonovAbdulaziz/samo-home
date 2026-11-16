@@ -1,6 +1,6 @@
 /* Scenarios page — the second tab (simple version; the full one is tag scenarios-full-v1):
    1. Tap to run — tiles like device tiles: tap opens the scene, the round ▶ runs it.
-   2. Automatic — cards that say in one sentence what happens, with a switch and what happened last time.
+   2. Automatic — cards that say in one short sentence what happens (first start + 'or N more', two actions + 'and N more'), with a switch and what happened last time.
    Nothing yet → the app's empty state (Figma "No devices yet", IR remote). "Turn off all" lives on Home. */
 (() => {
   UI.mount({ variant: 'ambient', panel: true });
@@ -16,13 +16,13 @@
     if (s.on === false) return '<span class="scn-last">Paused</span>';
     if (!l) return '';   // nothing to say before the first run
     if (!l.ok) return `<span class="scn-last warn">${icon('round-info', 'icon')}${esc(l.text || 'Didn’t finish')} · ${ago(l.at)}</span>`;
-    return `<span class="scn-last">${icon('check', 'icon')}Ran ${ago(l.at)}${l.cause ? ` · ${esc(l.cause)}` : ''}</span>`;
+    return `<span class="scn-last">Ran ${ago(l.at)}${l.cause ? ` · ${esc(l.cause)}` : ''}</span>`;
   }
   function autoCard(s) {
     return `<div class="scn-card ${s.on === false ? 'paused' : ''}" data-key="sa-${s.id}">
       <button class="scn-card-main" data-action="scn-open" data-id="${s.id}">
         <span class="scn-ic">${Scenarios.ic(s.icon, 'icon')}</span>
-        <span class="scn-txt"><b>${esc(s.name)}</b><span class="scn-sent">${esc(Scenarios.sentence(s))}</span>${lastLine(s)}</span>
+        <span class="scn-txt"><b>${esc(s.name)}</b><span class="scn-sent">${esc(Scenarios.summary(s))}</span>${lastLine(s)}</span>
       </button>
       <button class="switch" role="switch" aria-checked="${s.on !== false}" data-action="toggle" data-id="${s.id}" aria-label="${s.on === false ? 'Turn on' : 'Pause'} ${esc(s.name)}"></button>
     </div>`;
