@@ -84,10 +84,20 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   await go('device.html?id=d-presence'); await click('[data-action="pp-sofa"]'); await sl(1300);
   s = await ev(() => ({ sub: document.querySelector('[data-live="sub"]').textContent, lit: (document.querySelector('.pr-radar canvas').dataset.state || '').split('|')[1] }));
   ok('Presence (FP1): on the sofa → “At the sofa”, the Sofa place lights up', /^At the sofa/.test(s.sub) && s.lit === 'Sofa', JSON.stringify(s));
-  await click('[data-action="pr-zones"]'); await sl(400); await click('[data-action="pr-znew"]'); await sl(250);
+  await click('[data-action="pr-zones"]'); await sl(400);
+  s = await ev(() => ({ rows: document.querySelectorAll('.pr-places .pr-place').length, add: !!document.querySelector('.pr-places [data-action="pr-znew"]'), del: document.querySelectorAll('.pr-places [data-action="pr-zdel"]').length }));
+  ok('Presence: Places = room + list (3 places, each with remove) + Add place', s.rows === 3 && s.add && s.del === 3, JSON.stringify(s));
+  await click('[data-action="pr-znew"]'); await sl(450);
+  s = await ev(() => ({ input: !!document.querySelector('#sheet2 #prName'), chips: document.querySelectorAll('#sheet2 .name-chip').length }));
+  ok('Presence: Add place → name step (field + name chips)', s.input && s.chips >= 10, JSON.stringify(s));
+  await click('[data-action="pr-zname"][data-n="TV"]'); await click('[data-action="pr-nameok"]'); await sl(350);
   await ev(() => document.querySelector('[data-action="pr-cell"][data-c="3,1"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); await sl(250);
   s = await dev('d-presence');
-  ok('Presence: paint a new place — tapping a square adds it', s.zones.length === 4 && s.zones[3].cells.includes('3,1'), JSON.stringify(s.zones[3]));
+  ok('Presence: paint a new place — named TV, tapping a square adds it', s.zones.length === 4 && s.zones[3].name === 'TV' && s.zones[3].cells.includes('3,1'), JSON.stringify(s.zones[3]));
+  await click('#sheet2 [data-action="sub-close"]'); await sl(500);
+  await click('.pr-places [data-action="pr-zdel"][data-i="3"]'); await sl(300);
+  s = await dev('d-presence');
+  ok('Presence: the red cross removes a place', s.zones.length === 3 && !s.zones.some((z) => z.name === 'TV'), s.zones.map((z) => z.name).join(','));
   await ev(() => UI.closeSheet()); await sl(300);
 
   // ---- vibration

@@ -1542,6 +1542,15 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pr-cell:active { fill: rgba(255, 255, 255, .06); }
 .pr-stripbtn { fill: transparent; stroke: var(--label-quaternary); stroke-dasharray: 3 3; cursor: pointer; transition: fill 200ms var(--ease-out); }
 .pr-stripbtn.on { fill: rgba(0, 0, 0, .34); stroke: var(--label-tertiary); stroke-dasharray: none; }
+.pr-places .pr-place { padding: 0; gap: 0; }
+.pr-place-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; align-self: stretch; padding: 0; text-align: left; color: inherit; background: none; border: 0; font: inherit; }
+.pr-place-del { flex: none; width: 48px; margin-right: -12px; align-self: stretch; display: grid; place-items: center; color: var(--red); background: none; border: 0; }
+.pr-place-del .icon { width: 24px; height: 24px; }
+/* name suggestions under a name field — Figma “Add room” chips (5439:58025): 36 px pill, fills/tertiary, 13/16, 6 px apart */
+.name-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 24px; }
+.pr-preview { display: flex; justify-content: center; } .pr-preview .pr-plan { width: auto; height: 210px; }
+.name-chip { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-sm); letter-spacing: var(--body-sm-ls); border: 0; }
+.name-chip:active { transform: scale(.96); }
 .pr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .pr-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border-radius: 17px; background: var(--fill-tertiary); color: var(--label-secondary); font: var(--body-sm-accent); border: 1.5px solid transparent; }
 .pr-chip i { display: none; }

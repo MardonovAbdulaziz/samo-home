@@ -1718,6 +1718,15 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pr-cell:active { fill: rgba(255, 255, 255, .06); }
 .pr-stripbtn { fill: transparent; stroke: var(--label-quaternary); stroke-dasharray: 3 3; cursor: pointer; transition: fill 200ms var(--ease-out); }
 .pr-stripbtn.on { fill: rgba(0, 0, 0, .34); stroke: var(--label-tertiary); stroke-dasharray: none; }
+.pr-places .pr-place { padding: 0; gap: 0; }
+.pr-place-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; align-self: stretch; padding: 0; text-align: left; color: inherit; background: none; border: 0; font: inherit; }
+.pr-place-del { flex: none; width: 48px; margin-right: -12px; align-self: stretch; display: grid; place-items: center; color: var(--red); background: none; border: 0; }
+.pr-place-del .icon { width: 24px; height: 24px; }
+/* name suggestions under a name field — Figma “Add room” chips (5439:58025): 36 px pill, fills/tertiary, 13/16, 6 px apart */
+.name-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 24px; }
+.pr-preview { display: flex; justify-content: center; } .pr-preview .pr-plan { width: auto; height: 210px; }
+.name-chip { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-sm); letter-spacing: var(--body-sm-ls); border: 0; }
+.name-chip:active { transform: scale(.96); }
 .pr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .pr-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border-radius: 17px; background: var(--fill-tertiary); color: var(--label-secondary); font: var(--body-sm-accent); border: 1.5px solid transparent; }
 .pr-chip i { display: none; }
@@ -9273,7 +9282,11 @@ Devices.presence = (() => {
   function plan(d, o = {}) {
     const R = reach(d), H = Y0 + ROWS * CH + 8;
     const ign = has(d, 'ignore') ? S(d, 'ignore') : [];
-    const cells = (z, k) => z.cells.map((c) => { const [a, b] = c.split(',').map(Number); return `<rect x="${cx(a - 1) + 1}" y="${cy(b - 1) + 1}" width="${CW - 2}" height="${CH - 2}" rx="6"/>`; }).join('');
+    const cells = (z) => {   // a full rectangle of squares = one tile (like the radar); any other shape = its squares
+      const r = zoneRects(z); if (!r) return '';
+      if (r.full) { const [a0, b0] = [Math.round(r.box.u * COLS), Math.round(r.box.v * ROWS)], w = Math.round(r.box.w * COLS), h = Math.round(r.box.h * ROWS); return `<rect x="${cx(a0) + 1}" y="${cy(b0) + 1}" width="${CW * w - 2}" height="${CH * h - 2}" rx="10"/>`; }
+      return z.cells.map((c) => { const [a, b] = c.split(',').map(Number); return `<rect x="${cx(a - 1) + 1}" y="${cy(b - 1) + 1}" width="${CW - 2}" height="${CH - 2}" rx="8"/>`; }).join('');
+    };
     const label = (z) => { if (!z.cells.length) return ''; const pts = z.cells.map((c) => c.split(',').map(Number)); const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length - 0.5, my = pts.reduce((s, p) => s + p[1], 0) / pts.length - 0.5; return `<text x="${cx(mx).toFixed(0)}" y="${(cy(my) + 4).toFixed(0)}">${esc(z.name)}</text>`; };
     const zones = has(d, 'zones') || o.edit ? d.zones.map((z, i) => `<g class="pr-z t-${TONES[i % TONES.length]} ${o.sel === i ? 'sel' : ''}">${cells(z)}${label(z)}</g>`).join('') : '';
     const unwatched = [];
@@ -9468,26 +9481,59 @@ Devices.presence = (() => {
   }
   function live(d, root) { UI.setNum(root.querySelector('[data-live="sub"]'), subText(d)); }
 
-  /* ---------- Places in the room (zone painter) ---------- */
+  /* ---------- Places in the room ----------
+     Sheet = the room on top (every place with its name) + a list under it: tap a place to change it, the red cross
+     removes it, “Add place” at the end of the list. Changing a place opens a second sheet over it (iOS stacked):
+     name field + suggestion chips (Figma “Add room” 5439:58025) and the room grid where only this place is blue. */
+  const MAX_PLACES = 10;   // FP1 keeps up to 10 regions
+  const squares = (n) => (n ? `${n} square${n > 1 ? 's' : ''}` : 'No squares yet — tap to mark it');
   function openZones(d, ctx) {
-    let sel = 0;
+    let sub = null, cur = null, mode = 'paint', isNew = false;   // cur = the place open in the second sheet
     const s = UI.sheet({
-      title: 'Places in the room', sub: 'The sensor doesn’t see furniture. Pick a place, then tap the squares where it is — the sensor will tell when someone is there.',
-      render: () => {
-        const z = d.zones[sel];
-        return `<div class="pad pr-chips">${d.zones.map((x, i) => `<button class="pr-chip t-${TONES[i % TONES.length]} ${i === sel ? 'on' : ''}" data-action="pr-zsel" data-i="${i}"><i></i>${esc(x.name)}</button>`).join('')}${d.zones.length < 6 ? '<button class="pr-chip add" data-action="pr-znew">+ New place</button>' : ''}</div>
-          ${z ? `<div class="pad"><div class="pr-map edit">${plan(d, { edit: true, sel })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Tap squares to add them to <b>${esc(z.name)}</b> — tap again to remove. Top = the wall with the sensor.</div></div>
-          ${UI.group('Name', `<div class="pad pr-names">${NAMES.map((n) => `<button class="va-chip ${z.name === n ? 'on' : ''}" data-action="pr-zname" data-n="${n}">${n}</button>`).join('')}</div>`)}
-          <div class="pad" style="margin-top:16px"><button class="btn btn-danger btn-block" data-action="pr-zdel">Remove ${esc(z.name)}</button></div>` : '<div class="list-footer">No places yet — tap “+ New place”.</div>'}`;
-      },
+      title: 'Places in the room', sub: 'Mark where the sofa, desk or door is — the sensor then tells which place someone is in.',
+      footer: '',
+      render: () => `<div class="pad"><div class="pr-map pr-preview">${plan(d, {})}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Top = the wall with the sensor.</div></div>
+        <div class="list pr-places">${d.zones.map((z, i) => `<div class="cell pr-place"><button class="pr-place-main" data-action="pr-zedit" data-i="${i}"><span class="cell-main"><span class="cell-title" style="display:block">${esc(z.name)}</span><span class="cell-sub" style="display:block">${squares(z.cells.length)}</span></span>${icon('chevron-right', 'chev')}</button>
+          <button class="pr-place-del" data-action="pr-zdel" data-i="${i}" aria-label="Remove ${esc(z.name)}">${icon('cross-24', 'icon')}</button></div>`).join('')}
+          ${d.zones.length < MAX_PLACES ? `<button class="cell scn-add-row" data-action="pr-znew"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">Add place</span></button>` : ''}</div>
+        ${d.zones.length >= MAX_PLACES ? `<div class="list-footer">This sensor keeps up to ${MAX_PLACES} places.</div>` : ''}`,
     });
-    const commit = () => { Store.save(); ctx.render(); s.refresh(); };
+    const commit = () => { Store.save(); ctx.render(); s.refresh(); if (sub) sub.refresh(); };
+    // step 1 “name”: Figma Add room — name field + suggestion chips + one button; step 2 “paint”: Name row + the room grid
+    const nameView = () => `<label class="field"><span class="field-label">Place name</span>
+        <input id="prName" value="${esc(cur.name)}" maxlength="24" autocomplete="off">
+        <button class="field-clear" data-action="pr-nclear" aria-label="Clear">${icon('close-circle', 'icon icon-sm')}</button></label>
+      <div class="field-error" id="prNameErr"></div>
+      <div class="pad name-chips">${NAMES.map((n) => `<button class="name-chip" data-action="pr-zname" data-n="${n}">${n}</button>`).join('')}</div>`;
+    const paintView = () => `<div class="list"><button class="cell" data-action="pr-rename"><span class="cell-main cell-title">Name</span><span class="cell-value">${esc(cur.name)}</span>${icon('chevron-right', 'chev')}</button></div>
+      <div class="pad" style="margin-top:20px"><div class="pr-map edit">${plan(d, { edit: true, sel: d.zones.indexOf(cur) })}</div>
+      <div class="list-footer" style="padding-left:4px;padding-right:4px">Tap the squares where ${esc(cur.name)} is — tap again to clear.</div></div>`;
+    function open(z, startMode, fresh) {
+      cur = z; mode = startMode; isNew = fresh;
+      sub = UI.subSheet({
+        get title() { return mode === 'name' ? (isNew ? 'New place' : 'Name') : cur.name; },
+        get footer() { return mode === 'name' ? `<button class="btn btn-primary btn-block" data-action="pr-nameok">${isNew ? 'Next' : 'Save'}</button>` : '<button class="btn btn-primary btn-block" data-action="sub-close">Done</button>'; },
+        render: () => (mode === 'name' ? nameView() : paintView()),
+        onMount: (el) => { const i = el.querySelector('#prName'); if (i && !i._b) { i._b = true; i.addEventListener('keydown', (e) => { if (e.key === 'Enter') nameOk(); }); } },
+        onClose: () => { const z0 = cur; sub = null; cur = null; if (isNew && z0 && !z0.cells.length) d.zones.splice(d.zones.indexOf(z0), 1); Store.save(); ctx.render(); s.refresh(); },
+      });
+      if (mode === 'name') setTimeout(() => { const i = document.querySelector('#prName'); if (i) { i.focus(); i.select(); } }, 320);
+    }
+    function nameOk() {
+      const i = document.querySelector('#prName'), v = i ? i.value.trim() : '';
+      const err = !v ? 'Enter a name' : d.zones.some((z) => z !== cur && z.name.toLowerCase() === v.toLowerCase()) ? 'There is already a place with this name' : '';
+      if (err) { document.querySelector('#prNameErr').textContent = err; return; }
+      cur.name = v; mode = 'paint'; commit();
+    }
     UI.on({
-      'pr-zsel': ({ i }) => { sel = +i; s.refresh(); },
-      'pr-znew': () => { const used = d.zones.map((z) => z.name); d.zones.push({ name: NAMES.find((n) => !used.includes(n)) || 'Other', cells: [] }); sel = d.zones.length - 1; commit(); },
-      'pr-zname': ({ n }) => { d.zones[sel].name = n; commit(); },
-      'pr-cell': ({ c }) => { const z = d.zones[sel]; if (!z) return; const had = z.cells.includes(c); d.zones.forEach((x) => { x.cells = x.cells.filter((k) => k !== c); }); if (!had) z.cells.push(c); commit(); },
-      'pr-zdel': () => { d.zones.splice(sel, 1); sel = Math.max(0, sel - 1); commit(); },
+      'pr-zedit': ({ i }) => open(d.zones[+i], 'paint', false),
+      'pr-znew': () => { const used = d.zones.map((z) => z.name); d.zones.push({ name: NAMES.find((n) => !used.includes(n)) || 'Other', cells: [] }); Store.save(); s.refresh(); open(d.zones[d.zones.length - 1], 'name', true); },
+      'pr-rename': () => { mode = 'name'; sub.refresh(); setTimeout(() => { const i = document.querySelector('#prName'); if (i) i.focus(); }, 60); },
+      'pr-zname': ({ n }) => { const i = document.querySelector('#prName'); if (i) { i.value = n; document.querySelector('#prNameErr').textContent = ''; } },
+      'pr-nclear': () => { const i = document.querySelector('#prName'); if (i) { i.value = ''; i.focus(); } },
+      'pr-nameok': nameOk,
+      'pr-cell': ({ c }) => { if (!cur) return; const had = cur.cells.includes(c); d.zones.forEach((x) => { x.cells = x.cells.filter((k) => k !== c); }); if (!had) cur.cells.push(c); commit(); },
+      'pr-zdel': ({ i }) => { const z = d.zones[+i]; if (!z) return; d.zones.splice(+i, 1); commit(); UI.toast(`${z.name} removed`); },
     });
   }
   function openIgnore(d, ctx) {
