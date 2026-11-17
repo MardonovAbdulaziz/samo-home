@@ -137,29 +137,37 @@ Devices.presence = (() => {
   // the wall = one hairline; places = a soft fill, no border; the chosen / occupied place = blue; squares = hairlines
   const W = 343, PD = 6, CW = (W - PD * 2) / COLS, CH = 40, H = PD * 2 + ROWS * CH;
   const cx = (x) => PD + x * CW, cy = (y) => PD + y * CH;
+  // radii: room 16 · place tile 8 · square 6 (one scale everywhere — radar, Places pages, Parts not to watch)
+  const RR = 16, TR = 8, SR = 6;
   function plan(d, o = {}) {
     const R = reach(d), ign = has(d, 'ignore') ? S(d, 'ignore') : [], uid = `pr${Math.random().toString(36).slice(2, 7)}`;
-    const shape = (z) => {   // a full rectangle of squares = one tile; any other shape = its squares
-      const r = zoneRects(z); if (!r) return '';
-      if (r.full) { const a0 = Math.round(r.box.u * COLS), b0 = Math.round(r.box.v * ROWS), w = Math.round(r.box.w * COLS), h = Math.round(r.box.h * ROWS); return `<rect x="${(cx(a0) + 3).toFixed(1)}" y="${cy(b0) + 3}" width="${(CW * w - 6).toFixed(1)}" height="${CH * h - 6}" rx="12"/>`; }
-      return z.cells.map((c) => { const [a, b] = c.split(',').map(Number); return `<rect x="${(cx(a - 1) + 3).toFixed(1)}" y="${cy(b - 1) + 3}" width="${(CW - 6).toFixed(1)}" height="${CH - 6}" rx="10"/>`; }).join('');
-    };
-    const label = (z) => { const r = zoneRects(z); if (!r) return ''; const a0 = Math.round(r.box.u * COLS), b0 = Math.round(r.box.v * ROWS); return `<text x="${(cx(a0) + 13).toFixed(1)}" y="${cy(b0) + 21}">${esc(z.name)}</text>`; };
-    const zones = o.strips ? '' : d.zones.map((z, i) => `<g class="pr-z ${o.sel === i ? 'sel' : ''}">${shape(z)}${label(z)}</g>`).join('');
-    // square edges as hairlines from wall to wall — but never through a place (an edge between two squares of one place is skipped)
+    const room = `x=".5" y=".5" width="${W - 1}" height="${H - 1}" rx="${RR}"`;
     const owner = {}; d.zones.forEach((z, k) => z.cells.forEach((c) => { owner[c] = k; }));
-    const same = (a, b) => owner[a] != null && owner[a] === owner[b];
-    let lines = '';
+    let body = '';
     if (o.edit) {
-      for (let a = 1; a < COLS; a++) for (let b = 1; b <= ROWS; b++) if (!same(`${a},${b}`, `${a + 1},${b}`)) lines += `<line x1="${cx(a).toFixed(1)}" y1="${b === 1 ? 0 : cy(b - 1)}" x2="${cx(a).toFixed(1)}" y2="${b === ROWS ? H : cy(b)}"/>`;
-      for (let b = 1; b < ROWS; b++) for (let a = 1; a <= COLS; a++) if (!same(`${a},${b}`, `${a},${b + 1}`)) lines += `<line x1="${a === 1 ? 0 : cx(a - 1).toFixed(1)}" y1="${cy(b)}" x2="${a === COLS ? W : cx(a).toFixed(1)}" y2="${cy(b)}"/>`;
+      // every square is its own tile: empty · another place · this place (blue). Squares never merge, so each one
+      // lights up on its own when you tap it and the gaps between squares always stay.
+      for (let b = 1; b <= ROWS; b++) for (let a = 1; a <= COLS; a++) {
+        const k = owner[`${a},${b}`], cls = k == null ? '' : k === o.sel ? 'sel' : 'other';
+        body += `<rect x="${(cx(a - 1) + 2).toFixed(1)}" y="${cy(b - 1) + 2}" width="${(CW - 4).toFixed(1)}" height="${CH - 4}" rx="${SR}" class="pr-sq ${cls}" data-action="pr-cell" data-c="${a},${b}"/>`;
+      }
+      d.zones.forEach((z, k) => { if (!z.cells.length) return; const first = z.cells.map((c) => c.split(',').map(Number)).sort((p, q) => p[1] - q[1] || p[0] - q[0])[0];
+        body += `<text class="pr-lbl ${k === o.sel ? 'sel' : ''}" x="${(cx(first[0] - 1) + 12).toFixed(1)}" y="${cy(first[1] - 1) + 24}">${esc(z.name)}</text>`; });
+    } else if (o.strips) {
+      body = ign.map((on, r) => `<rect x="${PD}" y="${cy(r) + 2}" width="${W - PD * 2}" height="${CH - 4}" rx="${SR}" class="pr-stripbtn ${on || r + 1 <= R.min || r >= R.max ? 'on' : ''}" data-action="pr-band" data-i="${r}"/>`).join('');
+    } else {
+      // a full rectangle of squares = one tile; any other shape = its squares
+      d.zones.forEach((z, i) => {
+        const r = zoneRects(z); if (!r) return;
+        let shapes;
+        if (r.full) { const a0 = Math.round(r.box.u * COLS), b0 = Math.round(r.box.v * ROWS), w = Math.round(r.box.w * COLS), h = Math.round(r.box.h * ROWS); shapes = `<rect x="${(cx(a0) + 2).toFixed(1)}" y="${cy(b0) + 2}" width="${(CW * w - 4).toFixed(1)}" height="${CH * h - 4}" rx="${TR}"/>`; }
+        else shapes = z.cells.map((c) => { const [a, b] = c.split(',').map(Number); return `<rect x="${(cx(a - 1) + 2).toFixed(1)}" y="${cy(b - 1) + 2}" width="${(CW - 4).toFixed(1)}" height="${CH - 4}" rx="${SR}"/>`; }).join('');
+        const first = z.cells.map((c) => c.split(',').map(Number)).sort((p, q) => p[1] - q[1] || p[0] - q[0])[0];
+        body += `<g class="pr-z ${o.sel === i ? 'sel' : ''}">${shapes}<text x="${(cx(first[0] - 1) + 12).toFixed(1)}" y="${cy(first[1] - 1) + 24}">${esc(z.name)}</text></g>`;
+      });
     }
-    const taps = o.edit ? Array.from({ length: COLS * ROWS }, (_, i) => { const a = i % COLS + 1, b = Math.floor(i / COLS) + 1; return `<rect x="${cx(a - 1).toFixed(1)}" y="${cy(b - 1)}" width="${CW.toFixed(1)}" height="${CH}" class="pr-cell" data-action="pr-cell" data-c="${a},${b}"/>`; }).join('') : '';
-    const strips = o.strips ? ign.map((on, r) => `<rect x="${PD}" y="${cy(r) + 2}" width="${W - PD * 2}" height="${CH - 4}" rx="10" class="pr-stripbtn ${on || r + 1 <= R.min || r >= R.max ? 'on' : ''}" data-action="pr-band" data-i="${r}"/>`).join('') : '';
-    return `<svg viewBox="0 0 ${W} ${H}" class="pr-plan" aria-hidden="true"><defs><clipPath id="${uid}"><rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="28"/></clipPath></defs>
-      <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="28" class="pr-floor"/>
-      <g clip-path="url(#${uid})"><g class="pr-grid">${lines}</g>${strips}${zones}${taps}</g>
-      <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="28" class="pr-wall"/></svg>`;
+    return `<svg viewBox="0 0 ${W} ${H}" class="pr-plan" aria-hidden="true"><defs><clipPath id="${uid}"><rect ${room}/></clipPath></defs>
+      <rect ${room} class="pr-floor"/><g clip-path="url(#${uid})">${body}</g><rect ${room} class="pr-wall"/></svg>`;
   }
 
   /* ---------- The radar (device page) ----------
@@ -169,7 +177,7 @@ Devices.presence = (() => {
      touches it, and the animation state lives per device (no jumps when the page re-renders).
      Design page: design/presence-radar.html (user picked the dot, 2026-11-16). */
   const RW = 343, RH = 300, TAU = Math.PI * 2;
-  const RM = { x: 8, y: 8, w: 327, h: 284, r: 28 }, CXR = RM.x + RM.w / 2, CYR = RM.y + RM.h / 2;
+  const RM = { x: 8, y: 8, w: 327, h: 284, r: 16 }, CXR = RM.x + RM.w / 2, CYR = RM.y + RM.h / 2;
   const rpx = (u) => RM.x + u * RM.w, rpy = (v) => RM.y + v * RM.h;
   const ANIM = new Map();   // device id → { people, zk, sweepA, frozen }
   let raf = 0, lastT = 0;
@@ -240,7 +248,7 @@ Devices.presence = (() => {
     c.setTransform(k, 0, 0, k, 0, 0); c.clearRect(0, 0, RW, RH);
     c.globalAlpha = sc.off ? 0.5 : 1;
     c.save(); rr(c, RM.x, RM.y, RM.w, RM.h, RM.r); c.clip();
-    c.fillStyle = 'rgba(255,255,255,.03)'; c.fillRect(RM.x, RM.y, RM.w, RM.h);
+    c.fillStyle = 'rgba(255,255,255,.055)'; c.fillRect(RM.x, RM.y, RM.w, RM.h);
     glow(c, CXR, CYR, 210, '10,132,255', sc.off ? 0.03 : 0.07);
     // areas
     const Z = has(d, 'zones') ? d.zones.map((z) => ({ z, r: zoneRects(z) })).filter((x) => x.r) : [];
@@ -255,8 +263,8 @@ Devices.presence = (() => {
       if (sc.zone === z.name) lit.push(z.name);
       const fill = `rgba(${Math.round(mix(255, 10, kz))},${Math.round(mix(255, 132, kz))},255,${mix(.06, .22, kz).toFixed(3)})`;
       const box = r.box, x = rpx(box.u), y = rpy(box.v), w = box.w * RM.w, h = box.h * RM.h;
-      if (r.full) { rr(c, x, y, w, h, 14); c.fillStyle = fill; c.fill(); }
-      else { c.fillStyle = fill; r.cells.forEach((q) => { rr(c, rpx(q.u), rpy(q.v), q.w * RM.w, q.h * RM.h, 10); c.fill(); }); }
+      if (r.full) { rr(c, x, y, w, h, 8); c.fillStyle = fill; c.fill(); }
+      else { c.fillStyle = fill; r.cells.forEach((q) => { rr(c, rpx(q.u), rpy(q.v), q.w * RM.w, q.h * RM.h, 6); c.fill(); }); }
       c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top';
       c.fillStyle = `rgba(255,255,255,${mix(.5, .95, kz).toFixed(3)})`; c.fillText(z.name, x + 10, y + 9);
     });
@@ -292,7 +300,7 @@ Devices.presence = (() => {
       c.globalAlpha = sc.off ? 0.5 : 1;
     }
     c.restore();
-    rr(c, RM.x, RM.y, RM.w, RM.h, RM.r); c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 1.5; c.stroke();
+    rr(c, RM.x + .5, RM.y + .5, RM.w - 1, RM.h - 1, RM.r); c.strokeStyle = 'rgba(255,255,255,.07)'; c.lineWidth = 1; c.stroke();
     c.globalAlpha = 1;
     // for checks / screen readers: who is shown and which area is lit
     const st = `${p && p.ta ? (sc.leaving ? 'leaving' : 'here') : 'none'}|${lit.join(',')}`;

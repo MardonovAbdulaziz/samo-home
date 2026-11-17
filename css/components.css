@@ -1532,16 +1532,17 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* room drawings (Places pages, Parts not to watch): no card behind — the wall is the shape; places = fill only */
 .pr-room { margin-top: 0; }
 .pr-plan { display: block; width: 100%; height: auto; overflow: visible; }
-.pr-floor { fill: var(--fill-quaternary); fill-opacity: .5; }
-.pr-wall { fill: none; stroke: var(--label-quaternary); stroke-width: 1.5; }
-.pr-grid line { stroke: var(--separator); stroke-width: 1; }
-.pr-z rect { fill: var(--fill-tertiary); transition: fill 240ms var(--ease-out); }
-.pr-z text { fill: var(--label-secondary); font: 600 12px/1 var(--font); transition: fill 240ms var(--ease-out); }
-.pr-z.sel rect { fill: var(--primary); fill-opacity: .28; } .pr-z.sel text { fill: var(--label-primary); }
-.pr-cell { fill: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.pr-cell:active { fill: var(--fill-quaternary); }
-.pr-stripbtn { fill: transparent; cursor: pointer; transition: fill 200ms var(--ease-out); }
-.pr-stripbtn.on { fill: var(--fill-tertiary); }
+.pr-floor { fill: var(--fill-quaternary); }
+.pr-wall { fill: none; stroke: var(--separator); stroke-width: 1; }
+.pr-z rect { fill: var(--fill-tertiary); }
+.pr-z text, .pr-lbl { fill: var(--label-secondary); font: 600 12px/1 var(--font); pointer-events: none; }
+.pr-z.sel rect { fill: var(--primary); fill-opacity: .32; } .pr-z.sel text, .pr-lbl.sel { fill: var(--label-primary); }
+.pr-sq { fill: var(--fill-quaternary); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: fill 200ms var(--ease-out), fill-opacity 200ms var(--ease-out); }
+.pr-sq.other { fill: var(--fill-tertiary); }
+.pr-sq.sel { fill: var(--primary); fill-opacity: .32; }
+.pr-sq:active { fill-opacity: .7; }
+.pr-stripbtn { fill: var(--fill-quaternary); cursor: pointer; transition: fill 200ms var(--ease-out); }
+.pr-stripbtn.on { fill: var(--fill-secondary, var(--fill-tertiary)); }
 /* name suggestions under a name field — Figma “Add room” chips (5439:58025): 36 px pill, fills/tertiary, 13/16, 6 px apart */
 .name-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 24px; }   /* Figma Add room: 24 under the field */
 .name-chip { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-sm); letter-spacing: var(--body-sm-ls); border: 0; }
