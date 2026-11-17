@@ -167,7 +167,8 @@ Devices.presence = (() => {
       });
     }
     return `<svg viewBox="0 0 ${W} ${H}" class="pr-plan" aria-hidden="true"><defs><clipPath id="${uid}"><rect ${room}/></clipPath></defs>
-      <rect ${room} class="pr-floor"/><g clip-path="url(#${uid})">${body}</g><rect ${room} class="pr-wall"/></svg>`;
+      <rect ${room} class="pr-floor"/><g clip-path="url(#${uid})">${body}</g><rect ${room} class="pr-wall"/>
+      <rect x="${W / 2 - 14}" y="-2.5" width="28" height="6" rx="3" class="pr-sensor"/></svg>`;   // the sensor on the top wall (instead of a “Top = …” note)
   }
 
   /* ---------- The radar (device page) ----------
@@ -346,7 +347,7 @@ Devices.presence = (() => {
   function openIgnore(d, ctx) {
     const s = UI.sheet({
       title: 'Parts not to watch', sub: 'Tap a strip of the room where a fan or a curtain moves — the radar will ignore it (a person there won’t be seen either)',
-      render: () => `<div class="pad"><div class="pr-room">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Dark strips are not watched. Top = the wall with the sensor.</div></div>`,
+      render: () => `<div class="pad"><div class="pr-room">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Dark strips are not watched.</div></div>`,
     });
     UI.on({ 'pr-band': ({ i }) => { S(d, 'ignore')[+i] = !S(d, 'ignore')[+i]; Store.save(); ctx.render(); s.refresh(); } });
   }

@@ -1710,6 +1710,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pr-plan { display: block; width: 100%; height: auto; overflow: visible; }
 .pr-floor { fill: var(--fill-quaternary); }
 .pr-wall { fill: none; stroke: var(--separator); stroke-width: 1; }
+.pr-sensor { fill: var(--label-secondary); }
 .pr-z rect { fill: var(--fill-tertiary); }
 .pr-z text, .pr-lbl { fill: var(--label-secondary); font: 600 12px/1 var(--font); pointer-events: none; }
 .pr-z.sel rect { fill: var(--primary); fill-opacity: .32; } .pr-z.sel text, .pr-lbl.sel { fill: var(--label-primary); }
@@ -9307,7 +9308,8 @@ Devices.presence = (() => {
       });
     }
     return `<svg viewBox="0 0 ${W} ${H}" class="pr-plan" aria-hidden="true"><defs><clipPath id="${uid}"><rect ${room}/></clipPath></defs>
-      <rect ${room} class="pr-floor"/><g clip-path="url(#${uid})">${body}</g><rect ${room} class="pr-wall"/></svg>`;
+      <rect ${room} class="pr-floor"/><g clip-path="url(#${uid})">${body}</g><rect ${room} class="pr-wall"/>
+      <rect x="${W / 2 - 14}" y="-2.5" width="28" height="6" rx="3" class="pr-sensor"/></svg>`;   // the sensor on the top wall (instead of a “Top = …” note)
   }
 
   /* ---------- The radar (device page) ----------
@@ -9486,7 +9488,7 @@ Devices.presence = (() => {
   function openIgnore(d, ctx) {
     const s = UI.sheet({
       title: 'Parts not to watch', sub: 'Tap a strip of the room where a fan or a curtain moves — the radar will ignore it (a person there won’t be seen either)',
-      render: () => `<div class="pad"><div class="pr-room">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Dark strips are not watched. Top = the wall with the sensor.</div></div>`,
+      render: () => `<div class="pad"><div class="pr-room">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Dark strips are not watched.</div></div>`,
     });
     UI.on({ 'pr-band': ({ i }) => { S(d, 'ignore')[+i] = !S(d, 'ignore')[+i]; Store.save(); ctx.render(); s.refresh(); } });
   }
@@ -11484,7 +11486,6 @@ if (typeof Store !== 'undefined') Scenarios.start();
     const before = d.zones.length; d.zones = d.zones.filter((z) => !(z.draft && !z.cells.length)); if (d.zones.length !== before) Store.save();
     let h = UI.toolbar({ title: 'Places in the room', back, plain: true });
     h += `<div style="height:12px"></div><div class="pad pr-room">${P.plan(d, {})}</div>
-      <div class="list-footer">Top = the wall with the sensor.</div>
       <div class="list" style="margin-top:24px">${d.zones.map((z, i) => `<a class="cell" href="${listUrl}&p=${i}"><span class="cell-main"><span class="cell-title" style="display:block">${esc(z.name)}</span><span class="cell-sub" style="display:block">${squares(z.cells.length)}</span></span>${icon('chevron-right', 'chev')}</a>`).join('')}
         ${d.zones.length < P.MAX ? `<button class="cell scn-add-row" data-action="pl-add"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">Add place</span></button>` : ''}</div>
       ${d.zones.length >= P.MAX ? `<div class="list-footer">This sensor keeps up to ${P.MAX} places.</div>` : ''}
@@ -11500,7 +11501,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
         <button class="field-clear" data-action="pl-clear" aria-label="Clear">${icon('close-circle', 'icon icon-sm')}</button></label>
       <div class="pad name-chips">${SUGGEST.map((n) => `<button class="name-chip" data-action="pl-name" data-n="${n}">${n}</button>`).join('')}</div>
       <div class="pad pr-room" style="margin-top:24px">${P.plan(d, { edit: true, sel: i })}</div>
-      <div class="list-footer">Tap the squares where ${esc(z.name)} is. Top = the wall with the sensor.</div>
+      <div class="list-footer">Tap the squares where ${esc(z.name)} is.</div>
       <div class="pad" style="margin-top:24px"><button class="btn btn-danger btn-block" data-action="pl-del">Remove place</button></div>
       <div style="height:32px"></div>`;
     return h;

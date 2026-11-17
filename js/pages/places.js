@@ -21,7 +21,6 @@
     const before = d.zones.length; d.zones = d.zones.filter((z) => !(z.draft && !z.cells.length)); if (d.zones.length !== before) Store.save();
     let h = UI.toolbar({ title: 'Places in the room', back, plain: true });
     h += `<div style="height:12px"></div><div class="pad pr-room">${P.plan(d, {})}</div>
-      <div class="list-footer">Top = the wall with the sensor.</div>
       <div class="list" style="margin-top:24px">${d.zones.map((z, i) => `<a class="cell" href="${listUrl}&p=${i}"><span class="cell-main"><span class="cell-title" style="display:block">${esc(z.name)}</span><span class="cell-sub" style="display:block">${squares(z.cells.length)}</span></span>${icon('chevron-right', 'chev')}</a>`).join('')}
         ${d.zones.length < P.MAX ? `<button class="cell scn-add-row" data-action="pl-add"><span class="cell-icon"><span class="scn-plus">${icon('plus-small', 'icon')}</span></span><span class="cell-main cell-title">Add place</span></button>` : ''}</div>
       ${d.zones.length >= P.MAX ? `<div class="list-footer">This sensor keeps up to ${P.MAX} places.</div>` : ''}
@@ -37,7 +36,7 @@
         <button class="field-clear" data-action="pl-clear" aria-label="Clear">${icon('close-circle', 'icon icon-sm')}</button></label>
       <div class="pad name-chips">${SUGGEST.map((n) => `<button class="name-chip" data-action="pl-name" data-n="${n}">${n}</button>`).join('')}</div>
       <div class="pad pr-room" style="margin-top:24px">${P.plan(d, { edit: true, sel: i })}</div>
-      <div class="list-footer">Tap the squares where ${esc(z.name)} is. Top = the wall with the sensor.</div>
+      <div class="list-footer">Tap the squares where ${esc(z.name)} is.</div>
       <div class="pad" style="margin-top:24px"><button class="btn btn-danger btn-block" data-action="pl-del">Remove place</button></div>
       <div style="height:32px"></div>`;
     return h;
