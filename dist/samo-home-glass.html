@@ -1715,9 +1715,9 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pr-z text, .pr-lbl { fill: var(--label-secondary); font: 600 12px/1 var(--font); pointer-events: none; }
 .pr-z.sel rect { fill: var(--primary); fill-opacity: .32; } .pr-z.sel text, .pr-lbl.sel { fill: var(--label-primary); }
 .pr-sq { fill: var(--fill-quaternary); fill-opacity: .45; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: fill 200ms var(--ease-out), fill-opacity 200ms var(--ease-out); }
-.pr-sq.other { fill: var(--label-quaternary); fill-opacity: 1; }   /* taken by another place: clearly filled; empty squares stay faint */
+.pr-sq.other { fill: var(--label-quaternary); fill-opacity: 1; cursor: default; }   /* taken by another place: clearly filled; empty squares stay faint */
 .pr-sq.sel { fill: var(--primary); fill-opacity: .32; }
-.pr-sq:active { fill-opacity: .7; }
+.pr-sq:not(.other):active { fill-opacity: .7; }
 .pr-stripbtn { fill: var(--fill-quaternary); cursor: pointer; transition: fill 200ms var(--ease-out); }
 .pr-stripbtn.on { fill: var(--fill-secondary, var(--fill-tertiary)); }
 /* name suggestions under a name field — Figma “Add room” chips (5439:58025): 36 px pill, fills/tertiary, 13/16, 6 px apart */
@@ -11549,9 +11549,9 @@ if (typeof Store !== 'undefined') Scenarios.start();
     'pl-clear': () => { const i = inp(); if (i) { i.value = ''; i.focus(); } },
     'pr-cell': ({ c }) => {
       const z = zone(); if (!z) return;
-      const had = z.cells.includes(c);
-      d.zones.forEach((x) => { x.cells = x.cells.filter((k) => k !== c); });   // a square belongs to one place
-      if (!had) z.cells.push(c);
+      const other = d.zones.find((x) => x !== z && x.cells.includes(c));
+      if (other) { UI.toast(`This square is ${other.name}`); return; }   // never take a square away from another place silently
+      if (z.cells.includes(c)) z.cells = z.cells.filter((k) => k !== c); else z.cells.push(c);
       if (z.cells.length) delete z.draft;
       Store.save(); render();
     },

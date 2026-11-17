@@ -63,9 +63,9 @@
     'pl-clear': () => { const i = inp(); if (i) { i.value = ''; i.focus(); } },
     'pr-cell': ({ c }) => {
       const z = zone(); if (!z) return;
-      const had = z.cells.includes(c);
-      d.zones.forEach((x) => { x.cells = x.cells.filter((k) => k !== c); });   // a square belongs to one place
-      if (!had) z.cells.push(c);
+      const other = d.zones.find((x) => x !== z && x.cells.includes(c));
+      if (other) { UI.toast(`This square is ${other.name}`); return; }   // never take a square away from another place silently
+      if (z.cells.includes(c)) z.cells = z.cells.filter((k) => k !== c); else z.cells.push(c);
       if (z.cells.length) delete z.draft;
       Store.save(); render();
     },

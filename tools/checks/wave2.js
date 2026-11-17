@@ -93,6 +93,9 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   await click('[data-action="pl-name"][data-n="TV"]'); await sl(200);
   await ev(() => document.querySelector('[data-action="pr-cell"][data-c="3,1"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); await sl(250);
   s = await dev('d-presence');
+  await ev(() => document.querySelector('[data-action="pr-cell"][data-c="1,4"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); await sl(250);
+  s = await dev('d-presence');
+  ok('Presence: a square of another place (Sofa 1,4) is not taken by tapping it', s.zones[0].cells.includes('1,4') && !s.zones[3].cells.includes('1,4'), JSON.stringify(s.zones[0].cells));
   ok('Presence: name chip + tapping a square → TV with square 3,1', s.zones.length === 4 && s.zones[3].name === 'TV' && s.zones[3].cells.includes('3,1') && !s.zones[3].draft, JSON.stringify(s.zones[3]));
   await click('[data-action="pl-del"]'); await sl(400); await click('[data-action="confirm-ok"]'); await sl(700);
   s = await dev('d-presence');
