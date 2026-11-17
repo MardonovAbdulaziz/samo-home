@@ -6534,7 +6534,7 @@ Devices.climate = (() => {
     }
   }
   const row = (k, title, value, act = 'th-feature') => `<button class="cell" data-action="${act}" data-k="${k}">
-      <span class="cell-main cell-title">${esc(title)}</span>${value ? `<span class="cell-value">${esc(value)}</span>` : ''}${icon('chevron-right', 'chev')}</button>`;
+      <span class="cell-main cell-title">${esc(title)}</span>${value && !value.includes(' · ') ? `<span class="cell-value">${esc(value)}</span>` : ''}${icon('chevron-right', 'chev')}</button>`;   // two values glued with “·” read as nothing — the sheet names each one
 
   function settings(d) {
     let h = '';
@@ -7798,7 +7798,7 @@ Devices.smoke = (() => {
     const v = S(d, k);
     if (k === 'sensitivity') return F.sensitivity.opts.find((o) => o[0] === v)[1];
     if (k === 'pause') return paused(d) ? `${UI.fmtDur((d.st.pauseUntil - Date.now()) / 1000)} left` : `${v} min`;
-    if (k === 'siren') return `${VOLS.find((x) => x[0] === v.vol)[1]}${v.strobe ? ' · light' : ''}`;
+    if (k === 'siren') return VOLS.find((x) => x[0] === v.vol)[1];
     if (k === 'fireActions') { const n = ['lights', 'ac', 'unlock', 'sirens'].filter((x) => v[x]).length; return n ? `${n} actions` : 'Off'; }
     return '';
   }
@@ -8051,7 +8051,8 @@ const Kit = (() => {
     const master = fields.find((f) => f.kind === 'tog' && f.noSum);
     if (master && !v[master.id]) return 'Off';
     const nums = fields.filter((f) => !f.kind).slice(0, 2).map((f) => fmtNum(f, v[f.id]));
-    if (nums.length) return nums.join(' · ');
+    if (nums.length > 1) return '';   // “7 · 6”, “0.3 m · 4.5 m” read as nothing (user, 2026-11-17) — the sheet shows each value with its name
+    if (nums.length) return nums[0];
     const t = fields.filter((f) => f.kind === 'tog' && f !== master); if (t.length) { const n = t.filter((f) => v[f.id]).length; return n ? `${n} on` : 'Off'; }
     const s = fields.find((f) => f.kind === 'sel'); return s ? (s.opts.find((o) => o[0] === v[s.id]) || [])[1] : '';
   }

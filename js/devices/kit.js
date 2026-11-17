@@ -100,7 +100,8 @@ const Kit = (() => {
     const master = fields.find((f) => f.kind === 'tog' && f.noSum);
     if (master && !v[master.id]) return 'Off';
     const nums = fields.filter((f) => !f.kind).slice(0, 2).map((f) => fmtNum(f, v[f.id]));
-    if (nums.length) return nums.join(' · ');
+    if (nums.length > 1) return '';   // “7 · 6”, “0.3 m · 4.5 m” read as nothing (user, 2026-11-17) — the sheet shows each value with its name
+    if (nums.length) return nums[0];
     const t = fields.filter((f) => f.kind === 'tog' && f !== master); if (t.length) { const n = t.filter((f) => v[f.id]).length; return n ? `${n} on` : 'Off'; }
     const s = fields.find((f) => f.kind === 'sel'); return s ? (s.opts.find((o) => o[0] === v[s.id]) || [])[1] : '';
   }

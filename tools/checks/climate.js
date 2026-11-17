@@ -44,8 +44,8 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   s = await ev(() => ({ out: document.querySelector('.stepper output').textContent, t: Store.device('d-climate').st.t }));
   ok('Correction +0.5 °C: stepper "+0.5 °C", reported value 22.5 at once', s.out === '+0.5 °C' && s.t === 22.5, JSON.stringify(s));
   await click('[data-action="sheet-close"]'); await sl(400);
-  s = await ev(() => document.querySelector('[data-action="th-feature"][data-k="calibration"] .cell-value').textContent);
-  ok('Row summary', s === '+0.5 °C · 0 %', s);
+  s = await ev(() => { const v = document.querySelector('[data-action="th-feature"][data-k="calibration"] .cell-value'); return v ? v.textContent : ''; });
+  ok('Row summary: two values are not glued with “·” (row shows no value; the sheet names each one)', s === '', s);
 
   // our push limits: pair guard, one push per crossing
   await click('[data-action="th-feature"][data-k="alerts"]'); await sl(400);

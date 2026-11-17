@@ -231,7 +231,7 @@ Devices.smoke = (() => {
     const v = S(d, k);
     if (k === 'sensitivity') return F.sensitivity.opts.find((o) => o[0] === v)[1];
     if (k === 'pause') return paused(d) ? `${UI.fmtDur((d.st.pauseUntil - Date.now()) / 1000)} left` : `${v} min`;
-    if (k === 'siren') return `${VOLS.find((x) => x[0] === v.vol)[1]}${v.strobe ? ' · light' : ''}`;
+    if (k === 'siren') return VOLS.find((x) => x[0] === v.vol)[1];
     if (k === 'fireActions') { const n = ['lights', 'ac', 'unlock', 'sirens'].filter((x) => v[x]).length; return n ? `${n} actions` : 'Off'; }
     return '';
   }

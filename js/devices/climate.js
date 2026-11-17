@@ -292,7 +292,7 @@ Devices.climate = (() => {
     }
   }
   const row = (k, title, value, act = 'th-feature') => `<button class="cell" data-action="${act}" data-k="${k}">
-      <span class="cell-main cell-title">${esc(title)}</span>${value ? `<span class="cell-value">${esc(value)}</span>` : ''}${icon('chevron-right', 'chev')}</button>`;
+      <span class="cell-main cell-title">${esc(title)}</span>${value && !value.includes(' · ') ? `<span class="cell-value">${esc(value)}</span>` : ''}${icon('chevron-right', 'chev')}</button>`;   // two values glued with “·” read as nothing — the sheet names each one
 
   function settings(d) {
     let h = '';
