@@ -35,9 +35,9 @@
         <input id="plName" value="${esc(z.name)}" maxlength="24" autocomplete="off">
         <button class="field-clear" data-action="pl-clear" aria-label="Clear">${icon('close-circle', 'icon icon-sm')}</button></label>
       <div class="pad name-chips">${SUGGEST.map((n) => `<button class="name-chip" data-action="pl-name" data-n="${n}">${n}</button>`).join('')}</div>
-      <div class="pad pr-room" style="margin-top:24px">${P.plan(d, { edit: true, sel: i })}</div>
+      <div class="pad pr-room" style="margin-top:32px">${P.plan(d, { edit: true, sel: i })}</div>
       <div class="list-footer">Tap the squares where ${esc(z.name)} is.</div>
-      <div class="pad" style="margin-top:24px"><button class="btn btn-danger btn-block" data-action="pl-del">Remove place</button></div>
+      <div class="pad" style="margin-top:32px"><button class="btn btn-danger btn-block" data-action="pl-del">Remove place</button></div>
       <div style="height:32px"></div>`;
     return h;
   }

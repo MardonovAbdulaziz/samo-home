@@ -1545,7 +1545,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pr-stripbtn { fill: var(--fill-quaternary); cursor: pointer; transition: fill 200ms var(--ease-out); }
 .pr-stripbtn.on { fill: var(--fill-secondary, var(--fill-tertiary)); }
 /* name suggestions under a name field — Figma “Add room” chips (5439:58025): 36 px pill, fills/tertiary, 13/16, 6 px apart */
-.name-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 24px; }   /* Figma Add room: 24 under the field */
+.name-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }   /* law of proximity: suggestions belong to the field above them */
 .name-chip { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-sm); letter-spacing: var(--body-sm-ls); border: 0; }
 .name-chip:active { transform: scale(.96); }
 .pr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
