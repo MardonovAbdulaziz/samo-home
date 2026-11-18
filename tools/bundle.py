@@ -22,6 +22,7 @@ Usage:  python3 tools/bundle.py                     → dist/samo-home.html
         python3 tools/bundle.py --variant glass     → dist/samo-home-glass.html (all devices; device-page surfaces in the
                                                       Figma remote style 5767:16508 — css/variant-glass.css, main build untouched)
 """
+import hashlib, re
 import base64, json, mimetypes, pathlib, re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -396,6 +397,11 @@ def build_hig_pages():
         if '<head>' not in html or 'css/components.css' not in html: continue
         html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n  ' + HIG_HEAD, 1)
         html = html.replace('<link rel="stylesheet" href="css/components.css">', '<link rel="stylesheet" href="css/components.css">\n  <link rel="stylesheet" href="css/variant-hig.css">', 1)
+        # cache-bust: Safari keeps old CSS/JS for the Pages max-age — every local file gets ?v=<content hash>
+        def bust(m):
+            f = ROOT / m.group(2)
+            return m.group(1) + m.group(2) + ('?v=' + hashlib.md5(f.read_bytes()).hexdigest()[:8] if f.exists() else '') + m.group(3)
+        html = re.sub(r'((?:href|src)=")((?:css|js)/[^"?]+\.(?:css|js))(")', bust, html)
         (out / page.name).write_text(html, encoding='utf-8')
     print(f'{out}/  {len(list(out.glob("*.html")))} pages')
 

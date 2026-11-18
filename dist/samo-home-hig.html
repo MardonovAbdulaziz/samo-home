@@ -2493,31 +2493,31 @@ html.hig .sheet .sheet-x { background: rgba(255, 255, 255, 0.10); background-ima
    (45 s and 70 s, there and back) — transform only, so it costs the GPU nothing. The light is never pale under text.
    --aur-t (set at page start from the clock) keeps the drift continuous across page loads. ---------- */
 html.hig .phone.ambient { background: radial-gradient(130% 70% at 50% 100%, #05205A 0%, #031236 45%, #01060F 75%, #010308 100%); }
+/* Layers only slide and breathe (translate + scale, never rotate): every light ends well inside its layer, so no edge
+   can ever show (a rotated layer showed a hard diagonal cut). Layers stay small — Safari drops oversized animated layers. */
 html.hig .phone.ambient::before, html.hig .phone.ambient::after {
   content: ""; position: absolute; z-index: -1; pointer-events: none; filter: none; opacity: 1; border-radius: 0;
-  inset: -18%; width: auto; height: auto; left: -18%; top: -18%; will-change: transform;
+  inset: -12%; width: auto; height: auto; left: -12%; top: -12%; will-change: transform; transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden; backface-visibility: hidden;
   animation-delay: var(--aur-t, 0s); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); animation-iteration-count: infinite; animation-direction: alternate; }
-/* the sweep: light rising from the bottom-left corner, like ref 1 + 3 */
+/* the sweep: light rising from the bottom-left corner, like ref 1 + 3 (each ellipse ends inside the layer) */
 html.hig .phone.ambient::before { animation-name: hig-aur-sweep; animation-duration: 45s;
   background:
-    radial-gradient(24% 30% at 9% 84%, rgba(150,225,255,0.44) 0%, rgba(150,225,255,0.26) 35%, rgba(150,225,255,0.09) 65%, rgba(150,225,255,0) 100%),
-    radial-gradient(42% 44% at 12% 86%, rgba(40,180,255,0.56) 0%, rgba(40,180,255,0.34) 35%, rgba(40,180,255,0.12) 65%, rgba(40,180,255,0) 100%),
-    radial-gradient(85% 46% at 40% 94%, rgba(10,132,255,0.56) 0%, rgba(10,132,255,0.34) 35%, rgba(10,132,255,0.12) 65%, rgba(10,132,255,0) 100%),
-    radial-gradient(70% 36% at 92% 80%, rgba(10,90,230,0.40) 0%, rgba(10,90,230,0.24) 35%, rgba(10,90,230,0.08) 65%, rgba(10,90,230,0) 100%); }
-/* the band: one soft diagonal ribbon across the middle, like ref 2 */
+    radial-gradient(20% 20% at 18% 80%, rgba(150,225,255,0.42) 0%, rgba(150,225,255,0.25) 35%, rgba(150,225,255,0.09) 65%, rgba(150,225,255,0) 100%),
+    radial-gradient(32% 22% at 24% 78%, rgba(40,180,255,0.54) 0%, rgba(40,180,255,0.33) 35%, rgba(40,180,255,0.12) 65%, rgba(40,180,255,0) 100%),
+    radial-gradient(46% 24% at 48% 76%, rgba(10,132,255,0.54) 0%, rgba(10,132,255,0.33) 35%, rgba(10,132,255,0.12) 65%, rgba(10,132,255,0) 100%),
+    radial-gradient(28% 26% at 72% 74%, rgba(10,90,230,0.40) 0%, rgba(10,90,230,0.24) 35%, rgba(10,90,230,0.08) 65%, rgba(10,90,230,0) 100%); }
+/* the band: one soft diagonal ribbon across the upper middle, like ref 2 — a linear gradient fills the whole layer edge to edge */
 html.hig .phone.ambient::after { animation-name: hig-aur-band; animation-duration: 70s;
-  background:
-    radial-gradient(70% 8% at 62% 40%, rgba(70,175,255,0.30) 0%, rgba(70,175,255,0.18) 35%, rgba(70,175,255,0.06) 65%, rgba(70,175,255,0) 100%),
-    radial-gradient(95% 15% at 58% 44%, rgba(10,110,245,0.32) 0%, rgba(10,110,245,0.19) 35%, rgba(10,110,245,0.07) 65%, rgba(10,110,245,0) 100%);
-  transform: rotate(-24deg); }
+  background: linear-gradient(152deg, rgba(10,110,245,0) 30%, rgba(10,110,245,0.10) 38%, rgba(60,170,255,0.22) 43%, rgba(10,110,245,0.12) 48%, rgba(10,110,245,0) 58%); }
 @keyframes hig-aur-sweep {
-  0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
-  50%  { transform: translate3d(7%, -6%, 0) scale(1.08) rotate(4deg); }
-  100% { transform: translate3d(-4%, -9%, 0) scale(1.03) rotate(-3deg); } }
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(6%, -5%, 0) scale(1.06); }
+  100% { transform: translate3d(-4%, -8%, 0) scale(1.02); } }
 @keyframes hig-aur-band {
-  0%   { transform: translate3d(0, 0, 0) rotate(-24deg); }
-  50%  { transform: translate3d(-8%, 7%, 0) rotate(-18deg); }
-  100% { transform: translate3d(5%, 12%, 0) rotate(-29deg); } }
+  0%   { transform: translate3d(0, 0, 0); }
+  50%  { transform: translate3d(-7%, 6%, 0); }
+  100% { transform: translate3d(6%, 9%, 0); } }
 @media (prefers-reduced-motion: reduce) { html.hig .phone.ambient::before, html.hig .phone.ambient::after { animation: none; } }
 
 /* switch with a little glass: the track has a soft inner depth, the thumb a light gloss */
