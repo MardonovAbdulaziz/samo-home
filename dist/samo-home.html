@@ -11484,7 +11484,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
 
   function listPage() {
     // a place that was added but never marked is dropped when you come back to the list
-    const before = d.zones.length; d.zones = d.zones.filter((z) => !(z.draft && !z.cells.length)); if (d.zones.length !== before) Store.save();
+    const before = d.zones.length; d.zones = d.zones.filter((z) => !z.draft); if (d.zones.length !== before) Store.save();
     let h = UI.toolbar({ title: 'Places in the room', back, plain: true });
     h += `<div style="height:12px"></div><div class="pad pr-room">${P.plan(d, {})}</div>
       <div class="list" style="margin-top:24px">${d.zones.map((z, i) => `<a class="cell" href="${listUrl}&p=${i}"><span class="cell-main"><span class="cell-title" style="display:block">${esc(z.name)}</span><span class="cell-sub" style="display:block">${squares(z.cells.length)}</span></span>${icon('chevron-right', 'chev')}</a>`).join('')}
@@ -11503,7 +11503,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
       <div class="pad name-chips">${SUGGEST.map((n) => `<button class="name-chip" data-action="pl-name" data-n="${n}">${n}</button>`).join('')}</div>
       <div class="pad pr-room" style="margin-top:32px">${P.plan(d, { edit: true, sel: i })}</div>
       <div class="list-footer">Tap the squares where ${esc(z.name)} is.</div>
-      <div class="pad" style="margin-top:32px"><button class="btn btn-danger btn-block" data-action="pl-del">Remove place</button></div>
+      ${isNew ? '' : '<div class="pad" style="margin-top:32px"><button class="btn btn-danger btn-block" data-action="pl-del">Remove place</button></div>'}
       <div style="height:32px"></div>`;
     return h;
   }
@@ -11512,6 +11512,14 @@ if (typeof Store !== 'undefined') Scenarios.start();
     const z = zone();
     if (pi != null && !z) { UI.go(listUrl); return; }
     UI.patch(UI.screen, z ? placePage(z) : listPage());
+    // a new place: the main action is a fixed blue Add at the bottom (same footer CTA as Add device); ready once it has a name and a square
+    let f = UI.phone.querySelector('.footer-cta');
+    if (z && isNew) {
+      UI.screen.classList.add('with-footer');
+      if (!f) { f = document.createElement('div'); f.className = 'footer-cta'; UI.phone.appendChild(f); }
+      const ready = !!z.name.trim() && z.cells.length > 0;
+      UI.patch(f, `<button class="btn btn-primary btn-block" data-action="pl-addok" ${ready ? '' : 'disabled'}>Add</button>`);
+    } else if (f) f.remove();
   }
   render();
 
@@ -11532,9 +11540,9 @@ if (typeof Store !== 'undefined') Scenarios.start();
       const other = d.zones.find((x) => x !== z && x.cells.includes(c));
       if (other) { UI.toast(`This square is ${other.name}`); return; }   // never take a square away from another place silently
       if (z.cells.includes(c)) z.cells = z.cells.filter((k) => k !== c); else z.cells.push(c);
-      if (z.cells.length) delete z.draft;
       Store.save(); render();
     },
+    'pl-addok': () => { const z = zone(); if (!z || !z.cells.length) return; delete z.draft; Store.save(); UI.go(listUrl); },
     'pl-del': () => {
       const z = zone(); if (!z) return;
       UI.confirm({ title: `Remove ${z.name}?`, text: 'The sensor will stop telling when someone is there.', ok: 'Remove',
