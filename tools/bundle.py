@@ -274,7 +274,8 @@ def data_uri(rel):
 
 
 def inline_assets(text):
-    return re.sub(r'assets/[\w\-/]+\.(?:svg|png|jpg|jpeg|webp)', lambda m: data_uri(m.group(0)), text)
+    # CSS refers to assets as ../assets/… (relative to css/) — the ../ goes with it
+    return re.sub(r'(?:\.\./)?assets/[\w\-/]+\.(?:svg|png|jpg|jpeg|webp)', lambda m: data_uri(m.group(0).removeprefix('../')), text)
 
 
 def js(rel):

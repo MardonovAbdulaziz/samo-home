@@ -258,40 +258,24 @@ html.hig .tabbar .tab.on .icon { color: var(--primary); }
 html.hig .sheet :is(.btn-secondary, .btn-danger, .btn-glass) { background: rgba(255, 255, 255, 0.10); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
 html.hig .sheet .sheet-x { background: rgba(255, 255, 255, 0.10); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
 
-/* ---------- Background: dark blue aurora in slow motion (user's refs, 2026-11-18: magnific "artistic blurry colorful
-   wallpaper" 38065207 / 38129054 / 38129034). Black sky at the top, a curved sweep of light rising from the bottom-left
-   (deep blue → app blue → sky), and one soft blue band across the middle. The two light layers drift very slowly
-   (45 s and 70 s, there and back) — transform only, so it costs the GPU nothing. The light is never pale under text.
-   --aur-t (set at page start from the clock) keeps the drift continuous across page loads. ---------- */
-html.hig .phone.ambient { background: radial-gradient(130% 70% at 50% 100%, #05205A 0%, #031236 45%, #01060F 75%, #010308 100%); }
-/* Layers only slide and breathe (translate + scale, never rotate): every light ends well inside its layer, so no edge
-   can ever show (a rotated layer showed a hard diagonal cut). Layers stay small — Safari drops oversized animated layers. */
-html.hig .phone.ambient::before, html.hig .phone.ambient::after {
+/* ---------- Background: one photo, not CSS gradients (user, 2026-11-18: "bluer at the bottom, dark at the top; the blur
+   isn't smooth"). The image = a portrait slice of the user's reference (Magnific free photo "Artistic blurry
+   colorful wallpaper background" by Mateus Andre), graded near-black on top → blue at the bottom, with a faint grain
+   so the dark blues never band. 24 KB. It breathes very slowly (scale + slide, 40 s there and back, transform only).
+   --aur-t keeps the drift continuous across page loads. ---------- */
+html.hig .phone.ambient { background: #01030A; }
+html.hig .phone.ambient::before {
   content: ""; position: absolute; z-index: -1; pointer-events: none; filter: none; opacity: 1; border-radius: 0;
-  inset: -12%; width: auto; height: auto; left: -12%; top: -12%; will-change: transform; transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden; backface-visibility: hidden;
-  animation-delay: var(--aur-t, 0s); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); animation-iteration-count: infinite; animation-direction: alternate; }
-/* the sweep: light rising from the bottom-left corner, like ref 1 + 3 (each ellipse ends inside the layer) */
-html.hig .phone.ambient::before { animation-name: hig-aur-sweep; animation-duration: 45s;
-  background:
-    radial-gradient(20% 20% at 18% 80%, rgba(150,225,255,0.42) 0%, rgba(150,225,255,0.25) 35%, rgba(150,225,255,0.09) 65%, rgba(150,225,255,0) 100%),
-    radial-gradient(32% 22% at 24% 78%, rgba(40,180,255,0.54) 0%, rgba(40,180,255,0.33) 35%, rgba(40,180,255,0.12) 65%, rgba(40,180,255,0) 100%),
-    radial-gradient(46% 24% at 48% 76%, rgba(10,132,255,0.54) 0%, rgba(10,132,255,0.33) 35%, rgba(10,132,255,0.12) 65%, rgba(10,132,255,0) 100%),
-    radial-gradient(28% 26% at 72% 74%, rgba(10,90,230,0.40) 0%, rgba(10,90,230,0.24) 35%, rgba(10,90,230,0.08) 65%, rgba(10,90,230,0) 100%); }
-/* the wash: a broad soft light from the upper right, like the lit corner of ref 2 — no thin ribbon or line (user: the diagonal line looked ugly) */
-html.hig .phone.ambient::after { animation-name: hig-aur-band; animation-duration: 70s;
-  background:
-    radial-gradient(36% 30% at 64% 36%, rgba(10,100,240,0.20) 0%, rgba(10,100,240,0.12) 40%, rgba(10,100,240,0.04) 72%, rgba(10,100,240,0) 100%),
-    radial-gradient(26% 20% at 70% 40%, rgba(60,160,255,0.10) 0%, rgba(60,160,255,0.05) 50%, rgba(60,160,255,0) 100%); }
-@keyframes hig-aur-sweep {
+  inset: -6%; width: auto; height: auto; left: -6%; top: -6%;
+  background: #01030A url("../assets/bg/hig-aurora.jpg") center bottom / cover no-repeat;
+  will-change: transform; transform: translate3d(0, 0, 0); -webkit-backface-visibility: hidden; backface-visibility: hidden;
+  animation: hig-aur-breathe 40s cubic-bezier(0.45, 0, 0.55, 1) var(--aur-t, 0s) infinite alternate; }
+html.hig .phone.ambient::after { content: none; }
+@keyframes hig-aur-breathe {
   0%   { transform: translate3d(0, 0, 0) scale(1); }
-  50%  { transform: translate3d(6%, -5%, 0) scale(1.06); }
-  100% { transform: translate3d(-4%, -8%, 0) scale(1.02); } }
-@keyframes hig-aur-band {
-  0%   { transform: translate3d(0, 0, 0); }
-  50%  { transform: translate3d(-7%, 6%, 0); }
-  100% { transform: translate3d(6%, 9%, 0); } }
-@media (prefers-reduced-motion: reduce) { html.hig .phone.ambient::before, html.hig .phone.ambient::after { animation: none; } }
+  50%  { transform: translate3d(-3%, -2%, 0) scale(1.05); }
+  100% { transform: translate3d(3%, -1%, 0) scale(1.03); } }
+@media (prefers-reduced-motion: reduce) { html.hig .phone.ambient::before { animation: none; } }
 
 /* switch with a little glass: the track has a soft inner depth, the thumb a light gloss */
 html.hig .switch { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28), inset 0 0 0 0.5px rgba(255, 255, 255, 0.06); }
