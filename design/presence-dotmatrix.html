@@ -130,17 +130,17 @@ function makeGrid(o) {
   const p = o.pitch, cols = Math.floor((RM.w - p) / p) + 1, rows = Math.floor((RM.h - p) / p) + 1;
   const ox = RM.x + (RM.w - (cols - 1) * p) / 2, oy = RM.y + (RM.h - (rows - 1) * p) / 2, dots = [];
   // the dot field itself has round corners (16 or 24 px), measured on the outer dots
-  const R = +(o.fr || 24), x0 = ox, y0 = oy, x1 = ox + (cols - 1) * p, y1 = oy + (rows - 1) * p;
+  const R = +(o.fr || 12), x0 = ox, y0 = oy, x1 = ox + (cols - 1) * p, y1 = oy + (rows - 1) * p;
   const inField = (x, y) => { const cx = Math.min(Math.max(x, x0 + R), x1 - R), cy = Math.min(Math.max(y, y0 + R), y1 - R); return Math.hypot(x - cx, y - cy) <= R + .5; };
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { const x = ox + c * p, y = oy + r * p; if (inRR(x, y, p * .35) && inField(x, y)) dots.push({ x, y, v: 0, z: null, kn: 0, row: r, col: c }); }
   return { dots, cols, rows, ox, oy };
 }
 function renderer(o) {
-  let G = makeGrid(o), key = o.pitch + '/' + (o.fr || 24);
+  let G = makeGrid(o), key = o.pitch + '/' + (o.fr || 12);
   const labels = [];
   const rip = {};
   return function draw(c, t, dt) {
-    if (o.pitch + '/' + (o.fr || 24) !== key) { G = makeGrid(o); key = o.pitch + '/' + (o.fr || 24); }
+    if (o.pitch + '/' + (o.fr || 12) !== key) { G = makeGrid(o); key = o.pitch + '/' + (o.fr || 12); }
     const off = mode === 'off', P = people.filter((p) => p.a > .01), pitch = o.pitch;
     const sigma = pitch * 2.1, persist = o.glow === 'trail' ? 1.8 : o.glow === 'soft' ? .55 : .18;
     // places: which dots belong where, and the label knock-outs
@@ -270,11 +270,11 @@ const PRESETS = [
 ];
 
 /* ---------- studio knobs ---------- */
-const studio = Object.assign({ bloom: 'on', fr: '24' }, PROG[0][2]);
+const studio = Object.assign({ bloom: 'on', fr: '12' }, PROG[0][2]);
 const KNOBS = [
   ['shape', 'Dot shape', [['round', 'Round'], ['square', 'Rounded square']]],
   ['pitch', 'Density', [[7, 'Fine'], [9, 'Medium'], [11, 'Classic'], [13, 'Large']]],
-  ['fr', 'Corners of the dot field', [['24', '24 px'], ['16', '16 px']]],
+  ['fr', 'Corners of the dot field', [['8', '8 px'], ['12', '12 px'], ['24', '24 px']]],
   ['size', 'Dot size', [['halftone', 'Grows with light'], ['grow', 'Grows a little'], ['even', 'Always the same']]],
   ['colour', 'Colour', [['core', 'Blue + bright core'], ['blue', 'Blue'], ['mono', 'White only']]],
   ['glow', 'Fade', [['quick', 'Quick'], ['soft', 'Soft'], ['trail', 'Long afterglow']]],
