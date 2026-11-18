@@ -461,6 +461,8 @@ button.cell:active, a.cell:active { background: var(--fill-quaternary); }
 .proto-panel .pp-seg { display: flex; gap: 4px; }
 .proto-panel .pp-seg button { flex: 1; background: #20242c; border: 1px solid #2d323d; border-radius: 6px; padding: 5px 0; color: #c9ced8; }
 .proto-panel .pp-seg button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.proto-panel .pp-seg.pp-wrap { flex-wrap: wrap; }
+.proto-panel .pp-seg.pp-wrap button { flex: 1 0 calc(33% - 4px); }
 .proto-panel label.pp-chk { display: flex; gap: 8px; align-items: center; padding: 3px 0; cursor: pointer; }
 .proto-panel label.pp-chk input { accent-color: var(--primary); }
 .proto-panel .pp-group { color: #9aa2b1; font-size: 11px; margin: 10px 0 2px; }

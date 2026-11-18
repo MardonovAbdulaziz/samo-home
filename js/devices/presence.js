@@ -234,30 +234,38 @@ Devices.presence = (() => {
     if (!W2) return;
     if (cv.width !== W2 || cv.height !== H2) { cv.width = W2; cv.height = H2; }
     const c = cv.getContext('2d'), k = W2 / RW;
-    const A = ANIM.get(d.id) || (ANIM.set(d.id, { people: [], zk: {}, dots: new Float32Array(GRID.pts.length), shapes: new Map(), frozen: t }), ANIM.get(d.id));
+    const A = ANIM.get(d.id) || (ANIM.set(d.id, { people: [], zk: {}, dots: new Float32Array(GRID.pts.length), shapes: new Map(), frozen: t, drawn: false }), ANIM.get(d.id));
     const sc = scene(d);
     if (!sc.off) A.frozen = t; const T = A.frozen;
     // the person (one per device for now; the code keeps a list so FP2-type sensors can show several)
     let p = A.people[0];
-    if (sc.here && !p) { p = { u: sc.u, v: sc.v, a: 0, moving: false }; A.people[0] = p; }
+    // someone appears: the patch grows from small and one soft ring of light spreads out (not on the first frame of the page)
+    if (sc.here && !p) { p = { u: sc.u, v: sc.v, a: 0, sp: 0, still: 0, grow: A.drawn ? 0.45 : 1, loose: 0, born: A.drawn && !reduce ? t : -9, moving: false }; A.people[0] = p; }
     if (p) {
       p.ta = sc.here ? 1 : 0;
       let tu = sc.u, tv = sc.v;
       if (sc.here && sc.act === 'small' && !reduce) { tu += Math.sin(t / 1.6) * 0.008; tv += Math.cos(t / 2.1) * 0.006; }
-      if (!sc.off && sc.here) {
-        const du = tu - p.u, dv = tv - p.v, dist = Math.hypot(du, dv), sp = Math.min(dist, 0.16 * dt * Math.min(1, dist / 0.08 + .2));
-        if (dist > 1e-4) { p.u += du / dist * sp; p.v += dv / dist * sp; }
-        p.moving = dist > 0.01 && sc.act !== 'small';
-      }
-      p.a = smooth(p.a, p.ta * (sc.leaving ? .45 : 1), dt, 0.45);
+      if (!sc.off && sc.here && !sc.leaving) {
+        // walking: speeds up and slows down smoothly (no jump at the start, no snap at the end)
+        const du = tu - p.u, dv = tv - p.v, dist = Math.hypot(du, dv);
+        p.sp = smooth(p.sp, 0.16 * Math.min(1, dist / 0.1 + 0.1), dt, 0.4);
+        const step = Math.min(dist, p.sp * dt); if (dist > 1e-4) { p.u += du / dist * step; p.v += dv / dist * step; }
+        p.moving = dist > 0.012 && sc.act !== 'small';
+      } else p.moving = false;
+      p.still = smooth(p.still, !p.moving && sc.act === 'still' && !sc.leaving && sc.here ? 1 : 0, dt, 1.2);   // the breath fades in
+      p.grow = smooth(p.grow, 1, dt, 0.35);
+      p.loose = smooth(p.loose, sc.leaving || !p.ta ? 1 : 0, dt, sc.leaving ? 1.6 : 0.5);                    // unsure: wider and fainter
+      p.a = smooth(p.a, p.ta * (sc.leaving ? 0.4 : 1), dt, p.ta ? 0.35 : 0.7);
       if (p.a < 0.01 && !p.ta) { A.people = []; p = null; }
     }
+    A.drawn = true;
     // places: shapes are cached per painted layout
     const Z = has(d, 'zones') ? d.zones.map((z) => ({ z, r: zoneRects(z) })).filter((x) => x.r) : [];
     const lit = [];
     const places = Z.map(({ z, r }) => {
       const key = z.cells.slice().sort().join(';'); let s = A.shapes.get(key); if (!s) { s = placeShape(r); A.shapes.set(key, s); }
-      const kz = A.zk[z.name] = smooth(A.zk[z.name] || 0, sc.zone === z.name ? 1 : 0, dt, 0.35);
+      const inside = p && p.ta && !sc.leaving && z.cells.includes(cellOf(p.u * COLS, p.v * ROWS));   // lit when the person is really there
+      const kz = A.zk[z.name] = smooth(A.zk[z.name] || 0, inside ? 1 : 0, dt, inside ? 0.45 : 0.7);
       if (sc.zone === z.name) lit.push(z.name);
       return { z, s, kz };
     });
@@ -268,10 +276,15 @@ Devices.presence = (() => {
     if (!off) P.forEach((q) => { const x = rpx(q.u), y = rpy(q.v), r = sigma * 3.2, g = c.createRadialGradient(x, y, 0, x, y, r);
       [[0, .16], [.3, .1], [.55, .045], [.8, .012], [1, 0]].forEach(([s, a]) => g.addColorStop(s, `rgba(10,132,255,${(a * q.a).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); });
     const scanY = RM.y + ((T / 7.5) % 1.25) * RM.h, scanOn = !off && !reduce;
-    const breath = (q) => (q.moving || reduce || sc.act !== 'still' ? 0 : (1 - Math.cos(T * TAU / 5.5 + q.u * 7)) / 2);
+    const breath = (q) => (reduce ? 0 : q.still * (1 - Math.cos(T * TAU / 5.5)) / 2);
+    const rings = P.filter((q) => t - q.born < 1.8).map((q) => { const e = (t - q.born) / 1.8; return { x: rpx(q.u), y: rpy(q.v), R: 8 + 92 * (1 - Math.pow(1 - e, 3)), a: .42 * Math.pow(1 - e, 1.6) }; });
+    c.font = FONT;
+    const labels = places.map(({ z, s: sh }) => { const kRow = Math.round((sh.box.y + 14 - GRID.oy) / PITCH - .5), y = GRID.oy + (kRow + .5) * PITCH, x = sh.box.x + 6;
+      return { z, x, y, x0: x - 3, x1: x + c.measureText(z.name).width + 3, y0: y - PITCH * .75, y1: y + PITCH * .75 }; });
     GRID.pts.forEach((pt, i) => {
       let target = 0;
-      P.forEach((q) => { const br = breath(q), s = sigma * (1 + .1 * br), dx = pt.x - rpx(q.u), dy = pt.y - rpy(q.v); target = Math.max(target, q.a * (.9 + .1 * br) * Math.exp(-(dx * dx + dy * dy) / (2 * s * s))); });
+      P.forEach((q) => { const br = breath(q), s = sigma * q.grow * (1 + .1 * br + .45 * q.loose), dx = pt.x - rpx(q.u), dy = pt.y - rpy(q.v); target = Math.max(target, q.a * (.9 + .1 * br) * Math.exp(-(dx * dx + dy * dy) / (2 * s * s))); });
+      rings.forEach((g) => { const dd = Math.hypot(pt.x - g.x, pt.y - g.y) - g.R; target = Math.max(target, g.a * Math.exp(-(dd * dd) / (2 * 7 * 7))); });
       if (off) target = 0;
       const v = A.dots[i] = target > A.dots[i] ? smooth(A.dots[i], target, dt, .12) : smooth(A.dots[i], target, dt, .55);
       let base = .085;
@@ -279,7 +292,8 @@ Devices.presence = (() => {
       let pw = 0, pk = 0;
       places.forEach((pl) => { const w = pl.s.weights[i]; if (w > pw) { pw = w; pk = pl.kz; } });
       if (pw) base += (off ? .04 : .16 + .22 * pk) * pw;
-      const I = Math.min(1, v), a = off ? base * .55 : Math.min(1, base + .9 * I);
+      const under = labels.some((L) => pt.x > L.x0 && pt.x < L.x1 && pt.y > L.y0 && pt.y < L.y1);
+      const I = Math.min(under ? .28 : 1, v), a = off ? base * .55 : Math.min(1, base + .9 * I);   // under a name the light stays soft, so the word reads
       let col;
       if (I < .04 || off) {
         const m = !off && pw ? pw * .95 * pk : 0;   // a place: white, turning blue while someone is in it
@@ -290,14 +304,12 @@ Devices.presence = (() => {
     });
     // names: between two dot rows at the top left of the place, never covering a dot
     c.font = FONT; c.textBaseline = 'middle';
-    places.forEach(({ z, s, kz }) => {
-      const kRow = Math.round((s.box.y + 14 - GRID.oy) / PITCH - .5);
-      c.fillStyle = `rgba(255,255,255,${(off ? .35 : .62 + .38 * kz).toFixed(3)})`;
-      c.fillText(z.name, s.box.x + 6, GRID.oy + (kRow + .5) * PITCH + .5);
-    });
+    labels.forEach((L, j) => { c.fillStyle = `rgba(255,255,255,${(off ? .35 : .62 + .38 * places[j].kz).toFixed(3)})`; c.fillText(L.z.name, L.x, L.y + .5); });
     // for checks / screen readers: who is shown and which place is lit
     const st = `${p && p.ta ? (sc.leaving ? 'leaving' : 'here') : 'none'}|${lit.join(',')}`;
     if (cv.dataset.state !== st) cv.dataset.state = st;
+    const shown = places.filter((q) => q.kz > .5).map((q) => q.z.name).join(',');   // which place looks lit right now
+    if (cv.dataset.shown !== shown) cv.dataset.shown = shown;
   }
   function frame(now) {
     const t = now / 1000, dt = Math.min(0.05, lastT ? t - lastT : 0.016); lastT = t;
@@ -352,22 +364,62 @@ Devices.presence = (() => {
   }
   const about = (d) => [['Room', word(d)], ...(has(d, 'zones') && d.st.zone ? [['Place', d.st.zone]] : [])];
 
+  /* The prototype's room is the user's own places: one button per place (plus the middle), how the person moves,
+     someone coming in through the door, a walk around every place. Out of range / ignored strips say so. */
+  function spotOf(z) {   // where a person stands for a place: its middle (or, for an odd shape, the square nearest the middle)
+    const pts = z.cells.map((c) => c.split(',').map(Number).map((n) => n - .5)), mx = pts.reduce((q, p) => q + p[0], 0) / pts.length, my = pts.reduce((q, p) => q + p[1], 0) / pts.length;
+    if (z.cells.includes(cellOf(mx, my + .01))) return [mx, my + .01];
+    return pts.reduce((m, p) => (Math.hypot(p[0] - mx, p[1] - my) < Math.hypot(m[0] - mx, m[1] - my) ? p : m));
+  }
+  const placeAt = (d, x, y) => (d.zones.find((z) => z.cells.includes(cellOf(x, y))) || {}).name || null;   // the real room, whatever the sensor knows
+  const MIDDLE = [2.0, 3.5];
+  const entrance = (d) => { const z = d.zones.find((q) => /door|entr/i.test(q.name)); return z ? spotOf(z) : [2.0, 6.5]; };
+  function outOfSight(d, y) {
+    const R = reach(d);
+    if (y < R.min || y > R.max) return 'is outside the detection range — the sensor can’t see them there';
+    if (has(d, 'ignore') && S(d, 'ignore')[Math.min(ROWS - 1, Math.floor(y))]) return 'is in a part the sensor doesn’t watch';
+    return '';
+  }
+  let walkT = 0;
   function protoPanel(d) {
-    const P = d.phys;
+    const P = d.phys, at = P.here ? placeAt(d, P.x, P.y) : null;
+    const MV = [['still', 'Sitting still'], ['small', 'A little'], ['large', 'Walking']];
+    const status = P.here ? `a person ${({ large: 'walking', small: 'moving a little', still: 'sitting still' })[P.move]} ${at ? 'at the ' + at.toLowerCase() : 'in the room'}` : 'nobody';
     return Kit.protoHead('Presence sensor prototype', '9. Presence_Sensor_Interface.html', PRESETS, d) + `
-      <h3>The room · <span style="font-weight:400">${P.here ? `a person ${({ large: 'walking', small: 'moving a little', still: 'still' })[P.move]}${zoneOf(Object.assign({}, d, { features: d.features.concat('zones') }), P.x, P.y) ? ' at the ' + zoneOf(Object.assign({}, d, { features: d.features.concat('zones') }), P.x, P.y).toLowerCase() : ''}` : 'nobody'}${P.fan ? ' · fan on' : ''}</span></h3>
-      <div class="pp-row">${Kit.ppBtn('pp-walk', '🚶 Someone walks in')}${Kit.ppBtn('pp-sofa', '🛋 Sits on the sofa')}${Kit.ppBtn('pp-desk', '💻 Works at the desk')}</div>
-      <div class="pp-row">${Kit.ppBtn('pp-door', '🚪 Stands at the door')}${Kit.ppBtn('pp-leave', '👋 Leaves the room')}${Kit.ppBtn('pp-fan', P.fan ? '🌀 Fan off' : '🌀 Fan on (fools the radar)')}</div>
-      <div class="pp-row">${Kit.ppBtn('pp-dark', d.st.lux < 30 ? '☀️ Daylight' : '🌙 Evening (dark)', has(d, 'light') || has(d, 'presenceLight'))}${Kit.ppBtn('pp-batt', d.battery <= 20 ? '🔋 New battery' : '🔋 Battery low', has(d, 'battery'))}${Kit.ppBtn('pp-online', d.online ? '📴 Stops answering' : '📶 Answers again')}</div>` + Kit.protoFeatures(F, GROUPS, d);
+      <h3>The room · <span style="font-weight:400">${esc(status)}${P.fan ? ' · fan on' : ''}</span></h3>
+      <div class="pp-row">${Kit.ppBtn('pp-in', P.here ? '🚶 Walks around' : '🚶 Someone comes in')}${P.here ? Kit.ppBtn('pp-leave', '👋 Leaves the room') : ''}</div>
+      <h3>Goes to</h3>
+      <div class="pp-seg pp-wrap">${d.zones.map((z, i) => `<button class="${P.here && at === z.name ? 'on' : ''}" data-action="pp-go" data-i="${i}">${esc(z.name)}</button>`).join('')}<button class="${P.here && !at ? 'on' : ''}" data-action="pp-go" data-i="-1">Middle</button></div>
+      ${P.here ? `<h3>Moves</h3><div class="pp-seg">${MV.map(([k, l]) => `<button class="${P.move === k ? 'on' : ''}" data-action="pp-move" data-m="${k}">${l}</button>`).join('')}</div>` : ''}
+      <h3>Around the sensor</h3>
+      <div class="pp-row">${Kit.ppBtn('pp-fan', P.fan ? '🌀 Fan off' : '🌀 Fan on (fools the radar)')}${Kit.ppBtn('pp-dark', d.st.lux < 30 ? '☀️ Daylight' : '🌙 Evening (dark)', has(d, 'light') || has(d, 'presenceLight'))}</div>
+      <div class="pp-row">${Kit.ppBtn('pp-batt', d.battery <= 20 ? '🔋 New battery' : '🔋 Battery low', has(d, 'battery'))}${Kit.ppBtn('pp-online', d.online ? '📴 Stops answering' : '📶 Answers again')}</div>` + Kit.protoFeatures(F, GROUPS, d);
   }
   function bindProto(d, ctx) {
-    const P = d.phys, go = (k, move) => Object.assign(P, { here: true, x: AT[k][0], y: AT[k][1], move });
+    const P = d.phys;
+    // a little script of steps [x, y, move, ms]; the room picture eases between them
+    const script = (steps, loop) => {
+      clearTimeout(walkT);
+      const run = (i) => { const [x, y, move, ms] = steps[i]; Object.assign(P, { here: true, x, y, move }); tick(d); Store.save(); ctx.render();
+        const n = i + 1 < steps.length ? i + 1 : loop ? 0 : -1; if (n >= 0) walkT = setTimeout(() => run(n), ms); };
+      run(0);
+    };
+    const travel = (x, y) => Math.round(Math.hypot((x - P.x) / COLS, (y - P.y) / ROWS) / 0.16 * 1000) + 900;   // time the picture needs to get there
+    const goTo = ([x, y], settle) => { const first = !P.here; if (first) Object.assign(P, { x, y }); script([[x, y, first ? settle : 'large', first ? 0 : travel(x, y)], [x, y, settle, 0]]); };
+    const warn = (name, y) => { const w = outOfSight(d, y); return w ? `${name} ${w}` : ''; };
+    const stop = (f) => (a) => { clearTimeout(walkT); return f(a); };
     Kit.bindProto(F, PRESETS, d, ctx, {
-      'pp-walk': () => go('walk', 'large'),
-      'pp-sofa': () => go('sofa', 'still'),
-      'pp-desk': () => go('desk', 'small'),
-      'pp-door': () => go('door', 'large'),
-      'pp-leave': () => { P.here = false; return `The sensor waits ${has(d, 'timing') ? S(d, 'timing').leave : 30} s before saying “empty”`; },
+      'pp-in': stop(() => {
+        if (!P.here) { const e = entrance(d); Object.assign(P, { x: e[0], y: e[1] }); script([[e[0], e[1], 'large', 2200], [MIDDLE[0], MIDDLE[1], 'large', travel(...MIDDLE) + 600], [MIDDLE[0], MIDDLE[1], 'small', 0]]); return warn('The door', e[1]); }
+        const spots = d.zones.map(spotOf).concat([MIDDLE]); let x = P.x, y = P.y;
+        script(spots.map((q) => { const ms = Math.round(Math.hypot((q[0] - x) / COLS, (q[1] - y) / ROWS) / 0.16 * 1000) + 1600; x = q[0]; y = q[1]; return [q[0], q[1], 'large', ms]; }), true);
+      }),
+      'pp-go': stop(({ i }) => {
+        const z = d.zones[+i], q = z ? spotOf(z) : MIDDLE, settle = z && /door|entr/i.test(z.name) ? 'small' : 'still';
+        goTo(q, settle); return warn(z ? z.name : 'The middle', q[1]);
+      }),
+      'pp-move': stop(({ m }) => { P.move = m; }),
+      'pp-leave': stop(() => { P.here = false; return `The sensor waits ${has(d, 'timing') ? S(d, 'timing').leave : 30} s before saying “empty”`; }),
       'pp-fan': () => { P.fan = !P.fan; if (P.fan && !P.here) return 'An empty room with a fan: the radar may think someone is here — “Parts not to watch” or Learn fixes it'; },
       'pp-dark': () => { d.st.lux = d.st.lux < 30 ? 320 : 12; },
       'pp-batt': () => { d.battery = d.battery <= 20 ? 100 : 12; },
