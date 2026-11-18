@@ -8,7 +8,8 @@
     const newTag = d.isNew ? ' <span class="tag-new">NEW</span>' : '';
     return `<div class="${cls}" role="button" tabindex="0" data-key="t-${d.id}-${t.ch}" data-action="open" data-id="${d.id}" data-ch="${t.ch}">
       <span class="tile-icon" style="${t.on ? 'color:' + (t.accent || 'var(--primary)') : ''}">${icon(t.icon, 'icon', 'style="width:28px;height:28px"')}</span>
-      ${t.controllable && !t.offline ? `<button class="tile-power" data-action="tile-power" data-id="${d.id}" data-ch="${t.ch}" aria-label="Turn ${t.on ? 'off' : 'on'} ${UI.esc(t.name)}">${icon('power', 'icon icon-sm')}</button>` : ''}
+      ${t.pair ? `<span class="tile-pair">${t.pair.map((b) => `<button class="tile-power ${b.active ? 'active' : ''}" data-action="tile-cmd" data-id="${d.id}" data-ch="${t.ch}" data-c="${b.c}" aria-label="${UI.esc(b.label)}">${b.html}</button>`).join('')}</span>`
+        : t.controllable && !t.offline ? `<button class="tile-power" data-action="tile-power" data-id="${d.id}" data-ch="${t.ch}" aria-label="Turn ${t.on ? 'off' : 'on'} ${UI.esc(t.name)}">${icon('power', 'icon icon-sm')}</button>` : ''}
       <span class="tile-name">${UI.esc(t.name)}</span>
       <span class="tile-status${t.tone ? ' tone-' + t.tone : ''}"><span data-num>${UI.esc(t.status)}</span>${newTag}</span>
     </div>`;
@@ -174,6 +175,7 @@
 
   UI.on({
     open: ({ id, ch }) => UI.go(`device.html?id=${id}&ch=${ch}`),
+    'tile-cmd': ({ id, ch, c }) => { const d = Store.device(id); DeviceAPI(d).tileCmd(+ch, c); Store.save(); render(); },
     'tile-power': ({ id, ch }) => {
       const d = Store.device(id); DeviceAPI(d).toggle(+ch); Store.save(); render();
       UI.pulse(UI.screen.querySelector(`.tile[data-id="${id}"][data-ch="${ch}"]`), 'just-toggled');

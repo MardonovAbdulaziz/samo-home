@@ -156,6 +156,10 @@ a { color: inherit; text-decoration: none; }
 .tile.on { background: var(--tile-on-bg); color: var(--tile-on-label); }
 .tile.on .tile-status { color: var(--tile-on-sublabel); }
 .tile.on .tile-power { background: rgba(120, 120, 128, 0.16); color: var(--tile-on-label); }
+/* curtain tile: open + close side by side in the power button's place; the moving one turns blue and shows stop */
+.tile .tile-pair { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; }
+.tile .tile-pair .tile-power { position: static; }
+.tile .tile-pair .tile-power.active, .tile.on .tile-pair .tile-power.active { background: var(--primary); color: var(--static-white); }
 .tile.offline .tile-status { color: var(--red); }
 /* Alert card (Figma 5429:45566, leak / smoke alarm): background/opposite bg, label/oposite name, color/red icon + status */
 .tile.alert { background: var(--bg-opposite); color: var(--label-opposite); }

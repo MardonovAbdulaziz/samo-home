@@ -332,6 +332,10 @@ a { color: inherit; text-decoration: none; }
 .tile.on { background: var(--tile-on-bg); color: var(--tile-on-label); }
 .tile.on .tile-status { color: var(--tile-on-sublabel); }
 .tile.on .tile-power { background: rgba(120, 120, 128, 0.16); color: var(--tile-on-label); }
+/* curtain tile: open + close side by side in the power button's place; the moving one turns blue and shows stop */
+.tile .tile-pair { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; }
+.tile .tile-pair .tile-power { position: static; }
+.tile .tile-pair .tile-power.active, .tile.on .tile-pair .tile-power.active { background: var(--primary); color: var(--static-white); }
 .tile.offline .tile-status { color: var(--red); }
 /* Alert card (Figma 5429:45566, leak / smoke alarm): background/opposite bg, label/oposite name, color/red icon + status */
 .tile.alert { background: var(--bg-opposite); color: var(--label-opposite); }
@@ -3016,6 +3020,7 @@ const DeviceAPI = (d) => {
     icon: (ch) => own() || (t.icon ? t.icon(d, ch) : 'info'),
     homeTiles: () => { const ts = t.homeTiles ? t.homeTiles(d) : [], o = own(); return o ? ts.map((x) => Object.assign({}, x, { icon: o })) : ts; },
     toggle: (ch) => t.toggle && t.toggle(d, ch),
+    tileCmd: (ch, c) => t.tileCmd && t.tileCmd(d, ch, c),
     page: (ctx) => (t.page ? t.page(d, ctx) : ''),
     bindPage: (ctx) => t.bindPage && t.bindPage(d, ctx),
     settings: (ctx) => (t.settings ? t.settings(d, ctx) : ''),
@@ -4186,11 +4191,26 @@ Devices.curtain = (() => {
   const label = (d, i) => (multi(d) ? d.curtains[i].name : d.name);
 
   /* ---------- Home tiles ---------- */
+  /* The tile has two buttons side by side — open / close (roller: up / down), glyphs from the curtain's own type.
+     Tap starts the move and the % runs under the name; tap the same button again and it stops where it is
+     (while it moves that button turns blue and shows the stop glyph). */
   function homeTiles(d) {
-    return d.curtains.map((m, i) => ({
-      ch: i, name: label(d, i), icon: 'dev-curtains', accent: 'var(--primary)',
-      on: d.online && phys(d, cur(d, m)) > 2, status: stateText(d, m), controllable: has(d, 'openClose'), offline: !d.online,
-    }));
+    return d.curtains.map((m, i) => {
+      const dir = m.move ? m.move.dir : 0, btn = (c, g, sgn) => ({ c, html: glyph(dir === sgn ? 'stop' : g, 'icon icon-sm'), active: dir === sgn,
+        label: dir === sgn ? `Stop ${label(d, i)}` : `${c === 'open' ? (roller(d) ? 'Raise' : 'Open') : (roller(d) ? 'Lower' : 'Close')} ${label(d, i)}` });
+      return {
+        ch: i, name: label(d, i), icon: 'dev-curtains', accent: 'var(--primary)',
+        on: d.online && phys(d, cur(d, m)) > 2, controllable: has(d, 'openClose'), offline: !d.online,
+        status: m.move && m.calibrated ? `${movingText(d, m).replace('…', '')} ${shown(d, cur(d, m))} %` : stateText(d, m),
+        pair: has(d, 'openClose') && d.online ? [btn('open', openGlyph(d), 1), btn('close', closeGlyph(d), -1)] : null,
+      };
+    });
+  }
+  /** Tile button: start moving that way, or stop if it is already moving that way. */
+  function tileCmd(d, i, c) {
+    const m = d.curtains[i], want = c === 'open' ? 1 : -1;
+    if (m.move && m.move.dir === want) return cmd(d, i, 'stop');
+    cmd(d, i, c);
   }
   /** Tile power: stop if moving, else open a closed curtain / close an open one. */
   function toggle(d, i) {
@@ -5054,7 +5074,7 @@ Devices.curtain = (() => {
     label: 'Curtain', F, PRESETS, create, applyDefaults,
     icon: () => 'dev-curtains',
     describe: (p) => `${p.manufacturer} · ${p.names.length > 1 ? p.names.length + ' curtains' : p.id === 'roller' ? 'roller blind' : 'curtain motor'}`,
-    homeTiles, toggle, page, bindPage, live, settings, bindSettings, about, tick, busy, protoPanel, bindProto,
+    homeTiles, toggle, tileCmd, page, bindPage, live, settings, bindSettings, about, tick, busy, protoPanel, bindProto,
     presetName: (id) => (PRESETS.find((p) => p.id === id) || {}).name,
     _sim: () => V,   // read-only view of the live curtain simulation (used by tools/checks)
     /** Scenarios: move to a position, given as "% open" like the curtain page shows it. false = not set up yet. */
@@ -11112,7 +11132,8 @@ if (typeof Store !== 'undefined') Scenarios.start();
     const newTag = d.isNew ? ' <span class="tag-new">NEW</span>' : '';
     return `<div class="${cls}" role="button" tabindex="0" data-key="t-${d.id}-${t.ch}" data-action="open" data-id="${d.id}" data-ch="${t.ch}">
       <span class="tile-icon" style="${t.on ? 'color:' + (t.accent || 'var(--primary)') : ''}">${icon(t.icon, 'icon', 'style="width:28px;height:28px"')}</span>
-      ${t.controllable && !t.offline ? `<button class="tile-power" data-action="tile-power" data-id="${d.id}" data-ch="${t.ch}" aria-label="Turn ${t.on ? 'off' : 'on'} ${UI.esc(t.name)}">${icon('power', 'icon icon-sm')}</button>` : ''}
+      ${t.pair ? `<span class="tile-pair">${t.pair.map((b) => `<button class="tile-power ${b.active ? 'active' : ''}" data-action="tile-cmd" data-id="${d.id}" data-ch="${t.ch}" data-c="${b.c}" aria-label="${UI.esc(b.label)}">${b.html}</button>`).join('')}</span>`
+        : t.controllable && !t.offline ? `<button class="tile-power" data-action="tile-power" data-id="${d.id}" data-ch="${t.ch}" aria-label="Turn ${t.on ? 'off' : 'on'} ${UI.esc(t.name)}">${icon('power', 'icon icon-sm')}</button>` : ''}
       <span class="tile-name">${UI.esc(t.name)}</span>
       <span class="tile-status${t.tone ? ' tone-' + t.tone : ''}"><span data-num>${UI.esc(t.status)}</span>${newTag}</span>
     </div>`;
@@ -11278,6 +11299,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
 
   UI.on({
     open: ({ id, ch }) => UI.go(`device.html?id=${id}&ch=${ch}`),
+    'tile-cmd': ({ id, ch, c }) => { const d = Store.device(id); DeviceAPI(d).tileCmd(+ch, c); Store.save(); render(); },
     'tile-power': ({ id, ch }) => {
       const d = Store.device(id); DeviceAPI(d).toggle(+ch); Store.save(); render();
       UI.pulse(UI.screen.querySelector(`.tile[data-id="${id}"][data-ch="${ch}"]`), 'just-toggled');

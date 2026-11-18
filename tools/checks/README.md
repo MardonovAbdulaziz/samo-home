@@ -13,6 +13,7 @@ page sections not being rebuilt when a banner appears, counts never going backwa
     node tools/checks/cloth-seam-grab.js   # closed curtain grabbed at the middle seam opens toward the pull, halves never cross
     node tools/checks/roll-looks-same.js   # every [data-num]: rolling digit = same size/weight/colour as its number
     node tools/checks/settings-inline-and-favourite.js  # switch-only settings flip in the row (no sheet); motor direction sheet; curtain Position chips 25/50/75 (no favourite)
+    node tools/checks/curtain-tile.js      # Home curtain tile: open + close buttons (roller up/down), % runs while moving, same button again stops
     node tools/checks/light.js             # light: toggle, brightness drag (turns on, number rolls), white tone, colour, mood effects, power cut, wall switch, dimmer gangs, settings
     node tools/checks/climate.js           # temperature & humidity sensor: reported vs real (step / interval), correction, sensor alarm vs push limits, relay control, settings per sensor, history, offline
     node tools/checks/motion.js            # motion sensor: motion / no motion, lights on motion (dark only), rest time, cat vs sensitivity, sitting still, push only when away, detection off, tamper, per-sensor settings, history

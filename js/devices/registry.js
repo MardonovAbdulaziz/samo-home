@@ -82,6 +82,7 @@ const DeviceAPI = (d) => {
     icon: (ch) => own() || (t.icon ? t.icon(d, ch) : 'info'),
     homeTiles: () => { const ts = t.homeTiles ? t.homeTiles(d) : [], o = own(); return o ? ts.map((x) => Object.assign({}, x, { icon: o })) : ts; },
     toggle: (ch) => t.toggle && t.toggle(d, ch),
+    tileCmd: (ch, c) => t.tileCmd && t.tileCmd(d, ch, c),
     page: (ctx) => (t.page ? t.page(d, ctx) : ''),
     bindPage: (ctx) => t.bindPage && t.bindPage(d, ctx),
     settings: (ctx) => (t.settings ? t.settings(d, ctx) : ''),

@@ -205,11 +205,26 @@ Devices.curtain = (() => {
   const label = (d, i) => (multi(d) ? d.curtains[i].name : d.name);
 
   /* ---------- Home tiles ---------- */
+  /* The tile has two buttons side by side — open / close (roller: up / down), glyphs from the curtain's own type.
+     Tap starts the move and the % runs under the name; tap the same button again and it stops where it is
+     (while it moves that button turns blue and shows the stop glyph). */
   function homeTiles(d) {
-    return d.curtains.map((m, i) => ({
-      ch: i, name: label(d, i), icon: 'dev-curtains', accent: 'var(--primary)',
-      on: d.online && phys(d, cur(d, m)) > 2, status: stateText(d, m), controllable: has(d, 'openClose'), offline: !d.online,
-    }));
+    return d.curtains.map((m, i) => {
+      const dir = m.move ? m.move.dir : 0, btn = (c, g, sgn) => ({ c, html: glyph(dir === sgn ? 'stop' : g, 'icon icon-sm'), active: dir === sgn,
+        label: dir === sgn ? `Stop ${label(d, i)}` : `${c === 'open' ? (roller(d) ? 'Raise' : 'Open') : (roller(d) ? 'Lower' : 'Close')} ${label(d, i)}` });
+      return {
+        ch: i, name: label(d, i), icon: 'dev-curtains', accent: 'var(--primary)',
+        on: d.online && phys(d, cur(d, m)) > 2, controllable: has(d, 'openClose'), offline: !d.online,
+        status: m.move && m.calibrated ? `${movingText(d, m).replace('…', '')} ${shown(d, cur(d, m))} %` : stateText(d, m),
+        pair: has(d, 'openClose') && d.online ? [btn('open', openGlyph(d), 1), btn('close', closeGlyph(d), -1)] : null,
+      };
+    });
+  }
+  /** Tile button: start moving that way, or stop if it is already moving that way. */
+  function tileCmd(d, i, c) {
+    const m = d.curtains[i], want = c === 'open' ? 1 : -1;
+    if (m.move && m.move.dir === want) return cmd(d, i, 'stop');
+    cmd(d, i, c);
   }
   /** Tile power: stop if moving, else open a closed curtain / close an open one. */
   function toggle(d, i) {
@@ -1073,7 +1088,7 @@ Devices.curtain = (() => {
     label: 'Curtain', F, PRESETS, create, applyDefaults,
     icon: () => 'dev-curtains',
     describe: (p) => `${p.manufacturer} · ${p.names.length > 1 ? p.names.length + ' curtains' : p.id === 'roller' ? 'roller blind' : 'curtain motor'}`,
-    homeTiles, toggle, page, bindPage, live, settings, bindSettings, about, tick, busy, protoPanel, bindProto,
+    homeTiles, toggle, tileCmd, page, bindPage, live, settings, bindSettings, about, tick, busy, protoPanel, bindProto,
     presetName: (id) => (PRESETS.find((p) => p.id === id) || {}).name,
     _sim: () => V,   // read-only view of the live curtain simulation (used by tools/checks)
     /** Scenarios: move to a position, given as "% open" like the curtain page shows it. false = not set up yet. */
