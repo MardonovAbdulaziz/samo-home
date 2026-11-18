@@ -3033,6 +3033,21 @@ const DeviceAPI = (d) => {
   };
 };
 
+/** A Home tile (Figma "Device card"): icon, name, status, and its control — power, or open + close for curtains.
+    Shared by the Home page and design/curtain-tiles.html so both draw exactly the same tile. */
+function homeTileHTML(d, t) {
+  const cls = ['tile', t.on ? 'on' : '', t.offline ? 'offline' : '', t.alert ? 'alert' : ''].join(' ');   // alert: Figma 5429:45566
+  const newTag = d.isNew ? ' <span class="tag-new">NEW</span>' : '';
+  return `<div class="${cls}" role="button" tabindex="0" data-key="t-${d.id}-${t.ch}" data-action="open" data-id="${d.id}" data-ch="${t.ch}">
+    <span class="tile-icon" style="${t.on ? 'color:' + (t.accent || 'var(--primary)') : ''}">${icon(t.icon, 'icon', 'style="width:28px;height:28px"')}</span>
+    ${t.pair ? `<span class="tile-pair">${t.pair.map((b) => `<button class="tile-power ${b.active ? 'active' : ''}" data-action="tile-cmd" data-id="${d.id}" data-ch="${t.ch}" data-c="${b.c}" aria-label="${UI.esc(b.label)}">${b.html}</button>`).join('')}</span>`
+      : t.controllable && !t.offline ? `<button class="tile-power" data-action="tile-power" data-id="${d.id}" data-ch="${t.ch}" aria-label="Turn ${t.on ? 'off' : 'on'} ${UI.esc(t.name)}">${icon('power', 'icon icon-sm')}</button>` : ''}
+    <span class="tile-name">${UI.esc(t.name)}</span>
+    <span class="tile-status${t.tone ? ' tone-' + t.tone : ''}"><span data-num>${UI.esc(t.status)}</span>${newTag}</span>
+  </div>`;
+}
+
+
 /** Run every device's tick() once per second; save + callback if anything changed. */
 function startDeviceClock(onChange) {
   UI.tick(() => {
@@ -11127,17 +11142,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
   UI.mount({ variant: 'ambient' });
   const S = () => Store.state;
 
-  function tileHTML(d, t) {
-    const cls = ['tile', t.on ? 'on' : '', t.offline ? 'offline' : '', t.alert ? 'alert' : ''].join(' ');   // alert: Figma 5429:45566
-    const newTag = d.isNew ? ' <span class="tag-new">NEW</span>' : '';
-    return `<div class="${cls}" role="button" tabindex="0" data-key="t-${d.id}-${t.ch}" data-action="open" data-id="${d.id}" data-ch="${t.ch}">
-      <span class="tile-icon" style="${t.on ? 'color:' + (t.accent || 'var(--primary)') : ''}">${icon(t.icon, 'icon', 'style="width:28px;height:28px"')}</span>
-      ${t.pair ? `<span class="tile-pair">${t.pair.map((b) => `<button class="tile-power ${b.active ? 'active' : ''}" data-action="tile-cmd" data-id="${d.id}" data-ch="${t.ch}" data-c="${b.c}" aria-label="${UI.esc(b.label)}">${b.html}</button>`).join('')}</span>`
-        : t.controllable && !t.offline ? `<button class="tile-power" data-action="tile-power" data-id="${d.id}" data-ch="${t.ch}" aria-label="Turn ${t.on ? 'off' : 'on'} ${UI.esc(t.name)}">${icon('power', 'icon icon-sm')}</button>` : ''}
-      <span class="tile-name">${UI.esc(t.name)}</span>
-      <span class="tile-status${t.tone ? ' tone-' + t.tone : ''}"><span data-num>${UI.esc(t.status)}</span>${newTag}</span>
-    </div>`;
-  }
+  const tileHTML = homeTileHTML;   // shared with design/curtain-tiles.html (js/devices/registry.js)
 
   /* ---------- Top row: the user's own list of chips (edited from the Edit chip at its end) ----------
      Keys: 'all-off', 'dev:<id>' (any sensor — shows its live state), 'scene:<id>'. */
