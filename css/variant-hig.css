@@ -341,3 +341,7 @@ html.hig .cell:has(> .cell-icon:first-child) { --sep-l: 42px; }
 html.hig .sheet .cell:has(> .cell-icon:first-child) { --sep-l: 40px; }
 html.hig .cell:has(> .tr-btn + .cell-icon) { --sep-l: 76px; }
 html.hig :is(.list, .group-card) > :is(.cell, .option) { border-bottom-width: 0.5px; border-bottom-color: var(--ios-sep); }
+
+/* section caption → its block: 8 px, the same as on pages (user, 2026-11-18: sheets had 20 — an extra 12 px margin) */
+html.hig .sheet .list-header { margin-bottom: 0; padding-bottom: 7px; }
+html.hig .sheet .sheet-group .group-title { margin-bottom: 0; padding-bottom: 8px; }
