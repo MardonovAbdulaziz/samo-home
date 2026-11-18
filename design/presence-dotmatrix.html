@@ -29,7 +29,11 @@
   .mock { width: 375px; max-width: 100%; border-radius: 32px; overflow: hidden; padding: 20px 16px 4px;
     background: radial-gradient(120% 60% at 50% 115%, rgba(20,150,160,.45) 0%, rgba(20,150,160,.28) 30%, rgba(20,150,160,.13) 55%, rgba(20,150,160,.04) 78%, rgba(20,150,160,0) 100%), linear-gradient(180deg, #03070f 0%, #071a33 60%, #0a2f4a 100%); }
   .mock canvas { display: block; width: 343px; max-width: 100%; aspect-ratio: 343 / 300; }
-  .ro { padding: 16px 4px 16px; }
+  .lg { display: flex; gap: 18px; padding: 12px 6px 0; min-height: 30px; font: var(--body-sm); color: var(--label-tertiary); }
+  .lg span { display: inline-flex; align-items: center; gap: 6px; transition: color 300ms var(--ease-out); }
+  .lg i { width: 6px; height: 6px; border-radius: 3px; background: currentColor; opacity: .6; transition: background-color 300ms var(--ease-out); }
+  .lg span.on { color: var(--label-primary); } .lg span.on i { background: var(--primary); opacity: 1; }
+  .ro { padding: 12px 4px 16px; }
   .ro .w { font: 700 28px/34px var(--font); letter-spacing: .3px; }
   .ro .w.on { color: var(--primary); }
   .ro .s { font: var(--body-md); color: var(--label-secondary); margin-top: 2px; }
@@ -38,7 +42,7 @@
 </head>
 <body>
 <h1>Presence — Dot matrix, refined</h1>
-<p class="lead">The room drawn only with dots, like a calm LED panel. No outlines: the dots make the room, every dot is the same colour, places are marked in the language of dots (an island without dots, a dotted outline, corner dots…), names as text or LED letters, and a person is a soft patch of light that breathes when they sit and leaves a fading afterglow when they walk. A slow scan comes down from the sensor on the top wall.</p>
+<p class="lead">The room drawn only with dots, like a calm LED panel. No outlines: the dots make the room, every dot is the same colour, places never recolour the dots — they are names under the picture, little dot icons, soft pools, rulers on the walls or a callout, and a person is a soft patch of light that breathes when they sit and leaves a fading afterglow when they walk. A slow scan comes down from the sensor on the top wall.</p>
 <div class="bar">
   <div class="seg" id="st"><button data-s="sit" aria-pressed="true">Sitting still</button><button data-s="walk">Walking</button><button data-s="two">2 people</button><button data-s="empty">Empty</button><button data-s="off">Offline</button></div>
   <div class="seg" id="zn"><button data-z="1" aria-pressed="true">With places</button><button data-z="0">No places</button></div>
@@ -46,7 +50,7 @@
 
 <h2>Studio</h2>
 <div class="studio">
-  <div class="mock"><canvas id="studio" width="686" height="600"></canvas><div class="ro"><div class="w">Someone here</div><div class="s"></div></div></div>
+  <div class="mock"><canvas id="studio" width="686" height="600"></canvas><div class="lg"></div><div class="ro"><div class="w">Someone here</div><div class="s"></div></div></div>
   <div class="knobs" id="knobs"></div>
 </div>
 
@@ -97,7 +101,7 @@ function text() {
 /* ---------- the dot-matrix renderer ----------
    Every dot keeps its own brightness and eases toward its target (quick to light, slow to fade = afterglow),
    so nothing ever jumps. Options are the knobs in the studio. */
-const DEF = { shape: 'round', pitch: 11, colour: 'blue', glow: 'soft', scan: 'on', places: 'brackets', size: 'halftone', sensor: 'on', bloom: 'on' };
+const DEF = { shape: 'round', pitch: 11, colour: 'blue', glow: 'soft', scan: 'on', places: 'legend', size: 'halftone', sensor: 'on', bloom: 'on' };
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function perimeter(b, r, step) {   // evenly spaced points on a rounded rectangle
   const pts = [], segs = [[b.x + r, b.y, b.x + b.w - r, b.y], ['a', b.x + b.w - r, b.y + r, -Math.PI / 2, 0], [b.x + b.w, b.y + r, b.x + b.w, b.y + b.h - r], ['a', b.x + b.w - r, b.y + b.h - r, 0, Math.PI / 2], [b.x + b.w - r, b.y + b.h, b.x + r, b.y + b.h], ['a', b.x + r, b.y + b.h - r, Math.PI / 2, Math.PI], [b.x, b.y + b.h - r, b.x, b.y + r], ['a', b.x + r, b.y + r, Math.PI, Math.PI * 1.5]];
@@ -107,6 +111,11 @@ function perimeter(b, r, step) {   // evenly spaced points on a rounded rectangl
 }
 const LED = { S: [' ### ', '#   #', '#    ', ' ### ', '    #', '#   #', ' ### '], O: [' ### ', '#   #', '#   #', '#   #', '#   #', '#   #', ' ### '], F: ['#####', '#    ', '#    ', '#### ', '#    ', '#    ', '#    '], A: [' ### ', '#   #', '#   #', '#####', '#   #', '#   #', '#   #'],
   D: ['#### ', '#   #', '#   #', '#   #', '#   #', '#   #', '#### '], E: ['#####', '#    ', '#    ', '#### ', '#    ', '#    ', '#####'], K: ['#   #', '#  # ', '# #  ', '##   ', '# #  ', '#  # ', '#   #'], R: ['#### ', '#   #', '#   #', '#### ', '# #  ', '#  # ', '#   #'] };
+const ICON = { Sofa: [' ####### ', '#       #', '# ##### #', '#########', '#########', '##     ##', '#       #'],
+  Desk: ['  #####  ', '  #   #  ', '  #####  ', '    #    ', '#########', '#       #', '#       #'],
+  Door: [' ##### ', ' #   # ', ' #   # ', ' #  ## ', ' #   # ', ' #   # ', '#######'],
+  Other: ['  ###  ', ' #   # ', ' # # # ', ' #   # ', '  ###  ', '   #   ', '   #   '] };
+function ledIcon(c, rows, cx, cy, colour, p = 3) { const w = rows[0].length, h = rows.length; c.fillStyle = colour; rows.forEach((row, r) => [...row].forEach((v, k) => { if (v === '#') { c.beginPath(); c.arc(cx + (k - (w - 1) / 2) * p, cy + (r - (h - 1) / 2) * p, 1.15, 0, TAU); c.fill(); } })); }
 const ledFits = (s) => [...s.toUpperCase()].every((ch) => LED[ch]);
 function ledText(c, s, x, y, colour, p = 2) {   // each letter is 5 × 7 tiny dots, 2 px apart
   c.fillStyle = colour; let cx = x;
@@ -134,13 +143,19 @@ function renderer(o) {
     const scanY = RM.y + ((t / 7.5) % 1.25) * RM.h, scanOn = o.scan === 'on' && !off;
     const zr = (z) => ({ x: px(z.u) + 3, y: py(z.v) + 3, w: z.w * RM.w - 6, h: z.h * RM.h - 6 });
     const zc = (z, a) => (off ? `rgba(255,255,255,${(a * .5).toFixed(3)})` : `rgba(${Math.round(255 - 215 * z.k)},${Math.round(255 - 95 * z.k)},255,${(a + (1 - a) * .55 * z.k).toFixed(3)})`);
-    if (zonesOn && o.places === 'plate') ZONES.forEach((z) => { const b = zr(z); rrect(c, b.x, b.y, b.w, b.h, 12); c.fillStyle = off ? 'rgba(255,255,255,.03)' : `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.05 + .09 * z.k).toFixed(3)})`; c.fill(); });
+    if (zonesOn && o.places === 'pools') ZONES.forEach((z) => { const b = zr(z); c.save(); c.translate(b.x + b.w / 2, b.y + b.h / 2); c.scale(b.w / Math.max(b.w, b.h), b.h / Math.max(b.w, b.h));
+      const r = Math.max(b.w, b.h) * .62, g = c.createRadialGradient(0, 0, 0, 0, 0, r), rgb = off ? '255,255,255' : `${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255`, A = off ? .03 : .06 + .1 * z.k;
+      [[0, 1], [.35, .8], [.6, .45], [.8, .15], [1, 0]].forEach(([q, k]) => g.addColorStop(q, `rgba(${rgb},${(A * k).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill(); c.restore(); });
+    // legend mode: the place you are in glows softly on the map; names live in the row under the picture
+    if (zonesOn && o.places === 'legend' && !off) ZONES.forEach((z) => { if (z.k < .02) return; const b = zr(z); c.save(); c.translate(b.x + b.w / 2, b.y + b.h / 2); c.scale(b.w / Math.max(b.w, b.h), b.h / Math.max(b.w, b.h)); const r = Math.max(b.w, b.h) * .7, g = c.createRadialGradient(0, 0, 0, 0, 0, r);
+      [[0, 1], [.4, .7], [.7, .25], [1, 0]].forEach(([q, k]) => g.addColorStop(q, `rgba(10,132,255,${(.12 * z.k * k).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill(); c.restore(); });
     if (o.bloom !== 'off' && !off) P.forEach((p) => { const x = px(p.u), y = py(p.v), r = sigma * 3.2, g = c.createRadialGradient(x, y, 0, x, y, r);
       [[0, .16], [.3, .1], [.55, .045], [.8, .012], [1, 0]].forEach(([q, a]) => g.addColorStop(q, `rgba(10,132,255,${(a * p.a).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); });
     c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top';
-    const isles = zonesOn && o.places === 'island' ? ZONES.map(zr) : [];
-    // LED names get a small clear patch (no dots) so the letters read; the remaining dots keep one colour
-    if (zonesOn && o.names === 'led') ZONES.forEach((z) => { if (!ledFits(z.name)) return; const b = zr(z); isles.push({ x: b.x + 5, y: b.y + 5, w: z.name.length * 12 + (z.k > .5 && !off ? 9 : 0) + 6, h: 22, name: true }); });
+    const isles = [];
+    const nameBox = (z) => { const b = zr(z); return { x: b.x + 4, y: b.y + 4, w: z.name.length * 7.2 + 12, h: 21, name: true }; };
+    if (zonesOn && (o.places === 'pools' || o.places === 'rings')) ZONES.forEach((z) => isles.push(nameBox(z)));
+    if (zonesOn && o.places === 'icons') ZONES.forEach((z) => { const b = zr(z); isles.push({ x: b.x + b.w / 2 - 16, y: b.y + b.h / 2 - 13, w: 32, h: 26, name: true }); });
     for (const d of G.dots) {
       let target = 0;
       P.forEach((p) => { const br = p.moving ? 0 : (1 - Math.cos(t * TAU / 5.5 + p.u * 7)) / 2, s = sigma * (1 + .1 * br), dx = d.x - px(p.u), dy = d.y - py(p.v); target = Math.max(target, p.a * (.9 + .1 * br) * Math.exp(-(dx * dx + dy * dy) / (2 * s * s))); });
@@ -158,36 +173,42 @@ function renderer(o) {
       else if (I < .04 || off) col = `rgba(255,255,255,${a.toFixed(3)})`;
       else { const k = Math.min(1, I * 1.1), w = o.colour === 'core' ? Math.max(0, (I - .55) / .45) : Math.max(0, (I - .75) / .25) * .6;
         col = `rgba(${Math.round(10 + 245 * w)},${Math.round(132 + 123 * w)},255,${a.toFixed(3)})`; }
-      const zr = 1, r0 = pitch * (o.size === 'halftone' ? .1 : .14) * zr, r = o.size === 'halftone' ? r0 + pitch * .26 * I : o.size === 'even' ? pitch * .18 * zr : r0 + pitch * .12 * I;
+      const r0 = pitch * (o.size === "halftone" ? .1 : .14), r = o.size === "halftone" ? r0 + pitch * .26 * I : o.size === "even" ? pitch * .18 : r0 + pitch * .12 * I;
       c.fillStyle = col; c.beginPath();
-      if (o.shape === 'square') { const s = r * 1.7; c.roundRect ? c.roundRect(d.x - s / 2, d.y - s / 2, s, s, s * .28) : c.rect(d.x - s / 2, d.y - s / 2, s, s); } else c.arc(d.x, d.y, r, 0, TAU);
-      c.fill();
+      const ring = o.places === 'rings' && zonesOn && I < .04 && ZONES.some((q) => { const b = zr(q); return d.x > b.x && d.x < b.x + b.w && d.y > b.y && d.y < b.y + b.h; });
+      if (o.shape === 'square') { const s = r * 1.7; c.roundRect ? c.roundRect(d.x - s / 2, d.y - s / 2, s, s, s * .28) : c.rect(d.x - s / 2, d.y - s / 2, s, s); } else c.arc(d.x, d.y, ring ? r * 1.9 : r, 0, TAU);
+      if (ring) { c.strokeStyle = col; c.lineWidth = .9; c.stroke(); } else c.fill();
     }
+    const plain = (z, x, y, al) => { c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top'; c.fillStyle = `rgba(255,255,255,${(off ? .35 : al).toFixed(3)})`; c.fillText(z.name, x, y); };
     if (zonesOn) ZONES.forEach((z) => {
-      const b = zr(z), col = (al) => zc(z, al);
-      if (o.places === 'brackets') { const L = Math.min(12, b.w / 3, b.h / 3), R = 5; c.strokeStyle = col(.38); c.lineWidth = 1.5; c.lineCap = 'round';
-        [[b.x, b.y, 1, 1], [b.x + b.w, b.y, -1, 1], [b.x, b.y + b.h, 1, -1], [b.x + b.w, b.y + b.h, -1, -1]].forEach(([x, y, sx, sy]) => { c.beginPath(); c.moveTo(x, y + sy * L); c.lineTo(x, y + sy * R); c.arcTo(x, y, x + sx * R, y, R); c.lineTo(x + sx * L, y); c.stroke(); }); }
-      if (o.places === 'outline') { rrect(c, b.x + .5, b.y + .5, b.w - 1, b.h - 1, 12); c.strokeStyle = col(.22); c.lineWidth = 1; c.stroke(); }
-      if (o.places === 'dotline') { c.fillStyle = col(.4); perimeter(b, 10, 4.5).forEach(([x, y]) => { c.beginPath(); c.arc(x, y, .95, 0, TAU); c.fill(); }); }
-      if (o.places === 'corners') { c.fillStyle = col(.55); [[b.x, b.y, 1, 1], [b.x + b.w, b.y, -1, 1], [b.x, b.y + b.h, 1, -1], [b.x + b.w, b.y + b.h, -1, -1]].forEach(([x, y, sx, sy]) => [[0, 0], [4.5, 0], [9, 0], [0, 4.5], [0, 9]].forEach(([dx, dy]) => { c.beginPath(); c.arc(x + sx * dx, y + sy * dy, 1.25, 0, TAU); c.fill(); })); }
-      // the name: plain text with a thin halo of the page colour (clean over dots, no box), or LED letters made of dots
-      const nx = b.x + 9, ny = b.y + 9, busy = z.k > .5 && !off;
-      if (o.names === 'led' && ledFits(z.name)) { const w = ledText(c, z.name.toUpperCase(), nx + (busy ? 9 : 0), ny, col(.75)); if (busy) { c.fillStyle = '#0A84FF'; c.beginPath(); c.arc(nx + 2.5, ny + 6.9, 2.6, 0, TAU); c.fill(); } }
-      else if (o.names !== 'none') { c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top'; c.lineJoin = 'round';
-        const tx = nx + (busy ? 10 : 0); c.lineWidth = 5; c.strokeStyle = 'rgba(4,13,30,.92)'; c.strokeText(z.name, tx, ny); c.fillStyle = `rgba(255,255,255,${(off ? .35 : .62 + .38 * z.k).toFixed(3)})`; c.fillText(z.name, tx, ny);
-        if (busy) { c.fillStyle = '#0A84FF'; c.beginPath(); c.arc(nx + 3, ny + 6.5, 3, 0, TAU); c.fill(); } }
+      const b = zr(z), busy = z.k > .5 && !off;
+      if (o.places === 'pools' || o.places === 'rings') { const nb = nameBox(z); plain(z, nb.x + 6, nb.y + 5, .55 + .45 * z.k); }
+      if (o.places === 'icons') { const ic = ICON[z.name] || ICON.Other, cx = b.x + b.w / 2, cy = b.y + b.h / 2; ledIcon(c, ic, cx, cy, off ? 'rgba(255,255,255,.25)' : `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.5 + .5 * z.k).toFixed(3)})`); }
+      if (o.places === 'rulers') {   // where the place runs along the walls: a short bar on the left wall and on the bottom wall
+        const col = off ? 'rgba(255,255,255,.2)' : `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.3 + .6 * z.k).toFixed(3)})`;
+        c.strokeStyle = col; c.lineWidth = 2; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(RM.x + 1, b.y + 2); c.lineTo(RM.x + 1, b.y + b.h - 2); c.stroke();
+        c.beginPath(); c.moveTo(b.x + 2, RM.y + RM.h - 1); c.lineTo(b.x + b.w - 2, RM.y + RM.h - 1); c.stroke();
+        if (busy) { c.setLineDash([2, 4]); c.strokeStyle = 'rgba(10,132,255,.35)'; c.lineWidth = 1; c.beginPath(); c.moveTo(RM.x + 4, b.y + b.h / 2); c.lineTo(b.x, b.y + b.h / 2); c.stroke(); c.setLineDash([]); }
+      }
     });
+    if (zonesOn && o.places === 'callout' && !off) P.forEach((p) => { const z = zoneAt(p.u, p.v); if (!z || p.a < .3) return;
+      const x = px(p.u), y = py(p.v), right = x < W / 2, ex = x + (right ? 46 : -46), ey = y - 30; c.globalAlpha = Math.min(1, z.k * 1.4) * p.a;
+      c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 1; c.beginPath(); c.moveTo(x + (right ? 10 : -10), y - 7); c.lineTo(ex, ey); c.lineTo(ex + (right ? 10 : -10), ey); c.stroke();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(ex + (right ? 10 : -10), ey, 1.8, 0, TAU); c.fill();
+      c.font = '600 13px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'middle'; const tw = c.measureText(z.name).width; c.fillStyle = 'rgba(255,255,255,.95)'; c.fillText(z.name, right ? ex + 16 : ex - 16 - tw, ey); c.textBaseline = 'top'; c.globalAlpha = 1; });
+    return ZONES.map((z) => ({ name: z.name, k: zonesOn ? z.k : 0 }));
   };
 }
 
 /* ---------- presets ---------- */
 const PRESETS = [
-  ['Classic LED', 'Round dots, the person a blue patch with a bright core, soft afterglow, the slow scan from the sensor; places are islands with no dots — the person lights up inside.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'island', names: 'plain', size: 'halftone', sensor: 'on' }],
-  ['Fine grain', 'Twice as many, tiny dots — reads like a soft photo of light; places are a dotted outline. Very calm.', { shape: 'round', pitch: 7, colour: 'blue', glow: 'soft', scan: 'on', places: 'dotline', names: 'plain', size: 'halftone', sensor: 'on' }],
-  ['Pixels', 'Rounded-square pixels like an LED sign; places are corner dots, names in LED letters.', { shape: 'square', pitch: 12, colour: 'core', glow: 'soft', scan: 'off', places: 'corners', names: 'led', size: 'grow', sensor: 'on' }],
-  ['Monochrome', 'White only — the person is simply where the dots grow and brighten; places are islands, names in LED letters. The most quiet one.', { shape: 'round', pitch: 10, colour: 'mono', glow: 'soft', scan: 'off', places: 'island', names: 'led', size: 'halftone', sensor: 'on' }],
-  ['Halftone', 'Brightness is the size of the dot, like print; places are a dotted outline with LED names.', { shape: 'round', pitch: 9, colour: 'blue', glow: 'quick', scan: 'on', places: 'dotline', names: 'led', size: 'halftone', sensor: 'off' }],
-  ['Afterglow', 'Long phosphor fade: when someone walks, the dots behind them glow out slowly; places are corner dots.', { shape: 'round', pitch: 11, colour: 'core', glow: 'trail', scan: 'on', places: 'corners', names: 'plain', size: 'halftone', sensor: 'on' }],
+  ['Classic LED', 'Round dots, the person a blue patch with a bright core, soft afterglow, the slow scan from the sensor; places are names in a row under the picture — the busy one glows on the map.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'legend', size: 'halftone', sensor: 'on' }],
+  ['Fine grain', 'Twice as many, tiny dots — reads like a soft photo of light; places are little dot icons (sofa, desk, door) that light up blue.', { shape: 'round', pitch: 7, colour: 'blue', glow: 'soft', scan: 'on', places: 'icons', size: 'halftone', sensor: 'on' }],
+  ['Pixels', 'Rounded-square pixels like an LED sign; places are soft pools of light with no edges.', { shape: 'square', pitch: 12, colour: 'core', glow: 'soft', scan: 'off', places: 'pools', size: 'grow', sensor: 'on' }],
+  ['Monochrome', 'White only — the person is simply where the dots grow and brighten; places stay hidden — a callout names the place when someone is in it.', { shape: 'round', pitch: 10, colour: 'mono', glow: 'soft', scan: 'off', places: 'callout', size: 'halftone', sensor: 'on' }],
+  ['Halftone', 'Brightness is the size of the dot, like print; places are short rulers along the walls.', { shape: 'round', pitch: 9, colour: 'blue', glow: 'quick', scan: 'on', places: 'rulers', size: 'halftone', sensor: 'off' }],
+  ['Afterglow', 'Long phosphor fade: when someone walks, the dots behind them glow out slowly; places are a field of hollow ring dots.', { shape: 'round', pitch: 11, colour: 'core', glow: 'trail', scan: 'on', places: 'rings', size: 'halftone', sensor: 'on' }],
 ];
 
 /* ---------- studio knobs ---------- */
@@ -199,8 +220,7 @@ const KNOBS = [
   ['colour', 'Colour', [['core', 'Blue + bright core'], ['blue', 'Blue'], ['mono', 'White only']]],
   ['glow', 'Fade', [['quick', 'Quick'], ['soft', 'Soft'], ['trail', 'Long afterglow']]],
   ['scan', 'Scan from the sensor', [['on', 'On'], ['off', 'Off']]],
-  ['places', 'Places (background dots stay one colour)', [['island', 'Island — no dots'], ['dotline', 'Dotted outline'], ['corners', 'Corner dots'], ['brackets', 'Corner marks'], ['outline', 'Hairline'], ['plate', 'Soft plate']]],
-  ['names', 'Place names', [['plain', 'Text'], ['led', 'LED letters'], ['none', 'Hidden']]],
+  ['places', 'Places (background dots stay one colour)', [['legend', 'Names under the picture'], ['icons', 'Dot icons'], ['pools', 'Soft pools'], ['rulers', 'Edge rulers'], ['rings', 'Ring dots'], ['callout', 'Callout when someone is there']]],
   ['sensor', 'Sensor on the top wall', [['on', 'Show'], ['off', 'Hide']]],
   ['bloom', 'Soft light under the person', [['on', 'On'], ['off', 'Off']]],
 ];
@@ -211,7 +231,7 @@ function drawKnobs() {
 knobs.addEventListener('click', (e) => { const b = e.target.closest('button'), s = e.target.closest('[data-k]'); if (!b || !s) return; const k = s.dataset.k; studio[k] = k === 'pitch' ? +b.dataset.v : b.dataset.v; drawKnobs(); });
 drawKnobs();
 
-document.getElementById('presets').innerHTML = PRESETS.map(([n, idea], i) => `<section class="card"><h3><i>${String.fromCharCode(65 + i)}</i>${n}</h3><p>${idea}</p><div class="mock"><canvas width="686" height="600" data-i="${i}"></canvas><div class="ro"><div class="w">Someone here</div><div class="s"></div></div></div><button class="use" data-use="${i}">Open in studio</button></section>`).join('');
+document.getElementById('presets').innerHTML = PRESETS.map(([n, idea], i) => `<section class="card"><h3><i>${String.fromCharCode(65 + i)}</i>${n}</h3><p>${idea}</p><div class="mock"><canvas width="686" height="600" data-i="${i}"></canvas><div class="lg"></div><div class="ro"><div class="w">Someone here</div><div class="s"></div></div></div><button class="use" data-use="${i}">Open in studio</button></section>`).join('');
 document.getElementById('presets').addEventListener('click', (e) => { const b = e.target.closest('[data-use]'); if (!b) return; Object.assign(studio, PRESETS[+b.dataset.use][2]); drawKnobs(); document.getElementById('studio').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
 
 const views = [{ cv: document.getElementById('studio'), o: studio, vis: true }, ...[...document.querySelectorAll('canvas[data-i]')].map((cv) => ({ cv, o: Object.assign({ bloom: 'on' }, PRESETS[+cv.dataset.i][2]), vis: true }))];
@@ -225,7 +245,9 @@ function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now;
   const t = mode === 'off' ? frozenT : (frozenT = now / 1000);
   sim(dt);
-  views.forEach((v) => { if (!v.vis) return; v.c.setTransform(DPR, 0, 0, DPR, 0, 0); v.c.clearRect(0, 0, W, H); v.draw(v.c, t, dt); });
+  views.forEach((v) => { if (!v.vis) return; v.c.setTransform(DPR, 0, 0, DPR, 0, 0); v.c.clearRect(0, 0, W, H); const zs = v.draw(v.c, t, dt);
+    const lg = v.cv.parentElement.querySelector('.lg'), show = v.o.places === 'legend' && zonesOn, key = show ? zs.map((z) => z.name + (z.k > .5 && mode !== 'off' ? 1 : 0)).join() : '';
+    if (lg && lg.dataset.k !== key) { lg.dataset.k = key; lg.style.visibility = show ? 'visible' : 'hidden'; lg.innerHTML = show ? zs.map((z) => `<span class="${z.k > .5 && mode !== 'off' ? 'on' : ''}"><i></i>${z.name}</span>`).join('') : ''; } });
   requestAnimationFrame(frame);
 }
 setMode('sit'); requestAnimationFrame(frame);
