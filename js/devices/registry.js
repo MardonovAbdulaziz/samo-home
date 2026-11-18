@@ -96,7 +96,7 @@ const DeviceAPI = (d) => {
 };
 
 /** A Home tile (Figma "Device card"): icon, name, status, and its control — power, or open + close for curtains.
-    Shared by the Home page and design/curtain-tiles.html so both draw exactly the same tile. */
+    Used by the Home page. */
 function homeTileHTML(d, t) {
   const cls = ['tile', t.on ? 'on' : '', t.offline ? 'offline' : '', t.alert ? 'alert' : ''].join(' ');   // alert: Figma 5429:45566
   const newTag = d.isNew ? ' <span class="tag-new">NEW</span>' : '';

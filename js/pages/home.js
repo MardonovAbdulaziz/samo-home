@@ -3,7 +3,7 @@
   UI.mount({ variant: 'ambient' });
   const S = () => Store.state;
 
-  const tileHTML = homeTileHTML;   // shared with design/curtain-tiles.html (js/devices/registry.js)
+  const tileHTML = homeTileHTML;   // js/devices/registry.js
 
   /* ---------- Top row: the user's own list of chips (edited from the Edit chip at its end) ----------
      Keys: 'all-off', 'dev:<id>' (any sensor — shows its live state), 'scene:<id>'. */

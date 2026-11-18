@@ -3039,7 +3039,7 @@ const DeviceAPI = (d) => {
 };
 
 /** A Home tile (Figma "Device card"): icon, name, status, and its control — power, or open + close for curtains.
-    Shared by the Home page and design/curtain-tiles.html so both draw exactly the same tile. */
+    Used by the Home page. */
 function homeTileHTML(d, t) {
   const cls = ['tile', t.on ? 'on' : '', t.offline ? 'offline' : '', t.alert ? 'alert' : ''].join(' ');   // alert: Figma 5429:45566
   const newTag = d.isNew ? ' <span class="tag-new">NEW</span>' : '';
@@ -11147,7 +11147,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
   UI.mount({ variant: 'ambient' });
   const S = () => Store.state;
 
-  const tileHTML = homeTileHTML;   // shared with design/curtain-tiles.html (js/devices/registry.js)
+  const tileHTML = homeTileHTML;   // js/devices/registry.js
 
   /* ---------- Top row: the user's own list of chips (edited from the Edit chip at its end) ----------
      Keys: 'all-off', 'dev:<id>' (any sensor — shows its live state), 'scene:<id>'. */

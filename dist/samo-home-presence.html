@@ -2267,7 +2267,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 
 </script>
 <script>
-window.SAMO_EDITION = { id: "presence", types: ["presence"], seed: () => {
+window.SAMO_EDITION = { id: "presence", v: 1, types: ["presence"], seed: () => {
       const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-kitchen', name: 'Kitchen' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-garden', name: 'Garden' }];
       const T = Devices.presence, ps = T.PRESETS.filter((p) => p.id !== 'all').slice(0, 4);
       const devs = ps.map((p, i) => { const d = T.create(p.id, { name: i ? `${T.defaultName} ${i + 1}` : T.defaultName, roomId: rooms[i % rooms.length].id }); d.isNew = false; return d; });
@@ -3029,7 +3029,7 @@ const DeviceAPI = (d) => {
 };
 
 /** A Home tile (Figma "Device card"): icon, name, status, and its control — power, or open + close for curtains.
-    Shared by the Home page and design/curtain-tiles.html so both draw exactly the same tile. */
+    Used by the Home page. */
 function homeTileHTML(d, t) {
   const cls = ['tile', t.on ? 'on' : '', t.offline ? 'offline' : '', t.alert ? 'alert' : ''].join(' ');   // alert: Figma 5429:45566
   const newTag = d.isNew ? ' <span class="tag-new">NEW</span>' : '';
@@ -10419,7 +10419,7 @@ Devices.ir = (() => {
 const Store = (() => {
   // Edition (single-file builds for one device type, see tools/bundle.py --edition): own data + seed
   const ED = window.SAMO_EDITION || null;
-  const KEY = ED ? 'samo-home:' + ED.id : 'samo-home:v1';
+  const KEY = ED ? 'samo-home:' + ED.id + (ED.v > 1 ? ':v' + ED.v : '') : 'samo-home:v1';   // a new edition seed (v) starts fresh
   const uid = (p = 'id') => p + '-' + Math.random().toString(36).slice(2, 9);
   let state = null;
   const listeners = new Set();
@@ -11137,7 +11137,7 @@ if (typeof Store !== 'undefined') Scenarios.start();
   UI.mount({ variant: 'ambient' });
   const S = () => Store.state;
 
-  const tileHTML = homeTileHTML;   // shared with design/curtain-tiles.html (js/devices/registry.js)
+  const tileHTML = homeTileHTML;   // js/devices/registry.js
 
   /* ---------- Top row: the user's own list of chips (edited from the Edit chip at its end) ----------
      Keys: 'all-off', 'dev:<id>' (any sensor — shows its live state), 'scene:<id>'. */
