@@ -16,13 +16,13 @@ html.hig {
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", system-ui, sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", system-ui, sans-serif;
   /* Liquid Glass (dark) */
-  --lg-tint: rgba(38, 38, 42, 0.36);
-  --lg-blur: blur(16px) saturate(190%) brightness(1.06);
+  --lg-tint: rgba(24, 24, 28, 0.46);
+  --lg-blur: blur(18px) saturate(160%);
   --lg-blur-strong: blur(36px) saturate(190%);
-  --lg-rim: inset 0 0 0 0.5px rgba(255, 255, 255, 0.20), inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.30), inset 0 -0.5px 0.5px 0 rgba(255, 255, 255, 0.10);
-  --lg-shadow: 0 8px 24px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.18);
-  --lg-sheen: linear-gradient(165deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 38%, rgba(255, 255, 255, 0) 62%, rgba(255, 255, 255, 0.05) 100%);
-  --lg-prominent: linear-gradient(180deg, #2B95FF 0%, #0A84FF 55%, #0077F0 100%);
+  --lg-rim: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.14);            /* only a fine light edge on top — no outline (Apple draws outlines only with Increase Contrast) */
+  --lg-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+  --lg-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 45%);
+  --lg-prominent: var(--primary);
   /* iOS system colours (dark) used by native controls */
   --ios-fill: rgba(120, 120, 128, 0.36);
   --ios-fill-2: rgba(120, 120, 128, 0.32);
@@ -31,6 +31,7 @@ html.hig {
   --ios-label-2: rgba(235, 235, 245, 0.60);
   --ios-label-3: rgba(235, 235, 245, 0.30);
   --ios-grouped: #1C1C1E;
+  --hig-r: 24px;            /* ONE corner radius for every content container (tiles, cards, lists, fields, menus) */
 }
 html.hig body { font-family: var(--font); -webkit-font-smoothing: antialiased; }
 
@@ -65,7 +66,7 @@ html.hig .tabbar { left: 20px; right: 20px; bottom: 30px; height: 62px; gap: 12p
 html.hig .tabbar .ai { width: 62px; height: 62px; border-radius: 31px; }
 html.hig .tabbar .tabs { border-radius: 31px; padding: 4px; }
 html.hig .tabbar .tab { border-radius: 27px; font: 600 10px/12px var(--font); letter-spacing: 0.1px; color: rgba(255, 255, 255, 0.92); transition: background-color 240ms var(--ease-out), color 240ms; }
-html.hig .tabbar .tab.on { background: rgba(255, 255, 255, 0.13); color: var(--primary); box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12); }
+html.hig .tabbar .tab.on { color: var(--primary); }
 html.hig .tabbar .tab:active { background: rgba(255, 255, 255, 0.09); }
 
 /* ---------- Switch (iOS 26): 64 × 28 track, 38 × 24 capsule thumb; pressed → the thumb swells into clear glass ---------- */
@@ -94,9 +95,9 @@ html.hig .segmented button:active:not(.on) { background: rgba(255, 255, 255, 0.0
 /* ---------- Buttons: capsules. Primary = prominent glass in the app blue; the rest = regular glass ---------- */
 html.hig .btn { height: 52px; border-radius: 100px; font: 600 17px/22px var(--font); letter-spacing: -0.43px; transition: transform 220ms var(--ease-spring), filter 160ms, background-color 160ms; }
 html.hig .btn:active { transform: scale(1.03); }
-html.hig .btn-primary { background: var(--lg-prominent); color: #fff; box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.45), inset 0 -1px 1px rgba(0, 40, 110, 0.25), inset 0 0 0 0.5px rgba(255, 255, 255, 0.22), 0 8px 22px rgba(10, 132, 255, 0.28); }
-html.hig .btn-primary:active { background: var(--lg-prominent); filter: brightness(1.12); }
-html.hig .btn-tinted { background: rgba(10, 132, 255, 0.20); color: #4DA3FF; box-shadow: inset 0 0 0 0.5px rgba(10, 132, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.10); }
+html.hig .btn-primary { background: var(--primary); color: #fff; box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.28); }
+html.hig .btn-primary:active { background: var(--primary); filter: brightness(1.1); }
+html.hig .btn-tinted { background: rgba(10, 132, 255, 0.18); color: #4DA3FF; box-shadow: none; }
 html.hig .btn-secondary, html.hig .btn-glass { color: #fff; }
 html.hig .btn-danger { color: var(--red); }
 html.hig .btn[disabled], html.hig .btn:disabled { background: var(--fill-quaternary); background-image: none; color: var(--label-tertiary); box-shadow: none; filter: none; }
@@ -106,8 +107,7 @@ html.hig .btn-pill { height: 36px; font: 600 15px/20px var(--font); letter-spaci
 html.hig .footer-cta { background: none; padding: 12px 20px 40px; }
 
 /* ---------- Inset grouped lists: 26 px corners, Body 17, hairline separators inset to the text ---------- */
-html.hig .list { border-radius: 26px; padding: 0 16px; background: var(--ios-grouped); }
-html.hig .phone.ambient .list { background: rgba(28, 28, 30, 0.72); box-shadow: none; }
+html.hig .list { border-radius: var(--hig-r); padding: 0 16px; background: var(--ios-grouped); }
 html.hig .list + .list { margin-top: 32px; }
 html.hig .list-header { font: 400 13px/18px var(--font); letter-spacing: -0.08px; text-transform: uppercase; color: var(--ios-label-2); padding: 24px calc(var(--screen-pad) + 16px) 7px; }
 html.hig .list-footer { font: 400 13px/18px var(--font); letter-spacing: -0.08px; color: var(--ios-label-2); padding: 7px calc(var(--screen-pad) + 16px) 0; }
@@ -135,19 +135,19 @@ html.hig .option[aria-checked="true"] .radio::after {
 }
 
 /* text fields: same family as the lists */
-html.hig .field { border-radius: 26px; padding: 11px 18px; }
+html.hig .field { border-radius: var(--hig-r); padding: 11px 18px; }
 html.hig .field .field-label { font: 400 13px/18px var(--font); letter-spacing: -0.08px; color: var(--ios-label-2); }
 html.hig .field input { font: 400 17px/22px var(--font); letter-spacing: -0.43px; }
-html.hig .input-box { border-radius: 26px; padding: 8px 18px; }
+html.hig .input-box { border-radius: var(--hig-r); padding: 8px 18px; }
 
 /* ---------- Sheets: float as glass with concentric corners (phone 44 − 8 = 36); grabber; glass ✕ ---------- */
 html.hig .sheet:not(.sheet-full) {
   left: 8px; right: 8px; bottom: 8px; border-radius: 36px; padding-bottom: 26px;
-  --lg-tint: rgba(30, 30, 34, 0.74); -webkit-backdrop-filter: var(--lg-blur-strong); backdrop-filter: var(--lg-blur-strong);
+  --lg-tint: rgba(26, 26, 30, 0.84); -webkit-backdrop-filter: var(--lg-blur-strong); backdrop-filter: var(--lg-blur-strong);
 }
 html.hig .sheet:not(.sheet-full).open { transform: translateY(0); }
 html.hig .sheet:not(.sheet-full):not(.open) { transform: translateY(calc(100% + 16px)); }
-html.hig .sheet.sheet-full { border-radius: 36px 36px 0 0; background: rgba(28, 28, 30, 0.94); -webkit-backdrop-filter: var(--lg-blur-strong); backdrop-filter: var(--lg-blur-strong); box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.18); }
+html.hig .sheet.sheet-full { border-radius: 36px 36px 0 0; background: rgba(28, 28, 30, 0.94); -webkit-backdrop-filter: var(--lg-blur-strong); backdrop-filter: var(--lg-blur-strong); box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.08); }
 html.hig .sheet-backdrop { background: rgba(0, 0, 0, 0.42); }
 html.hig .sheet .grabber { width: 36px; height: 5px; background: rgba(255, 255, 255, 0.30); margin-top: 6px; }
 html.hig .sheet .sheet-title { font: 700 22px/28px var(--font-display); letter-spacing: -0.26px; }
@@ -155,13 +155,13 @@ html.hig .sheet .sheet-sub { font: 400 15px/20px var(--font); letter-spacing: -0
 html.hig .sheet .sheet-big-title { font: 700 34px/41px var(--font-display); letter-spacing: 0.4px; }
 html.hig .sheet .list { background: rgba(255, 255, 255, 0.07); }
 html.hig .sheet .field, html.hig .sheet .input-box { background: rgba(255, 255, 255, 0.07); }
-html.hig .sheet .option-card { border-radius: 26px; background: rgba(255, 255, 255, 0.07); }
+html.hig .sheet .option-card { border-radius: var(--hig-r); background: rgba(255, 255, 255, 0.07); }
 html.hig .sheet .sheet-x { width: 36px; height: 36px; border-radius: 18px; color: rgba(255, 255, 255, 0.9); }
 html.hig .sheet .sheet-x .icon { width: 20px !important; height: 20px !important; }
 html.hig .sheet .sheet-x:active { transform: scale(1.08); }
 
 /* ---------- Menus (+ menu) — dark glass, 26 px ---------- */
-html.hig .popover { border-radius: 26px; color: #fff; padding: 8px 0; --lg-tint: rgba(40, 40, 44, 0.58); -webkit-backdrop-filter: var(--lg-blur-strong); backdrop-filter: var(--lg-blur-strong); }
+html.hig .popover { border-radius: var(--hig-r); color: #fff; padding: 8px 0; --lg-tint: rgba(30, 30, 34, 0.80); -webkit-backdrop-filter: var(--lg-blur-strong); backdrop-filter: var(--lg-blur-strong); }
 html.hig .popover button { height: 46px; color: #fff; font: 400 17px/22px var(--font); letter-spacing: -0.43px; padding: 0 18px; }
 html.hig .popover button .icon { color: rgba(255, 255, 255, 0.85); }
 html.hig .popover button:active { background: rgba(255, 255, 255, 0.10); }
@@ -189,7 +189,7 @@ html.hig .stepper output { min-width: 60px; font: 600 17px/22px var(--font); let
 
 /* chips keep their shape; selected = app blue capsule with the glass rim */
 html.hig .chip { height: 34px; font: 600 15px/20px var(--font); letter-spacing: -0.23px; }
-html.hig .chip.on, html.hig .chip[aria-pressed="true"] { box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, 0.35), inset 0 0 0 0.5px rgba(255, 255, 255, 0.2); }
+html.hig .chip.on, html.hig .chip[aria-pressed="true"] { box-shadow: none; }
 
 /* Reduce Transparency: glass becomes solid, as on iOS */
 @media (prefers-reduced-transparency: reduce) {
@@ -217,4 +217,41 @@ html.hig .home-header { padding-right: var(--screen-pad); }
 html.hig .phone .toolbar.plain { padding-left: 16px; padding-right: 16px; }
 html.hig :is(.toolbar .icon-btn, header > .icon-btn):active { transform: scale(1.08); }
 /* the chosen tab: a brighter lens so the blue label reads */
-html.hig .tabbar .tab.on { background: rgba(255, 255, 255, 0.2); }
+
+/* ==========================================================================
+   Home + device pages: tiles and elements are glass too (user, 2026-11-18). Sizes and layout stay exactly as they
+   are — only the material changes: a clear glass layer (blur + saturation), a light rim and a soft top highlight.
+   ========================================================================== */
+html.hig {
+  --cg-bg: rgba(255, 255, 255, 0.07);
+  --cg-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 50%);
+  --cg-rim: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.10);
+  --cg-blur: blur(20px) saturate(150%);
+}
+html.hig .phone.ambient :is(.tile:not(.on):not(.alert), .quick-chip, .info-card, .ir-tile, .list, .cw-ctl button, .cw-chip, .btn-pill, .btn-sm,
+  .power-toggle, .lt-bar, .lk-disc, .segmented, .stepper, .chip:not(.on):not([aria-pressed="true"])) {
+  background-color: var(--cg-bg); background-image: var(--cg-sheen);
+  -webkit-backdrop-filter: var(--cg-blur); backdrop-filter: var(--cg-blur);
+  box-shadow: var(--cg-rim);
+}
+/* small round buttons sitting on a glass tile: a lighter drop of glass */
+html.hig .phone.ambient :is(.tile-power, .btn-circle, .tile.add .plus) { background-color: rgba(255, 255, 255, 0.10); box-shadow: none; }
+/* ON tiles stay white, alert tiles stay as they are — they get the same rim so every tile reads as one family */
+html.hig .phone.ambient .tile.on { box-shadow: none; }
+html.hig .phone.ambient .tile.on .tile-power { background-color: rgba(120, 120, 128, 0.16); box-shadow: none; }
+/* setup banner on glass */
+html.hig .phone.ambient .cw-setup { -webkit-backdrop-filter: var(--cg-blur); backdrop-filter: var(--cg-blur); box-shadow: none; }
+/* rows you tap into on device pages (Timer, Let a guest in, Air today…): glass rows, the press shows a light wash */
+html.hig .phone.ambient .list { background-color: var(--cg-bg); }
+
+/* ---------- One corner radius everywhere (24); pills stay capsules; sheets stay 36 (concentric to the phone) ---------- */
+html.hig :is(.tile, .info-card, .ir-tile, .cw-ctl button, .cw-setup, .banner, .card, .metric, .option-card, .tile.add) { border-radius: var(--hig-r); }
+html.hig .lt-bar { border-radius: 100px; }
+
+/* ---------- Tab bar: the chosen tab sits on a white lens, so the blue icon and label read clearly ---------- */
+html.hig .tabbar .tab.on { background: rgba(255, 255, 255, 0.92); color: var(--primary); box-shadow: none; }
+html.hig .tabbar .tab.on .icon { color: var(--primary); }
+
+/* inside sheets and the confirm dialog: buttons are plain fills like an iOS alert (no glass on glass, no rim) */
+html.hig .sheet :is(.btn-secondary, .btn-danger, .btn-glass) { background: rgba(255, 255, 255, 0.10); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+html.hig .sheet .sheet-x { background: rgba(255, 255, 255, 0.10); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
