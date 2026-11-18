@@ -54,7 +54,7 @@
   <div class="knobs" id="knobs"></div>
 </div>
 
-<h2>Six directions</h2>
+<h2>Soft pools — six ways</h2>
 <p class="lead" style="font:var(--body-md)">Tap “Open in studio” to fine-tune one.</p>
 <div class="presets" id="presets"></div>
 
@@ -101,7 +101,7 @@ function text() {
 /* ---------- the dot-matrix renderer ----------
    Every dot keeps its own brightness and eases toward its target (quick to light, slow to fade = afterglow),
    so nothing ever jumps. Options are the knobs in the studio. */
-const DEF = { shape: 'round', pitch: 11, colour: 'blue', glow: 'soft', scan: 'on', places: 'legend', size: 'halftone', sensor: 'on', bloom: 'on' };
+const DEF = { shape: 'round', pitch: 11, colour: 'blue', glow: 'soft', scan: 'on', places: 'pools', size: 'halftone', sensor: 'on', bloom: 'on', pshape: 'round', ptone: 'neutral', pbusy: 'bright', pname: 'tl' };
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function perimeter(b, r, step) {   // evenly spaced points on a rounded rectangle
   const pts = [], segs = [[b.x + r, b.y, b.x + b.w - r, b.y], ['a', b.x + b.w - r, b.y + r, -Math.PI / 2, 0], [b.x + b.w, b.y + r, b.x + b.w, b.y + b.h - r], ['a', b.x + b.w - r, b.y + b.h - r, 0, Math.PI / 2], [b.x + b.w - r, b.y + b.h, b.x + r, b.y + b.h], ['a', b.x + r, b.y + b.h - r, Math.PI / 2, Math.PI], [b.x, b.y + b.h - r, b.x, b.y + r], ['a', b.x + r, b.y + r, Math.PI, Math.PI * 1.5]];
@@ -132,6 +132,7 @@ function makeGrid(o) {
 function renderer(o) {
   let G = makeGrid(o), key = o.pitch;
   const labels = [];
+  const rip = {};
   return function draw(c, t, dt) {
     if (o.pitch !== key) { G = makeGrid(o); key = o.pitch; }
     const off = mode === 'off', P = people.filter((p) => p.a > .01), pitch = o.pitch;
@@ -143,9 +144,24 @@ function renderer(o) {
     const scanY = RM.y + ((t / 7.5) % 1.25) * RM.h, scanOn = o.scan === 'on' && !off;
     const zr = (z) => ({ x: px(z.u) + 3, y: py(z.v) + 3, w: z.w * RM.w - 6, h: z.h * RM.h - 6 });
     const zc = (z, a) => (off ? `rgba(255,255,255,${(a * .5).toFixed(3)})` : `rgba(${Math.round(255 - 215 * z.k)},${Math.round(255 - 95 * z.k)},255,${(a + (1 - a) * .55 * z.k).toFixed(3)})`);
-    if (zonesOn && o.places === 'pools') ZONES.forEach((z) => { const b = zr(z); c.save(); c.translate(b.x + b.w / 2, b.y + b.h / 2); c.scale(b.w / Math.max(b.w, b.h), b.h / Math.max(b.w, b.h));
-      const r = Math.max(b.w, b.h) * .62, g = c.createRadialGradient(0, 0, 0, 0, 0, r), rgb = off ? '255,255,255' : `${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255`, A = off ? .03 : .06 + .1 * z.k;
-      [[0, 1], [.35, .8], [.6, .45], [.8, .15], [1, 0]].forEach(([q, k]) => g.addColorStop(q, `rgba(${rgb},${(A * k).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill(); c.restore(); });
+    if (zonesOn && o.places === 'pools') ZONES.forEach((z, zi) => {
+      const b = zr(z), cx = b.x + b.w / 2, cy = b.y + b.h / 2, tone = o.ptone || 'neutral';
+      const HUE = ['100,210,255', '191,90,242', '48,209,88'];   // DS teal / purple / green — soft, one per place
+      const idle = tone === 'hue' ? HUE[zi % 3] : tone === 'blue' ? '10,132,255' : '255,255,255', busyRgb = tone === 'hue' ? HUE[zi % 3] : '10,132,255';
+      // busy effect: brighter, a slow breath, or one soft ripple when someone comes in
+      let k = z.k; if (!off && (o.pbusy === 'breathe') && z.k > .02) k = z.k * (.75 + .25 * (1 - Math.cos(t * TAU / 5)) / 2);
+      if (z.k > .5 && !(rip[z.name] > 0) && !off) rip[z.name] = t; if (z.k < .2) rip[z.name] = 0;
+      const rgb = off ? '255,255,255' : k > .02 ? busyRgb : idle;
+      const A = off ? .035 : (tone === 'neutral' ? .085 : tone === 'hue' ? .11 : .1) + (o.pbusy === 'quiet' ? .06 : .12) * k;
+      if ((o.pshape || 'round') === 'soft') {   // soft rounded rectangle: the shape of the place, edges melted with the canvas' own shadow
+        // 12 stacked, very faint rounded rectangles = a soft edge that looks the same in every browser (Safari drops far-off canvas shadows)
+        const N = 12, inMax = Math.min(b.w, b.h) / 2 - 4; c.fillStyle = `rgba(${rgb},${(A / 8).toFixed(4)})`;
+        for (let i = 0; i < N; i++) { const ins = -6 + (inMax + 6) * (i / N); if (b.w - 2 * ins < 4 || b.h - 2 * ins < 4) break; rrect(c, b.x + ins, b.y + ins, b.w - 2 * ins, b.h - 2 * ins, Math.max(4, 16 - ins * .3)); c.fill(); }
+      } else { c.save(); c.translate(cx, cy); c.scale(b.w / Math.max(b.w, b.h), b.h / Math.max(b.w, b.h)); const r = Math.max(b.w, b.h) * .62, g = c.createRadialGradient(0, 0, 0, 0, 0, r);
+        [[0, 1], [.35, .8], [.6, .45], [.8, .15], [1, 0]].forEach(([q, m]) => g.addColorStop(q, `rgba(${rgb},${(A * m).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill(); c.restore(); }
+      if (o.pbusy === 'ripple' && rip[z.name] > 0 && !off) { const age = t - rip[z.name], R = Math.max(b.w, b.h) * .75; if (age < 2.4) { const e = 1 - Math.pow(1 - age / 2.4, 3), rr0 = 8 + (R - 8) * e;
+        c.save(); c.translate(cx, cy); c.scale(b.w / Math.max(b.w, b.h), b.h / Math.max(b.w, b.h)); c.strokeStyle = `rgba(${busyRgb},${(.35 * (1 - age / 2.4)).toFixed(3)})`; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, rr0, 0, TAU); c.stroke(); c.restore(); } }
+    });
     // legend mode: the place you are in glows softly on the map; names live in the row under the picture
     if (zonesOn && o.places === 'legend' && !off) ZONES.forEach((z) => { if (z.k < .02) return; const b = zr(z); c.save(); c.translate(b.x + b.w / 2, b.y + b.h / 2); c.scale(b.w / Math.max(b.w, b.h), b.h / Math.max(b.w, b.h)); const r = Math.max(b.w, b.h) * .7, g = c.createRadialGradient(0, 0, 0, 0, 0, r);
       [[0, 1], [.4, .7], [.7, .25], [1, 0]].forEach(([q, k]) => g.addColorStop(q, `rgba(10,132,255,${(.12 * z.k * k).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fill(); c.restore(); });
@@ -154,7 +170,11 @@ function renderer(o) {
     c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top';
     const isles = [];
     const nameBox = (z) => { const b = zr(z); return { x: b.x + 4, y: b.y + 4, w: z.name.length * 7.2 + 12, h: 21, name: true }; };
-    if (zonesOn && (o.places === 'pools' || o.places === 'rings')) ZONES.forEach((z) => isles.push(nameBox(z)));
+    const poolName = (z) => { const b = zr(z), w = z.name.length * 7.2 + 12, pos = o.pname || 'tl';
+      return pos === 'center' ? { x: b.x + b.w / 2 - w / 2, y: b.y + b.h / 2 - 10, w, h: 21, name: true } : pos === 'below' ? { x: b.x + b.w / 2 - w / 2, y: b.y + b.h - 20, w, h: 21, name: true } : { x: b.x + 4, y: b.y + 4, w, h: 21, name: true }; };
+    const showName = (z) => o.places !== 'pools' || o.pname !== 'busy' || (z.k > .3 && !off);
+    if (zonesOn && o.places === 'pools') ZONES.forEach((z) => { if (showName(z)) isles.push(Object.assign(poolName(z), { k: z.k })); });
+    if (zonesOn && o.places === 'rings') ZONES.forEach((z) => isles.push(nameBox(z)));
     if (zonesOn && o.places === 'icons') ZONES.forEach((z) => { const b = zr(z); isles.push({ x: b.x + b.w / 2 - 16, y: b.y + b.h / 2 - 13, w: 32, h: 26, name: true }); });
     for (const d of G.dots) {
       let target = 0;
@@ -182,7 +202,8 @@ function renderer(o) {
     const plain = (z, x, y, al) => { c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top'; c.fillStyle = `rgba(255,255,255,${(off ? .35 : al).toFixed(3)})`; c.fillText(z.name, x, y); };
     if (zonesOn) ZONES.forEach((z) => {
       const b = zr(z), busy = z.k > .5 && !off;
-      if (o.places === 'pools' || o.places === 'rings') { const nb = nameBox(z); plain(z, nb.x + 6, nb.y + 5, .55 + .45 * z.k); }
+      if (o.places === 'rings') { const nb = nameBox(z); plain(z, nb.x + 6, nb.y + 5, .55 + .45 * z.k); }
+      if (o.places === 'pools' && showName(z)) { const nb = poolName(z); c.globalAlpha = o.pname === 'busy' ? Math.min(1, (z.k - .3) / .4) : 1; plain(z, nb.x + 6, nb.y + 5, .55 + .45 * z.k); c.globalAlpha = 1; }
       if (o.places === 'icons') { const ic = ICON[z.name] || ICON.Other, cx = b.x + b.w / 2, cy = b.y + b.h / 2; ledIcon(c, ic, cx, cy, off ? 'rgba(255,255,255,.25)' : `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.5 + .5 * z.k).toFixed(3)})`); }
       if (o.places === 'rulers') {   // where the place runs along the walls: a short bar on the left wall and on the bottom wall
         const col = off ? 'rgba(255,255,255,.2)' : `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.3 + .6 * z.k).toFixed(3)})`;
@@ -203,12 +224,12 @@ function renderer(o) {
 
 /* ---------- presets ---------- */
 const PRESETS = [
-  ['Classic LED', 'Round dots, the person a blue patch with a bright core, soft afterglow, the slow scan from the sensor; places are names in a row under the picture — the busy one glows on the map.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'legend', size: 'halftone', sensor: 'on' }],
-  ['Fine grain', 'Twice as many, tiny dots — reads like a soft photo of light; places are little dot icons (sofa, desk, door) that light up blue.', { shape: 'round', pitch: 7, colour: 'blue', glow: 'soft', scan: 'on', places: 'icons', size: 'halftone', sensor: 'on' }],
-  ['Pixels', 'Rounded-square pixels like an LED sign; places are soft pools of light with no edges.', { shape: 'square', pitch: 12, colour: 'core', glow: 'soft', scan: 'off', places: 'pools', size: 'grow', sensor: 'on' }],
-  ['Monochrome', 'White only — the person is simply where the dots grow and brighten; places stay hidden — a callout names the place when someone is in it.', { shape: 'round', pitch: 10, colour: 'mono', glow: 'soft', scan: 'off', places: 'callout', size: 'halftone', sensor: 'on' }],
-  ['Halftone', 'Brightness is the size of the dot, like print; places are short rulers along the walls.', { shape: 'round', pitch: 9, colour: 'blue', glow: 'quick', scan: 'on', places: 'rulers', size: 'halftone', sensor: 'off' }],
-  ['Afterglow', 'Long phosphor fade: when someone walks, the dots behind them glow out slowly; places are a field of hollow ring dots.', { shape: 'round', pitch: 11, colour: 'core', glow: 'trail', scan: 'on', places: 'rings', size: 'halftone', sensor: 'on' }],
+  ['Round pools', 'A soft round pool of light for each place; the busy one turns blue and brighter. Name top left.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'pools', size: 'halftone', sensor: 'on', pshape: 'round', ptone: 'neutral', pbusy: 'bright', pname: 'tl' }],
+  ['Shape of the place', 'The pool takes the shape of the place, with melted edges — you see the sofa’s size, not a box.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'pools', size: 'halftone', sensor: 'on', pshape: 'soft', ptone: 'neutral', pbusy: 'bright', pname: 'tl' }],
+  ['Blue light', 'Every place is a faint blue light; the busy one breathes slowly with the person. Name in the middle.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'pools', size: 'halftone', sensor: 'on', pshape: 'soft', ptone: 'blue', pbusy: 'breathe', pname: 'center' }],
+  ['Own colours', 'Each place has its own very soft colour (teal, purple, green) so you can tell them apart at a glance.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'pools', size: 'halftone', sensor: 'on', pshape: 'round', ptone: 'hue', pbusy: 'bright', pname: 'tl' }],
+  ['Ripple', 'When someone comes into a place, one soft ripple spreads to its edge. Name at the bottom.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'pools', size: 'halftone', sensor: 'on', pshape: 'soft', ptone: 'neutral', pbusy: 'ripple', pname: 'below' }],
+  ['Quiet names', 'The pools are there all the time, names appear only where someone is — the calmest picture.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'pools', size: 'halftone', sensor: 'on', pshape: 'round', ptone: 'neutral', pbusy: 'quiet', pname: 'busy' }],
 ];
 
 /* ---------- studio knobs ---------- */
@@ -221,6 +242,10 @@ const KNOBS = [
   ['glow', 'Fade', [['quick', 'Quick'], ['soft', 'Soft'], ['trail', 'Long afterglow']]],
   ['scan', 'Scan from the sensor', [['on', 'On'], ['off', 'Off']]],
   ['places', 'Places (background dots stay one colour)', [['legend', 'Names under the picture'], ['icons', 'Dot icons'], ['pools', 'Soft pools'], ['rulers', 'Edge rulers'], ['rings', 'Ring dots'], ['callout', 'Callout when someone is there']]],
+  ['pshape', 'Pool shape', [['round', 'Round'], ['soft', 'Shape of the place']]],
+  ['ptone', 'Pool colour', [['neutral', 'Neutral'], ['blue', 'App blue'], ['hue', 'Own colour per place']]],
+  ['pbusy', 'When someone is there', [['bright', 'Brighter'], ['breathe', 'Slow breath'], ['ripple', 'One soft ripple'], ['quiet', 'Barely']]],
+  ['pname', 'Name', [['tl', 'Top left'], ['center', 'Centre'], ['below', 'Bottom'], ['busy', 'Only when someone is there']]],
   ['sensor', 'Sensor on the top wall', [['on', 'Show'], ['off', 'Hide']]],
   ['bloom', 'Soft light under the person', [['on', 'On'], ['off', 'Off']]],
 ];
