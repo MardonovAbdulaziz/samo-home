@@ -219,7 +219,11 @@ a { color: inherit; text-decoration: none; }
 .phone.ambient::after  { width: 313px; height: 500px; background: var(--ambient-blob-2); opacity: .4; left: calc(50% - 188px - 156px); top: calc(50% + 98px - 250px); }
 .phone.elevated { background: var(--bg-base-android); }
 
+/* status-bar strip: 59 px in the desktop mock-up; on a real phone the browser / OS already draws its own status bar,
+   so only the safe area (notch) + 8 px is kept — no empty band above the header */
+:root { --sb-h: 59px; }
 @media (max-width: 520px) {
+  :root { --sb-h: calc(env(safe-area-inset-top, 0px) + 8px); }
   body { padding: 0; display: block; background: #000; }
   .phone { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; }
   .proto-panel { display: none !important; }
@@ -227,7 +231,7 @@ a { color: inherit; text-decoration: none; }
 
 /* Status bar (Figma: status-bar 375x59) */
 .statusbar {
-  position: absolute; inset: 0 0 auto 0; height: 59px; z-index: 30;
+  position: absolute; inset: 0 0 auto 0; height: var(--sb-h); z-index: 30;
   display: flex; justify-content: space-between; pointer-events: none;
 }
 .statusbar .time { width: 140.5px; display: flex; align-items: center; justify-content: center; padding: 16px 0 12px; font: var(--body-lg-accent); }
@@ -236,7 +240,7 @@ a { color: inherit; text-decoration: none; }
 .home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 100px; background: var(--label-primary); z-index: 40; pointer-events: none; }
 
 .screen {
-  position: absolute; inset: 59px 0 0 0; overflow-y: auto; overflow-x: hidden;
+  position: absolute; inset: var(--sb-h) 0 0 0; overflow-y: auto; overflow-x: hidden;
   padding: 0 0 40px; scrollbar-width: none;
 }
 .screen::-webkit-scrollbar { display: none; }
@@ -786,11 +790,11 @@ button.cell:active::after, a.cell:active::after { opacity: 1; }
    fading out at its bottom edge. With a large title, the centered title appears once the large title
    has scrolled under the bar. */
 .phone:not(.ambient) .screen { inset: 0; }
-.phone .toolbar.plain { top: 0; height: 107px; padding: 59px 8px 0; background: transparent; isolation: isolate; }
+.phone .toolbar.plain { top: 0; height: calc(var(--sb-h) + 48px); padding: var(--sb-h) 8px 0; background: transparent; isolation: isolate; }
 .phone .toolbar.plain::before { content: ""; position: absolute; inset: 0 0 -16px; z-index: -1; background: rgba(18, 18, 20, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent); mask-image: linear-gradient(#000 calc(100% - 28px), transparent); opacity: 0; transition: opacity 240ms var(--ease); }
 .phone.scrolled .toolbar.plain::before { opacity: 1; }
-.toolbar.plain .title-wrap { top: 59px; height: 48px; padding-top: 0; display: flex; flex-direction: column; justify-content: center; }
+.toolbar.plain .title-wrap { top: var(--sb-h); height: 48px; padding-top: 0; display: flex; flex-direction: column; justify-content: center; }
 .toolbar.plain .title { font: 590 17px/22px var(--font); letter-spacing: -0.43px; padding-top: 0; }
 .toolbar.has-large .title-wrap { opacity: 0; transform: translate(-50%, 6px); transition: opacity 200ms var(--ease), transform 280ms var(--ease); }
 .phone.collapsed .toolbar.has-large .title-wrap { opacity: 1; transform: translate(-50%, 0); }
@@ -802,12 +806,12 @@ button.cell:active::after, a.cell:active::after { opacity: 1; }
 /* Device pages (ambient background): same Apple behavior — header stays, blurred bar fades in on scroll.
    Content scrolls under the status bar + nav instead of being cut at the top. */
 .phone.ambient .screen { inset: 0; }
-.phone.ambient .toolbar { position: sticky; top: 0; height: 107px; padding: 59px 16px 0; background: none; isolation: isolate; z-index: 20; }
+.phone.ambient .toolbar { position: sticky; top: 0; height: calc(var(--sb-h) + 48px); padding: var(--sb-h) 16px 0; background: none; isolation: isolate; z-index: 20; }
 .phone.ambient .toolbar::before { content: ""; position: absolute; inset: 0 0 -16px; z-index: -1; background: rgba(2, 8, 20, 0.72); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
   -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent); mask-image: linear-gradient(#000 calc(100% - 28px), transparent); opacity: 0; transition: opacity 240ms var(--ease); }
 .phone.ambient.scrolled .toolbar::before { opacity: 1; }
-.phone.ambient .toolbar .title-wrap { top: 59px; height: 48px; padding-top: 0; display: flex; flex-direction: column; justify-content: center; }
-.phone.ambient .home-header { padding-top: 59px; height: auto; }
+.phone.ambient .toolbar .title-wrap { top: var(--sb-h); height: 48px; padding-top: 0; display: flex; flex-direction: column; justify-content: center; }
+.phone.ambient .home-header { padding-top: var(--sb-h); height: auto; }
 /* Home (no nav bar): content scrolling under the status bar gets the same blurred backing */
 .phone.ambient .statusbar::before { content: ""; position: absolute; inset: 0 0 -14px; z-index: -1; background: rgba(2, 8, 20, 0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   -webkit-mask-image: linear-gradient(#000 calc(100% - 20px), transparent); mask-image: linear-gradient(#000 calc(100% - 20px), transparent); opacity: 0; transition: opacity 240ms var(--ease); }
@@ -817,14 +821,14 @@ button.cell:active::after, a.cell:active::after { opacity: 1; }
 /* Nav bar backing — opaque over the whole bar (status + nav = 107 px), fades only BELOW it */
 .phone .toolbar.plain::before, .phone.ambient .toolbar::before {
   inset: 0 0 -24px;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 107px, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0, #000 107px, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(var(--sb-h) + 48px), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(var(--sb-h) + 48px), transparent 100%);
   backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
 }
 .phone .toolbar.plain::before { background: rgba(18, 18, 20, 0.86); }
 .phone.ambient .toolbar::before { background: rgba(3, 9, 22, 0.86); }
 .phone.ambient .statusbar::before { background: rgba(3, 9, 22, 0.86); inset: 0 0 -20px;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 59px, transparent 100%); mask-image: linear-gradient(to bottom, #000 0, #000 59px, transparent 100%); }
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 var(--sb-h), transparent 100%); mask-image: linear-gradient(to bottom, #000 0, #000 var(--sb-h), transparent 100%); }
 
 
 /* =====================================================================
@@ -2582,6 +2586,7 @@ const UI = (() => {
         ticking = false;
         const y = screen.scrollTop;
         phone.classList.toggle('scrolled', y > 2);
+        phone.style.setProperty('--scroll-y', Math.round(y));   // background parallax (HIG version) reads it
         // bar material follows the scroll position itself (0 → 1 over the first 24 px), like UIKit's
         // scrollEdge → standard appearance: no timed fade that trails behind the finger
         const a = Math.min(1, Math.max(0, y / 24)).toFixed(3);
