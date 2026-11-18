@@ -84,6 +84,11 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   await go('device.html?id=d-presence');
   s = await ev(() => [...document.querySelectorAll('[data-action="pp-go"]')].map((b) => b.textContent));
   ok('Presence prototype: one “Goes to” button per place in the room (+ Middle)', s.join() === 'Sofa,Desk,Door,Middle', s.join());
+  await ev(() => { const d = Store.device('d-presence'); d.zones.push({ name: 'Bed', cells: [] }); Store.save(); }); await go('device.html?id=d-presence');
+  await click('[data-action="pp-in"]'); await sl(400);
+  s = await ev(() => [...document.querySelectorAll('[data-action="pp-go"]')].map((b) => b.textContent).join());
+  ok('Presence prototype: a place with no squares gets no button and doesn’t break “Walks around”', s === 'Sofa,Desk,Door,Middle', s);
+  await ev(() => { const d = Store.device('d-presence'); d.zones = d.zones.filter((z) => z.cells.length); Store.save(); }); await go('device.html?id=d-presence');
   await click('[data-action="pp-go"][data-i="0"]'); await sl(1300);
   s = await ev(() => ({ sub: document.querySelector('[data-live="sub"]').textContent, lit: (document.querySelector('.pr-radar canvas').dataset.state || '').split('|')[1] }));
   ok('Presence (FP1): on the sofa → “At the sofa”, the Sofa place lights up', /^At the sofa/.test(s.sub) && s.lit === 'Sofa', JSON.stringify(s));

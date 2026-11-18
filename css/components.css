@@ -1533,7 +1533,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
    walk (transform transition), breathes when they sit still, fades while the room empties. No metres anywhere. ---------- */
 /* presence — device page: the radar canvas (drawn in js/devices/presence.js); zone-painting sheets: the same calm room as SVG */
 .pr-radar { margin-top: 12px; }
-.pr-radar canvas { display: block; width: 100%; aspect-ratio: 343 / 300; }
+.pr-radar canvas { display: block; width: 100%; aspect-ratio: 1 / 1; }
 /* room drawings (Places pages, Parts not to watch): no card behind — the wall is the shape; places = fill only */
 .pr-room { margin-top: 0; }
 .pr-plan { display: block; width: 100%; height: auto; overflow: visible; }

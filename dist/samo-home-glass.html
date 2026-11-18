@@ -1709,7 +1709,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
    walk (transform transition), breathes when they sit still, fades while the room empties. No metres anywhere. ---------- */
 /* presence — device page: the radar canvas (drawn in js/devices/presence.js); zone-painting sheets: the same calm room as SVG */
 .pr-radar { margin-top: 12px; }
-.pr-radar canvas { display: block; width: 100%; aspect-ratio: 343 / 300; }
+.pr-radar canvas { display: block; width: 100%; aspect-ratio: 1 / 1; }
 /* room drawings (Places pages, Parts not to watch): no card behind — the wall is the shape; places = fill only */
 .pr-room { margin-top: 0; }
 .pr-plan { display: block; width: 100%; height: auto; overflow: visible; }
@@ -9378,8 +9378,9 @@ Devices.presence = (() => {
      brighter and bigger, fading in from a round edge (no box, no border); the busy place turns blue. The name sits
      exactly between two dot rows, so no dot is covered or removed. Every dot eases its own brightness (fast to light,
      slow to fade), so nothing jumps. Canvas is [data-keep]; animation state lives per device. */
-  const RW = 343, RH = 300, TAU = Math.PI * 2;
-  const RM = { x: 8, y: 8, w: 327, h: 284, r: 18 }, PITCH = 11, FIELD_R = 12;
+  // a square picture, full width: the outer dots sit on the canvas edge, so the field is 16 px from the screen sides (.pad)
+  const RW = 343, RH = 343, TAU = Math.PI * 2;
+  const RM = { x: 1.5, y: 1.5, w: RW - 3, h: RH - 3 }, PITCH = (RW - 3) / 30, FIELD_R = 12;
   const rpx = (u) => RM.x + u * RM.w, rpy = (v) => RM.y + v * RM.h;
   const ANIM = new Map();   // device id → { people, zk, dots, frozen }
   let raf = 0, lastT = 0;
@@ -9387,8 +9388,8 @@ Devices.presence = (() => {
   const FONT = '600 10px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif';
   // the dot grid: centred in the room, the field's corners rounded on its outer dots
   const GRID = (() => {
-    const p = PITCH, cols = Math.floor((RM.w - p) / p) + 1, rows = Math.floor((RM.h - p) / p) + 1;
-    const ox = RM.x + (RM.w - (cols - 1) * p) / 2, oy = RM.y + (RM.h - (rows - 1) * p) / 2, x1 = ox + (cols - 1) * p, y1 = oy + (rows - 1) * p, R = FIELD_R, pts = [];
+    const p = PITCH, cols = Math.round(RM.w / p) + 1, rows = Math.round(RM.h / p) + 1;
+    const ox = RM.x, oy = RM.y, x1 = ox + (cols - 1) * p, y1 = oy + (rows - 1) * p, R = FIELD_R, pts = [];
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
       const x = ox + c * p, y = oy + r * p, cx = Math.min(Math.max(x, ox + R), x1 - R), cy = Math.min(Math.max(y, oy + R), y1 - R);
       if (Math.hypot(x - cx, y - cy) <= R + .5) pts.push({ x, y });
@@ -9565,7 +9566,9 @@ Devices.presence = (() => {
 
   /* The prototype's room is the user's own places: one button per place (plus the middle), how the person moves,
      someone coming in through the door, a walk around every place. Out of range / ignored strips say so. */
+  const marked = (d) => d.zones.map((z, i) => ({ z, i })).filter(({ z }) => z.cells.length && !z.draft);   // places that have squares
   function spotOf(z) {   // where a person stands for a place: its middle (or, for an odd shape, the square nearest the middle)
+    if (!z.cells.length) return MIDDLE;
     const pts = z.cells.map((c) => c.split(',').map(Number).map((n) => n - .5)), mx = pts.reduce((q, p) => q + p[0], 0) / pts.length, my = pts.reduce((q, p) => q + p[1], 0) / pts.length;
     if (z.cells.includes(cellOf(mx, my + .01))) return [mx, my + .01];
     return pts.reduce((m, p) => (Math.hypot(p[0] - mx, p[1] - my) < Math.hypot(m[0] - mx, m[1] - my) ? p : m));
@@ -9588,7 +9591,7 @@ Devices.presence = (() => {
       <h3>The room · <span style="font-weight:400">${esc(status)}${P.fan ? ' · fan on' : ''}</span></h3>
       <div class="pp-row">${Kit.ppBtn('pp-in', P.here ? '🚶 Walks around' : '🚶 Someone comes in')}${P.here ? Kit.ppBtn('pp-leave', '👋 Leaves the room') : ''}</div>
       <h3>Goes to</h3>
-      <div class="pp-seg pp-wrap">${d.zones.map((z, i) => `<button class="${P.here && at === z.name ? 'on' : ''}" data-action="pp-go" data-i="${i}">${esc(z.name)}</button>`).join('')}<button class="${P.here && !at ? 'on' : ''}" data-action="pp-go" data-i="-1">Middle</button></div>
+      <div class="pp-seg pp-wrap">${marked(d).map(({ z, i }) => `<button class="${P.here && at === z.name ? 'on' : ''}" data-action="pp-go" data-i="${i}">${esc(z.name)}</button>`).join('')}<button class="${P.here && !at ? 'on' : ''}" data-action="pp-go" data-i="-1">Middle</button></div>
       ${P.here ? `<h3>Moves</h3><div class="pp-seg">${MV.map(([k, l]) => `<button class="${P.move === k ? 'on' : ''}" data-action="pp-move" data-m="${k}">${l}</button>`).join('')}</div>` : ''}
       <h3>Around the sensor</h3>
       <div class="pp-row">${Kit.ppBtn('pp-fan', P.fan ? '🌀 Fan off' : '🌀 Fan on (fools the radar)')}${Kit.ppBtn('pp-dark', d.st.lux < 30 ? '☀️ Daylight' : '🌙 Evening (dark)', has(d, 'light') || has(d, 'presenceLight'))}</div>
@@ -9610,7 +9613,7 @@ Devices.presence = (() => {
     Kit.bindProto(F, PRESETS, d, ctx, {
       'pp-in': stop(() => {
         if (!P.here) { const e = entrance(d); Object.assign(P, { x: e[0], y: e[1] }); script([[e[0], e[1], 'large', 2200], [MIDDLE[0], MIDDLE[1], 'large', travel(...MIDDLE) + 600], [MIDDLE[0], MIDDLE[1], 'small', 0]]); return warn('The door', e[1]); }
-        const spots = d.zones.map(spotOf).concat([MIDDLE]); let x = P.x, y = P.y;
+        const spots = marked(d).map(({ z }) => spotOf(z)).concat([MIDDLE]); let x = P.x, y = P.y;
         script(spots.map((q) => { const ms = Math.round(Math.hypot((q[0] - x) / COLS, (q[1] - y) / ROWS) / 0.16 * 1000) + 1600; x = q[0]; y = q[1]; return [q[0], q[1], 'large', ms]; }), true);
       }),
       'pp-go': stop(({ i }) => {
