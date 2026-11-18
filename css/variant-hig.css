@@ -223,19 +223,21 @@ html.hig :is(.toolbar .icon-btn, header > .icon-btn):active { transform: scale(1
    are — only the material changes: a clear glass layer (blur + saturation), a light rim and a soft top highlight.
    ========================================================================== */
 html.hig {
-  --cg-bg: rgba(255, 255, 255, 0.07);
-  --cg-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 50%);
-  --cg-rim: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.10);
-  --cg-blur: blur(20px) saturate(150%);
+  --cg-bg: rgba(255, 255, 255, 0.085);
+  --cg-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 40%, rgba(255, 255, 255, 0) 66%);
+  --cg-rim: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.18), inset 0 -0.5px 0 0 rgba(255, 255, 255, 0.04), 0 6px 18px rgba(0, 0, 0, 0.10);
+  --cg-blur: blur(24px) saturate(165%);
 }
 html.hig .phone.ambient :is(.tile:not(.on):not(.alert), .quick-chip, .info-card, .ir-tile, .list, .cw-ctl button, .cw-chip, .btn-pill, .btn-sm,
-  .power-toggle, .lt-bar, .lk-disc, .segmented, .stepper, .chip:not(.on):not([aria-pressed="true"])) {
+  .power-toggle, .lt-bar, .lk-disc, .segmented, .stepper, .chip:not(.on):not([aria-pressed="true"]),
+  .scn-card, .scn-idea, .all-pill, .master, .all-action, .lo-code, .va-chip, .gs-steps, .ir-dpad, .ir-k, .ir-step, .ir-search,
+  .preset-grid button, .name-chip, .pr-chip:not(.on), .dir-test .btn, .cw-chips > button:not(.on)) {
   background-color: var(--cg-bg); background-image: var(--cg-sheen);
   -webkit-backdrop-filter: var(--cg-blur); backdrop-filter: var(--cg-blur);
   box-shadow: var(--cg-rim);
 }
 /* small round buttons sitting on a glass tile: a lighter drop of glass */
-html.hig .phone.ambient :is(.tile-power, .btn-circle, .tile.add .plus) { background-color: rgba(255, 255, 255, 0.10); box-shadow: none; }
+html.hig .phone.ambient :is(.tile-power, .btn-circle, .tile.add .plus, .scn-ic, .scn-add .plus) { background-color: rgba(255, 255, 255, 0.10); box-shadow: none; }
 /* ON tiles stay white, alert tiles stay as they are — they get the same rim so every tile reads as one family */
 html.hig .phone.ambient .tile.on { box-shadow: none; }
 html.hig .phone.ambient .tile.on .tile-power { background-color: rgba(120, 120, 128, 0.16); box-shadow: none; }
@@ -245,7 +247,7 @@ html.hig .phone.ambient .cw-setup { -webkit-backdrop-filter: var(--cg-blur); bac
 html.hig .phone.ambient .list { background-color: var(--cg-bg); }
 
 /* ---------- One corner radius everywhere (24); pills stay capsules; sheets stay 36 (concentric to the phone) ---------- */
-html.hig :is(.tile, .info-card, .ir-tile, .cw-ctl button, .cw-setup, .banner, .card, .metric, .option-card, .tile.add) { border-radius: var(--hig-r); }
+html.hig :is(.tile, .info-card, .ir-tile, .cw-ctl button, .cw-setup, .banner, .card, .metric, .option-card, .tile.add, .scn-card, .scn-idea, .scn-empty, .master, .all-action, .lo-code, .gs-steps, .ir-step) { border-radius: var(--hig-r); }
 html.hig .lt-bar { border-radius: 100px; }
 
 /* ---------- Tab bar: the chosen tab sits on a white lens, so the blue icon and label read clearly ---------- */
