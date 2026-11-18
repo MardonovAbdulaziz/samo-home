@@ -6,7 +6,7 @@
 const Store = (() => {
   // Edition (single-file builds for one device type, see tools/bundle.py --edition): own data + seed
   const ED = window.SAMO_EDITION || null;
-  const KEY = ED ? 'samo-home:' + ED.id : 'samo-home:v1';
+  const KEY = ED ? 'samo-home:' + ED.id + (ED.v > 1 ? ':v' + ED.v : '') : 'samo-home:v1';   // a new edition seed (v) starts fresh
   const uid = (p = 'id') => p + '-' + Math.random().toString(36).slice(2, 9);
   let state = null;
   const listeners = new Set();

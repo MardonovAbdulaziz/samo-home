@@ -45,19 +45,25 @@ EDITIONS = {
     }''',
     },
     'curtain': {
-        'out': 'samo-home-curtains.html', 'title': 'Samo-home · Curtains', 'types': ['curtain'],
+        'out': 'samo-home-curtains.html', 'title': 'Samo-home · Curtains', 'types': ['curtain'], 'v': 2,
+        # one room, every curtain type and state (user, 2026-11-18): left, right, middle, roller, two on one module,
+        # not set up, blocked, offline. Tap a tile's open / close to see the move and the running %.
         'seed': r'''() => {
-      const rooms = [{ id: 'r-living', name: 'Living Room' }, { id: 'r-bedroom', name: 'Bedroom' }, { id: 'r-kitchen', name: 'Kitchen' }];
-      const C = Devices.curtain;
-      const done = (d, q) => { d.curtains.forEach((m, i) => { m.calibrated = true; m.q = Array.isArray(q) ? q[i] : q; m.ctime = 8; }); d.isNew = false; return d; };
-      const living = done(C.create('tuya', { name: 'Living room curtain', roomId: 'r-living' }), 40);
-      const bedroom = C.create('aqc3', { name: 'Bedroom curtain', roomId: 'r-bedroom' });   // not set up yet → shows the setup flow
-      bedroom.features = Object.keys(C.F).filter((k) => !['tilt', 'switchType', 'childLock', 'indicator', 'motorMode', 'step'].includes(k));
-      C.applyDefaults(bedroom); bedroom.isNew = false;
-      const blind = done(C.create('roller', { name: 'Kitchen blind', roomId: 'r-kitchen' }), 100);
-      const dual = done(C.create('dual', { name: 'Bay windows', roomId: 'r-living', channelNames: ['Left window', 'Right window'] }), [0, 75]);
-      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: 'r-living', model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
-      return { home: { name: 'My Home' }, rooms, devices: [hub, living, dual, bedroom, blind], notifications: 0 };
+      const rooms = [{ id: 'r-living', name: 'Living Room' }];
+      const C = Devices.curtain, R = 'r-living';
+      const done = (d, q, style) => { if (style) d.settings.openingStyle = style; d.curtains.forEach((m, i) => { m.calibrated = true; m.q = Array.isArray(q) ? q[i] : q; m.ctime = 8; }); d.isNew = false; return d; };
+      const left = done(C.create('aqb1', { name: 'Left curtain', roomId: R }), 40, 'left');
+      const right = done(C.create('mod', { name: 'Right curtain', roomId: R }), 100, 'right');
+      const middle = done(C.create('tuya', { name: 'Middle curtain', roomId: R }), 0, 'center');
+      const roller = done(C.create('roller', { name: 'Roller blind', roomId: R }), 60, 'roller');
+      const dual = done(C.create('dual', { name: 'Bay windows', roomId: R, channelNames: ['Left window', 'Right window'] }), [0, 75], 'left');
+      const fresh = C.create('aqc3', { name: 'New curtain', roomId: R });   // not set up yet → shows the setup flow
+      fresh.features = Object.keys(C.F).filter((k) => !['tilt', 'switchType', 'childLock', 'indicator', 'motorMode', 'step'].includes(k));
+      C.applyDefaults(fresh); fresh.isNew = false;
+      const blocked = done(C.create('roller', { name: 'Balcony blind', roomId: R }), 45, 'roller'); blocked.curtains[0].fault = true;
+      const offline = done(C.create('aqb1', { name: 'Study curtain', roomId: R }), 30, 'left'); offline.online = false;
+      const hub = { id: 'd-hub', type: 'hub', name: 'T-HUB 320', roomId: R, model: 'T-HUB 320', manufacturer: 'Uztelecom', protocol: 'Ethernet (LAN)', online: true, showOnHome: false };
+      return { home: { name: 'My Home' }, rooms, devices: [hub, left, right, middle, roller, dual, fresh, blocked, offline], notifications: 0 };
     }''',
     },
     'contact': {
@@ -329,7 +335,7 @@ def build(edition=None, variant=None):
     V = VARIANTS[variant] if variant else None
     out = (ROOT / 'dist' / E['out']) if E else (ROOT / 'dist' / V['out']) if V else OUT
     title = E['title'] if E else V['title'] if V else 'Samo-home · Prototype'
-    pre = (f"window.SAMO_EDITION = {{ id: {json.dumps(edition)}, types: {json.dumps(E['types'])}, seed: {E['seed']} }};") if E else ''
+    pre = (f"window.SAMO_EDITION = {{ id: {json.dumps(edition)}, v: {json.dumps(E.get('v', 1))}, types: {json.dumps(E['types'])}, seed: {E['seed']} }};") if E else ''
     if V: pre += V['pre']
     css = '\n'.join(inline_assets((ROOT / c).read_text(encoding='utf-8')) for c in CSS + ([V['css']] if V else []))
     core = '\n;\n'.join(f'/* ===== {r} ===== */\n' + js(r) for r in CORE)
