@@ -1080,7 +1080,7 @@ Devices.curtain = (() => {
       },
       'pp-power': () => { if (d.online) { d.curtains.forEach((m) => stop(d, m)); d.online = false; } else d.online = true; commit(d.online ? 'Power restored' : 'Power cut — motor offline'); },
       'pp-batt': () => { d.battery = d.battery < 20 ? 64 : 14; commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 

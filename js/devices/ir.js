@@ -241,7 +241,7 @@ Devices.ir = (() => {
     const s = UI.sheet(cfg);
     const bindSearch = () => { const i = document.getElementById('irSearch'); if (i && !i._b) { i._b = true; i.addEventListener('input', () => { q = i.value; const pos = i.selectionStart; s.refresh(); const j = document.getElementById('irSearch'); if (j) { j.focus(); j.setSelectionRange(pos, pos); } bindSearch(); }); } };
     UI.on({
-      'ir-k': ({ k }) => { kind = k; if (k === 'custom') { d.remotes.push({ kind: 'custom', brand: '', name: 'Custom', buttons: [] }); Store.save(); UI.closeSheet(); location.href = `device.html?id=${d.id}&r=${d.remotes.length - 1}`; return; } step = 'brand'; q = ''; cfg.title = 'Choose brand'; s.refresh(); bindSearch(); },
+      'ir-k': ({ k }) => { kind = k; if (k === 'custom') { d.remotes.push({ kind: 'custom', brand: '', name: 'Custom', buttons: [] }); Store.save(); UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${d.remotes.length - 1}`); return; } step = 'brand'; q = ''; cfg.title = 'Choose brand'; s.refresh(); bindSearch(); },
       'ir-k-back': () => { step = 'kind'; cfg.title = 'Select device type'; s.refresh(); },
       'ir-brand': ({ b }) => openSetup(d, ctx, kind, b),
     });
@@ -255,7 +255,7 @@ Devices.ir = (() => {
         <ol><li><b>Select a Button</b><span>Choose a button on the remote layout to start</span></li><li><b>Press the Remote Button</b><span>Point your physical remote at the device and press the matching button. A colour change confirms the signal was detected</span></li><li><b>Save Your Remote</b><span>Repeat for each button you want to add. When finished, tap Save to keep your setup</span></li></ol></div>`,
       footer: '<button class="btn btn-opposite btn-block" data-action="ir-start">Start</button>',
     });
-    UI.on({ 'ir-start': () => { const k = kindOf(kind); const r = { kind, brand, name: kind === 'ac' ? 'Air Conditioner' : k[1], trained: {} }; if (kind === 'ac' && has(d, 'acBuiltIn')) { r.ac = acState(); r.builtin = true; delete r.trained; } d.remotes.push(r); Kit.logEv(d, 'added', { text: `Added ${brand} ${k[1]}` }); Store.save(); UI.closeSheet(); location.href = `device.html?id=${d.id}&r=${d.remotes.length - 1}${r.trained ? '&check=1' : ''}`; } });
+    UI.on({ 'ir-start': () => { const k = kindOf(kind); const r = { kind, brand, name: kind === 'ac' ? 'Air Conditioner' : k[1], trained: {} }; if (kind === 'ac' && has(d, 'acBuiltIn')) { r.ac = acState(); r.builtin = true; delete r.trained; } d.remotes.push(r); Kit.logEv(d, 'added', { text: `Added ${brand} ${k[1]}` }); Store.save(); UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${d.remotes.length - 1}${r.trained ? '&check=1' : ''}`); } });
   }
   /** Figma 5433:50104 “RC – Error”. */
   function openError(d, ctx, kind, brand) {
@@ -286,7 +286,7 @@ Devices.ir = (() => {
   }
   function bindPage(d, ctx) {
     const commit = () => { Store.save(); ctx.render(); };
-    const go = (u) => { location.href = u; };
+    const go = (u) => UI.go(u);
     UI.on({
       'ir-add': () => openAdd(d, ctx),
       'ir-open': ({ i }, el, e) => { if (e && e.target.closest('.ir-more')) return; go(`device.html?id=${d.id}&r=${i}`); },

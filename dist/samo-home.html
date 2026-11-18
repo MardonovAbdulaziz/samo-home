@@ -2312,7 +2312,7 @@ const SafeStorage = (() => {
 const UI = (() => {
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const param = (k) => new URLSearchParams(window.__ROUTE.search).get(k);
-  const go = (url) => { window.__go(url); };
+  const go = (url) => { window.__go(url); };   // hig/ pages stay in hig/
 
   let phone, screen, sheetEl, backdrop, toastEl, toastT;
 
@@ -3885,7 +3885,7 @@ function makeSwitch(K) {
       'pp-press': ({ ch, a }) => { const m = wallPress(d, +ch, a); Store.save(); ctx.render(); UI.toast(m); },
       'pp-volt': () => { d.volt = d.volt > 250 ? 230 : 262; Store.save(); ctx.render(); UI.toast(d.volt > 250 ? 'Mains voltage jumps to 262 V' : 'Mains voltage back to 230 V'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; Store.save(); ctx.render(); },
-      'pp-reset': () => { Store.reset(); window.__go('index.html'); },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -5072,7 +5072,7 @@ Devices.curtain = (() => {
       },
       'pp-power': () => { if (d.online) { d.curtains.forEach((m) => stop(d, m)); d.online = false; } else d.online = true; commit(d.online ? 'Power restored' : 'Power cut — motor offline'); },
       'pp-batt': () => { d.battery = d.battery < 20 ? 64 : 14; commit(); },
-      'pp-reset': () => { Store.reset(); window.__go('index.html'); },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -5643,7 +5643,7 @@ Devices.contact = (() => {
       },
       'pp-away': () => { Store.state.away = !away(); commit(away() ? 'Home set to Away (an app setting for the whole home)' : 'Someone is home'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -6219,7 +6219,7 @@ Devices.light = (() => {
         const c = d.channels[+ch]; if (why(d, +ch)) return commit(why(d, +ch));
         c.on = true; c.br = clamp(c.br + 20 * dir, 1, 100); commit(`Hold → ${c.br}%`);
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -6722,7 +6722,7 @@ Devices.climate = (() => {
         if (!d.online) { logEv(d, 'offline', 'Stopped reporting'); return commit(); }
         report(d); commit();
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -7196,7 +7196,7 @@ Devices.motion = (() => {
       'pp-online': () => { d.online = !d.online; if (d.online) d.st.lastSeen = Date.now(); commit(); },
       'pp-away': () => { Store.state.away = !away(); commit(away() ? 'Home set to Away — motion now sends a notification' : 'Someone is home'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -7561,7 +7561,7 @@ Devices.leak = (() => {
         }
         d.st.lastSeen = Date.now(); report(d); commit();
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -7945,7 +7945,7 @@ Devices.smoke = (() => {
       'pp-dust': () => { d.st.fault = d.st.fault ? '' : 'dust'; if (d.st.fault) { logEv(d, 'fault'); if (has(d, 'notify') && S(d, 'notify').service) notifyPush(d, `${W(d)}: dusty chamber`, 'Clean or replace the detector', 'warn'); } commit(); },
       'pp-batt': () => { d.battery = battLow(d) ? 100 : 12; if (battLow(d)) { logEv(d, 'battery'); if (has(d, 'notify') && S(d, 'notify').service) notifyPush(d, 'Battery low', `${W(d)} · ${d.battery} %`, 'warn'); } commit(); },
       'pp-online': () => { d.online = !d.online; if (!d.online) logEv(d, 'offline'); else d.st.lastSeen = Date.now(); commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -8167,7 +8167,7 @@ const Kit = (() => {
       commit();
     };
     const wrapped = {}; for (const k in handlers) wrapped[k] = (a) => { const msg = handlers[k](a); commit(typeof msg === 'string' ? msg : ''); };
-    UI.on(Object.assign(wrapped, { 'pp-reset': () => { Store.reset(); location.href = 'index.html'; } }));
+    UI.on(Object.assign(wrapped, { 'pp-reset': () => { Store.reset(); UI.go('index.html'); } }));
   }
   const ppBtn = (act, label, on = true) => (on ? `<button class="pp-btn" data-action="${act}">${label}</button>` : '');
 
@@ -10336,7 +10336,7 @@ Devices.ir = (() => {
     const s = UI.sheet(cfg);
     const bindSearch = () => { const i = document.getElementById('irSearch'); if (i && !i._b) { i._b = true; i.addEventListener('input', () => { q = i.value; const pos = i.selectionStart; s.refresh(); const j = document.getElementById('irSearch'); if (j) { j.focus(); j.setSelectionRange(pos, pos); } bindSearch(); }); } };
     UI.on({
-      'ir-k': ({ k }) => { kind = k; if (k === 'custom') { d.remotes.push({ kind: 'custom', brand: '', name: 'Custom', buttons: [] }); Store.save(); UI.closeSheet(); location.href = `device.html?id=${d.id}&r=${d.remotes.length - 1}`; return; } step = 'brand'; q = ''; cfg.title = 'Choose brand'; s.refresh(); bindSearch(); },
+      'ir-k': ({ k }) => { kind = k; if (k === 'custom') { d.remotes.push({ kind: 'custom', brand: '', name: 'Custom', buttons: [] }); Store.save(); UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${d.remotes.length - 1}`); return; } step = 'brand'; q = ''; cfg.title = 'Choose brand'; s.refresh(); bindSearch(); },
       'ir-k-back': () => { step = 'kind'; cfg.title = 'Select device type'; s.refresh(); },
       'ir-brand': ({ b }) => openSetup(d, ctx, kind, b),
     });
@@ -10350,7 +10350,7 @@ Devices.ir = (() => {
         <ol><li><b>Select a Button</b><span>Choose a button on the remote layout to start</span></li><li><b>Press the Remote Button</b><span>Point your physical remote at the device and press the matching button. A colour change confirms the signal was detected</span></li><li><b>Save Your Remote</b><span>Repeat for each button you want to add. When finished, tap Save to keep your setup</span></li></ol></div>`,
       footer: '<button class="btn btn-opposite btn-block" data-action="ir-start">Start</button>',
     });
-    UI.on({ 'ir-start': () => { const k = kindOf(kind); const r = { kind, brand, name: kind === 'ac' ? 'Air Conditioner' : k[1], trained: {} }; if (kind === 'ac' && has(d, 'acBuiltIn')) { r.ac = acState(); r.builtin = true; delete r.trained; } d.remotes.push(r); Kit.logEv(d, 'added', { text: `Added ${brand} ${k[1]}` }); Store.save(); UI.closeSheet(); location.href = `device.html?id=${d.id}&r=${d.remotes.length - 1}${r.trained ? '&check=1' : ''}`; } });
+    UI.on({ 'ir-start': () => { const k = kindOf(kind); const r = { kind, brand, name: kind === 'ac' ? 'Air Conditioner' : k[1], trained: {} }; if (kind === 'ac' && has(d, 'acBuiltIn')) { r.ac = acState(); r.builtin = true; delete r.trained; } d.remotes.push(r); Kit.logEv(d, 'added', { text: `Added ${brand} ${k[1]}` }); Store.save(); UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${d.remotes.length - 1}${r.trained ? '&check=1' : ''}`); } });
   }
   /** Figma 5433:50104 “RC – Error”. */
   function openError(d, ctx, kind, brand) {
@@ -10381,7 +10381,7 @@ Devices.ir = (() => {
   }
   function bindPage(d, ctx) {
     const commit = () => { Store.save(); ctx.render(); };
-    const go = (u) => { location.href = u; };
+    const go = (u) => UI.go(u);
     UI.on({
       'ir-add': () => openAdd(d, ctx),
       'ir-open': ({ i }, el, e) => { if (e && e.target.closest('.ir-more')) return; go(`device.html?id=${d.id}&r=${i}`); },

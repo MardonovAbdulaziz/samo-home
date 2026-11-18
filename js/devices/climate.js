@@ -465,7 +465,7 @@ Devices.climate = (() => {
         if (!d.online) { logEv(d, 'offline', 'Stopped reporting'); return commit(); }
         report(d); commit();
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 

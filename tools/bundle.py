@@ -283,7 +283,7 @@ def js(rel):
         # routing: query string comes from the hash route; go() switches route
         src = src.replace("const param = (k) => new URLSearchParams(location.search).get(k);",
                           "const param = (k) => new URLSearchParams(window.__ROUTE.search).get(k);", 1)
-        src = src.replace("const go = (url) => { location.href = url; };",
+        src = src.replace("const go = (url) => { location.href = (window.SAMO_PREFIX && /^[\\w-]+\\.html/.test(url) ? window.SAMO_PREFIX : '') + url; };",
                           "const go = (url) => { window.__go(url); };", 1)
         assert '__ROUTE' in src and '__go' in src, 'ui.js routing patch failed'
     if rel in ('js/devices/relay.js', 'js/devices/plug.js', 'js/devices/curtain.js'):
@@ -380,6 +380,26 @@ def build(edition=None, variant=None):
     print(f'{out}  {out.stat().st_size / 1024:.0f} KB  (unresolved asset refs: {len(left)})')
 
 
+HIG_HEAD = """<base href="../">
+  <script>/* iOS 26 HIG version: same pages, same files (cached), one extra stylesheet; links stay inside hig/ */
+    window.SAMO_PREFIX = 'hig/'; document.documentElement.classList.add('hig');
+    document.addEventListener('click', function (e) { if (e.defaultPrevented) return; var a = e.target.closest && e.target.closest('a[href]'); if (!a || a.target) return;
+      var h = a.getAttribute('href'); if (/^[\\w-]+\\.html/.test(h)) { e.preventDefault(); location.href = 'hig/' + h; } });
+  </script>"""
+
+
+def build_hig_pages():
+    """hig/*.html — the live, multi-file iOS 26 version (fast: cached CSS/JS, no 1.3 MB reload per page)."""
+    out = ROOT / 'hig'; out.mkdir(exist_ok=True)
+    for page in sorted(ROOT.glob('*.html')):
+        html = page.read_text(encoding='utf-8')
+        if '<head>' not in html or 'css/components.css' not in html: continue
+        html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n  ' + HIG_HEAD, 1)
+        html = html.replace('<link rel="stylesheet" href="css/components.css">', '<link rel="stylesheet" href="css/components.css">\n  <link rel="stylesheet" href="css/variant-hig.css">', 1)
+        (out / page.name).write_text(html, encoding='utf-8')
+    print(f'{out}/  {len(list(out.glob("*.html")))} pages')
+
+
 if __name__ == '__main__':
     import sys
     args = sys.argv[1:]
@@ -387,5 +407,6 @@ if __name__ == '__main__':
         build(args[args.index('--edition') + 1])
     elif '--variant' in args:
         build(variant=args[args.index('--variant') + 1])
+        if args[args.index('--variant') + 1] == 'hig': build_hig_pages()
     else:
         build()

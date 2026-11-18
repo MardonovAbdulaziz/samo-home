@@ -551,7 +551,7 @@ Devices.contact = (() => {
       },
       'pp-away': () => { Store.state.away = !away(); commit(away() ? 'Home set to Away (an app setting for the whole home)' : 'Someone is home'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 

@@ -20,7 +20,7 @@ const SafeStorage = (() => {
 const UI = (() => {
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const param = (k) => new URLSearchParams(location.search).get(k);
-  const go = (url) => { location.href = url; };
+  const go = (url) => { location.href = (window.SAMO_PREFIX && /^[\w-]+\.html/.test(url) ? window.SAMO_PREFIX : '') + url; };   // hig/ pages stay in hig/
 
   let phone, screen, sheetEl, backdrop, toastEl, toastT;
 

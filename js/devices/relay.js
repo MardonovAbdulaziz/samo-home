@@ -832,7 +832,7 @@ function makeSwitch(K) {
       'pp-press': ({ ch, a }) => { const m = wallPress(d, +ch, a); Store.save(); ctx.render(); UI.toast(m); },
       'pp-volt': () => { d.volt = d.volt > 250 ? 230 : 262; Store.save(); ctx.render(); UI.toast(d.volt > 250 ? 'Mains voltage jumps to 262 V' : 'Mains voltage back to 230 V'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; Store.save(); ctx.render(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 

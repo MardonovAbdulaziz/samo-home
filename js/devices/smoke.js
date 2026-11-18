@@ -363,7 +363,7 @@ Devices.smoke = (() => {
       'pp-dust': () => { d.st.fault = d.st.fault ? '' : 'dust'; if (d.st.fault) { logEv(d, 'fault'); if (has(d, 'notify') && S(d, 'notify').service) notifyPush(d, `${W(d)}: dusty chamber`, 'Clean or replace the detector', 'warn'); } commit(); },
       'pp-batt': () => { d.battery = battLow(d) ? 100 : 12; if (battLow(d)) { logEv(d, 'battery'); if (has(d, 'notify') && S(d, 'notify').service) notifyPush(d, 'Battery low', `${W(d)} · ${d.battery} %`, 'warn'); } commit(); },
       'pp-online': () => { d.online = !d.online; if (!d.online) logEv(d, 'offline'); else d.st.lastSeen = Date.now(); commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 

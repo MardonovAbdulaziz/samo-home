@@ -201,7 +201,7 @@ const Kit = (() => {
       commit();
     };
     const wrapped = {}; for (const k in handlers) wrapped[k] = (a) => { const msg = handlers[k](a); commit(typeof msg === 'string' ? msg : ''); };
-    UI.on(Object.assign(wrapped, { 'pp-reset': () => { Store.reset(); location.href = 'index.html'; } }));
+    UI.on(Object.assign(wrapped, { 'pp-reset': () => { Store.reset(); UI.go('index.html'); } }));
   }
   const ppBtn = (act, label, on = true) => (on ? `<button class="pp-btn" data-action="${act}">${label}</button>` : '');
 

@@ -344,7 +344,7 @@ Devices.leak = (() => {
         }
         d.st.lastSeen = Date.now(); report(d); commit();
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 

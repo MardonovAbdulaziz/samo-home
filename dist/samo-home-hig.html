@@ -2496,6 +2496,52 @@ html.hig .phone.ambient { background:
   radial-gradient(90% 32% at 28% -4%, rgba(100,210,255,0.240) 0%, rgba(100,210,255,0.149) 30%, rgba(100,210,255,0.072) 55%, rgba(100,210,255,0.022) 78%, rgba(100,210,255,0.000) 100%),
   linear-gradient(180deg, #06101f 0%, #0a1c37 48%, #0f2d57 100%); }
 
+/* ==========================================================================
+   "Blue Glow" — the user's moodboard (design/moodboard-blue-glow.html, 2026-11-18): one hue only (the app blue)
+   on a near-black night. Tiles glow from their edges, ON tiles carry a bright top-left rim and a soft light around them,
+   cards are dark with the blue rising toward the edges. Gradients + shadows only (no live blur) → fast.
+   Sizes and layout of tiles/cards are unchanged.
+   ========================================================================== */
+html.hig .phone.ambient { background:
+  radial-gradient(85% 42% at 78% 104%, rgba(10, 132, 255, .42) 0%, rgba(10, 132, 255, .26) 30%, rgba(10, 132, 255, .12) 55%, rgba(10, 132, 255, .035) 78%, rgba(10, 132, 255, 0) 100%),
+  radial-gradient(70% 30% at 15% -6%, rgba(10, 100, 230, .20) 0%, rgba(10, 100, 230, .12) 30%, rgba(10, 100, 230, .05) 60%, rgba(10, 100, 230, 0) 100%),
+  linear-gradient(180deg, #02040A 0%, #030817 55%, #050E26 100%); }
+
+/* tiles (home + scenarios) */
+html.hig .phone.ambient .tile:not(.on):not(.alert) {
+  background: radial-gradient(95% 95% at 42% 40%, #030a1d 0%, #04112f 40%, #0a2564 78%, #15459f 100%);
+  box-shadow: inset 1px 1px 0 rgba(200, 225, 255, .26), inset 0 0 0 1px rgba(110, 165, 255, .12), inset 0 0 20px rgba(30, 110, 255, .22);
+  -webkit-backdrop-filter: none; backdrop-filter: none; }
+html.hig .phone.ambient .tile.on {
+  background: radial-gradient(90% 90% at 46% 46%, #04102c 0%, #072a78 42%, #0e5ae6 82%, #4c9bff 100%); color: #fff;
+  box-shadow: inset 1.5px 1.5px 0 rgba(235, 244, 255, .9), inset 0 0 0 1px rgba(170, 205, 255, .45), inset 0 0 28px rgba(80, 150, 255, .55), 0 0 26px rgba(10, 132, 255, .32); }
+html.hig .phone.ambient .tile.on .tile-status, html.hig .phone.ambient .tile.on .tile-status > [data-num] { color: #CFE4FF; }
+html.hig .phone.ambient .tile.on .tile-icon { color: #fff; filter: none; }
+html.hig .phone.ambient .tile.on .tile-power { background: rgba(235, 244, 255, .92); color: #0A3E9C; box-shadow: 0 0 12px rgba(120, 180, 255, .6); }
+html.hig .phone.ambient .tile.offline { opacity: .62; }
+html.hig .phone.ambient .tile:not(.on) .tile-power { background: rgba(120, 170, 255, .14); box-shadow: inset 0 0 0 1px rgba(150, 195, 255, .18); }
+
+/* cards, rows and controls on device pages / chips on home: the same light, quieter */
+html.hig .phone.ambient :is(.quick-chip, .info-card, .ir-tile, .list, .cw-ctl button, .cw-chip, .btn-pill, .btn-sm, .power-toggle, .lt-bar, .lk-disc, .segmented, .stepper,
+  .chip:not(.on):not([aria-pressed="true"]), .scn-card, .scn-idea, .all-pill, .master, .all-action, .lo-code, .va-chip, .gs-steps, .ir-dpad, .ir-k, .ir-step, .ir-search,
+  .preset-grid button, .name-chip, .pr-chip:not(.on), .dir-test .btn, .cw-chips > button:not(.on)) {
+  background: radial-gradient(120% 140% at 30% 20%, rgba(6, 18, 48, .92) 0%, rgba(8, 28, 74, .88) 60%, rgba(14, 52, 130, .85) 100%);
+  box-shadow: inset 1px 1px 0 rgba(190, 218, 255, .20), inset 0 0 0 1px rgba(110, 165, 255, .10), inset 0 0 16px rgba(30, 110, 255, .14);
+  -webkit-backdrop-filter: none; backdrop-filter: none; }
+html.hig .phone.ambient .lk-disc { background: radial-gradient(90% 90% at 40% 35%, #061438 0%, #0a2a70 70%, #1750c0 100%); }
+
+/* bars: dark night glass; the chosen tab holds a soft blue light */
+html.hig .tabbar .tabs, html.hig .tabbar .ai { background-color: rgba(6, 14, 34, .72); background-image: none; box-shadow: inset 0 0.5px 0 rgba(160, 200, 255, .22), 0 10px 30px rgba(0, 0, 0, .4); }
+html.hig .tabbar .tab { color: rgba(205, 220, 245, .7); }
+html.hig .tabbar .tab.on { color: #fff; background: radial-gradient(120% 140% at 50% 120%, rgba(77, 163, 255, .55) 0%, rgba(10, 132, 255, .30) 55%, rgba(10, 132, 255, .12) 100%);
+  box-shadow: inset 0 1px 0 rgba(220, 235, 255, .5), 0 0 18px rgba(10, 132, 255, .32); }
+html.hig .tabbar .tab.on .icon { color: #fff; }
+html.hig :is(.glass-btn, .toolbar .icon-btn:not(.sheet-x), .home-header > .row, header > .icon-btn) { background-color: rgba(8, 18, 42, .62); background-image: none; box-shadow: inset 0 0.5px 0 rgba(160, 200, 255, .22); }
+
+/* light means "on": the switch track and the prominent button glow a little */
+html.hig .switch.on, html.hig .switch[aria-checked="true"] { box-shadow: 0 0 14px rgba(10, 132, 255, .45); }
+html.hig .btn-primary { background: radial-gradient(120% 140% at 50% 120%, #7DB8FF 0%, #0A84FF 45%, #0761C9 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 0 22px rgba(10, 132, 255, .38); }
+
 </style>
 </head>
 <body>
@@ -2581,7 +2627,7 @@ const SafeStorage = (() => {
 const UI = (() => {
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const param = (k) => new URLSearchParams(window.__ROUTE.search).get(k);
-  const go = (url) => { window.__go(url); };
+  const go = (url) => { window.__go(url); };   // hig/ pages stay in hig/
 
   let phone, screen, sheetEl, backdrop, toastEl, toastT;
 
@@ -4154,7 +4200,7 @@ function makeSwitch(K) {
       'pp-press': ({ ch, a }) => { const m = wallPress(d, +ch, a); Store.save(); ctx.render(); UI.toast(m); },
       'pp-volt': () => { d.volt = d.volt > 250 ? 230 : 262; Store.save(); ctx.render(); UI.toast(d.volt > 250 ? 'Mains voltage jumps to 262 V' : 'Mains voltage back to 230 V'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; Store.save(); ctx.render(); },
-      'pp-reset': () => { Store.reset(); window.__go('index.html'); },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -5341,7 +5387,7 @@ Devices.curtain = (() => {
       },
       'pp-power': () => { if (d.online) { d.curtains.forEach((m) => stop(d, m)); d.online = false; } else d.online = true; commit(d.online ? 'Power restored' : 'Power cut — motor offline'); },
       'pp-batt': () => { d.battery = d.battery < 20 ? 64 : 14; commit(); },
-      'pp-reset': () => { Store.reset(); window.__go('index.html'); },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -5912,7 +5958,7 @@ Devices.contact = (() => {
       },
       'pp-away': () => { Store.state.away = !away(); commit(away() ? 'Home set to Away (an app setting for the whole home)' : 'Someone is home'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -6488,7 +6534,7 @@ Devices.light = (() => {
         const c = d.channels[+ch]; if (why(d, +ch)) return commit(why(d, +ch));
         c.on = true; c.br = clamp(c.br + 20 * dir, 1, 100); commit(`Hold → ${c.br}%`);
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -6991,7 +7037,7 @@ Devices.climate = (() => {
         if (!d.online) { logEv(d, 'offline', 'Stopped reporting'); return commit(); }
         report(d); commit();
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -7465,7 +7511,7 @@ Devices.motion = (() => {
       'pp-online': () => { d.online = !d.online; if (d.online) d.st.lastSeen = Date.now(); commit(); },
       'pp-away': () => { Store.state.away = !away(); commit(away() ? 'Home set to Away — motion now sends a notification' : 'Someone is home'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -7830,7 +7876,7 @@ Devices.leak = (() => {
         }
         d.st.lastSeen = Date.now(); report(d); commit();
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -8214,7 +8260,7 @@ Devices.smoke = (() => {
       'pp-dust': () => { d.st.fault = d.st.fault ? '' : 'dust'; if (d.st.fault) { logEv(d, 'fault'); if (has(d, 'notify') && S(d, 'notify').service) notifyPush(d, `${W(d)}: dusty chamber`, 'Clean or replace the detector', 'warn'); } commit(); },
       'pp-batt': () => { d.battery = battLow(d) ? 100 : 12; if (battLow(d)) { logEv(d, 'battery'); if (has(d, 'notify') && S(d, 'notify').service) notifyPush(d, 'Battery low', `${W(d)} · ${d.battery} %`, 'warn'); } commit(); },
       'pp-online': () => { d.online = !d.online; if (!d.online) logEv(d, 'offline'); else d.st.lastSeen = Date.now(); commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
@@ -8436,7 +8482,7 @@ const Kit = (() => {
       commit();
     };
     const wrapped = {}; for (const k in handlers) wrapped[k] = (a) => { const msg = handlers[k](a); commit(typeof msg === 'string' ? msg : ''); };
-    UI.on(Object.assign(wrapped, { 'pp-reset': () => { Store.reset(); location.href = 'index.html'; } }));
+    UI.on(Object.assign(wrapped, { 'pp-reset': () => { Store.reset(); UI.go('index.html'); } }));
   }
   const ppBtn = (act, label, on = true) => (on ? `<button class="pp-btn" data-action="${act}">${label}</button>` : '');
 
@@ -10605,7 +10651,7 @@ Devices.ir = (() => {
     const s = UI.sheet(cfg);
     const bindSearch = () => { const i = document.getElementById('irSearch'); if (i && !i._b) { i._b = true; i.addEventListener('input', () => { q = i.value; const pos = i.selectionStart; s.refresh(); const j = document.getElementById('irSearch'); if (j) { j.focus(); j.setSelectionRange(pos, pos); } bindSearch(); }); } };
     UI.on({
-      'ir-k': ({ k }) => { kind = k; if (k === 'custom') { d.remotes.push({ kind: 'custom', brand: '', name: 'Custom', buttons: [] }); Store.save(); UI.closeSheet(); location.href = `device.html?id=${d.id}&r=${d.remotes.length - 1}`; return; } step = 'brand'; q = ''; cfg.title = 'Choose brand'; s.refresh(); bindSearch(); },
+      'ir-k': ({ k }) => { kind = k; if (k === 'custom') { d.remotes.push({ kind: 'custom', brand: '', name: 'Custom', buttons: [] }); Store.save(); UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${d.remotes.length - 1}`); return; } step = 'brand'; q = ''; cfg.title = 'Choose brand'; s.refresh(); bindSearch(); },
       'ir-k-back': () => { step = 'kind'; cfg.title = 'Select device type'; s.refresh(); },
       'ir-brand': ({ b }) => openSetup(d, ctx, kind, b),
     });
@@ -10619,7 +10665,7 @@ Devices.ir = (() => {
         <ol><li><b>Select a Button</b><span>Choose a button on the remote layout to start</span></li><li><b>Press the Remote Button</b><span>Point your physical remote at the device and press the matching button. A colour change confirms the signal was detected</span></li><li><b>Save Your Remote</b><span>Repeat for each button you want to add. When finished, tap Save to keep your setup</span></li></ol></div>`,
       footer: '<button class="btn btn-opposite btn-block" data-action="ir-start">Start</button>',
     });
-    UI.on({ 'ir-start': () => { const k = kindOf(kind); const r = { kind, brand, name: kind === 'ac' ? 'Air Conditioner' : k[1], trained: {} }; if (kind === 'ac' && has(d, 'acBuiltIn')) { r.ac = acState(); r.builtin = true; delete r.trained; } d.remotes.push(r); Kit.logEv(d, 'added', { text: `Added ${brand} ${k[1]}` }); Store.save(); UI.closeSheet(); location.href = `device.html?id=${d.id}&r=${d.remotes.length - 1}${r.trained ? '&check=1' : ''}`; } });
+    UI.on({ 'ir-start': () => { const k = kindOf(kind); const r = { kind, brand, name: kind === 'ac' ? 'Air Conditioner' : k[1], trained: {} }; if (kind === 'ac' && has(d, 'acBuiltIn')) { r.ac = acState(); r.builtin = true; delete r.trained; } d.remotes.push(r); Kit.logEv(d, 'added', { text: `Added ${brand} ${k[1]}` }); Store.save(); UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${d.remotes.length - 1}${r.trained ? '&check=1' : ''}`); } });
   }
   /** Figma 5433:50104 “RC – Error”. */
   function openError(d, ctx, kind, brand) {
@@ -10650,7 +10696,7 @@ Devices.ir = (() => {
   }
   function bindPage(d, ctx) {
     const commit = () => { Store.save(); ctx.render(); };
-    const go = (u) => { location.href = u; };
+    const go = (u) => UI.go(u);
     UI.on({
       'ir-add': () => openAdd(d, ctx),
       'ir-open': ({ i }, el, e) => { if (e && e.target.closest('.ir-more')) return; go(`device.html?id=${d.id}&r=${i}`); },

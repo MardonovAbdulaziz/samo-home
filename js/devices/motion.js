@@ -452,7 +452,7 @@ Devices.motion = (() => {
       'pp-online': () => { d.online = !d.online; if (d.online) d.st.lastSeen = Date.now(); commit(); },
       'pp-away': () => { Store.state.away = !away(); commit(away() ? 'Home set to Away — motion now sends a notification' : 'Someone is home'); },
       'pp-fast': () => { d.sim.fast = !d.sim.fast; commit(); },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 

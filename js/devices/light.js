@@ -553,7 +553,7 @@ Devices.light = (() => {
         const c = d.channels[+ch]; if (why(d, +ch)) return commit(why(d, +ch));
         c.on = true; c.br = clamp(c.br + 20 * dir, 1, 100); commit(`Hold → ${c.br}%`);
       },
-      'pp-reset': () => { Store.reset(); location.href = 'index.html'; },
+      'pp-reset': () => { Store.reset(); UI.go('index.html'); },
     });
   }
 
