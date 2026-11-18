@@ -2507,9 +2507,11 @@ html.hig .phone.ambient::before { animation-name: hig-aur-sweep; animation-durat
     radial-gradient(32% 22% at 24% 78%, rgba(40,180,255,0.54) 0%, rgba(40,180,255,0.33) 35%, rgba(40,180,255,0.12) 65%, rgba(40,180,255,0) 100%),
     radial-gradient(46% 24% at 48% 76%, rgba(10,132,255,0.54) 0%, rgba(10,132,255,0.33) 35%, rgba(10,132,255,0.12) 65%, rgba(10,132,255,0) 100%),
     radial-gradient(28% 26% at 72% 74%, rgba(10,90,230,0.40) 0%, rgba(10,90,230,0.24) 35%, rgba(10,90,230,0.08) 65%, rgba(10,90,230,0) 100%); }
-/* the band: one soft diagonal ribbon across the upper middle, like ref 2 — a linear gradient fills the whole layer edge to edge */
+/* the wash: a broad soft light from the upper right, like the lit corner of ref 2 — no thin ribbon or line (user: the diagonal line looked ugly) */
 html.hig .phone.ambient::after { animation-name: hig-aur-band; animation-duration: 70s;
-  background: linear-gradient(152deg, rgba(10,110,245,0) 30%, rgba(10,110,245,0.10) 38%, rgba(60,170,255,0.22) 43%, rgba(10,110,245,0.12) 48%, rgba(10,110,245,0) 58%); }
+  background:
+    radial-gradient(36% 30% at 64% 36%, rgba(10,100,240,0.20) 0%, rgba(10,100,240,0.12) 40%, rgba(10,100,240,0.04) 72%, rgba(10,100,240,0) 100%),
+    radial-gradient(26% 20% at 70% 40%, rgba(60,160,255,0.10) 0%, rgba(60,160,255,0.05) 50%, rgba(60,160,255,0) 100%); }
 @keyframes hig-aur-sweep {
   0%   { transform: translate3d(0, 0, 0) scale(1); }
   50%  { transform: translate3d(6%, -5%, 0) scale(1.06); }
