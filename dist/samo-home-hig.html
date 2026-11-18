@@ -2455,7 +2455,7 @@ html.hig {
   --cg-bg: rgba(255, 255, 255, 0.085);
   --cg-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 40%, rgba(255, 255, 255, 0) 66%);
   --cg-rim: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.18), inset 0 -0.5px 0 0 rgba(255, 255, 255, 0.04);   /* no drop shadow on tiles/cards (user: looked rough) */
-  --cg-blur: blur(24px) saturate(165%);
+  --cg-blur: none;   /* speed: tiles/cards sit on a smooth gradient, a live blur there costs a lot and shows nothing — the floating layer keeps the real blur */
 }
 html.hig .phone.ambient :is(.tile:not(.on):not(.alert), .quick-chip, .info-card, .ir-tile, .list, .cw-ctl button, .cw-chip, .btn-pill, .btn-sm,
   .power-toggle, .lt-bar, .lk-disc, .segmented, .stepper, .chip:not(.on):not([aria-pressed="true"]),
@@ -2486,6 +2486,15 @@ html.hig .tabbar .tab.on .icon { color: var(--primary); }
 /* inside sheets and the confirm dialog: buttons are plain fills like an iOS alert (no glass on glass, no rim) */
 html.hig .sheet :is(.btn-secondary, .btn-danger, .btn-glass) { background: rgba(255, 255, 255, 0.10); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
 html.hig .sheet .sheet-x { background: rgba(255, 255, 255, 0.10); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+
+/* ---------- Background: light, juicy colour from soft radial light — no filters, no extra layers (fast) ---------- */
+html.hig .phone.ambient::before, html.hig .phone.ambient::after { content: none; }
+html.hig .phone.ambient { background:
+  radial-gradient(80% 46% at 96% 102%, rgba(10,132,255,0.660) 0%, rgba(10,132,255,0.409) 30%, rgba(10,132,255,0.198) 55%, rgba(10,132,255,0.059) 78%, rgba(10,132,255,0.000) 100%),
+  radial-gradient(72% 40% at -4% 64%, rgba(48,213,200,0.420) 0%, rgba(48,213,200,0.260) 30%, rgba(48,213,200,0.126) 55%, rgba(48,213,200,0.038) 78%, rgba(48,213,200,0.000) 100%),
+  radial-gradient(62% 34% at 104% 40%, rgba(125,122,255,0.340) 0%, rgba(125,122,255,0.211) 30%, rgba(125,122,255,0.102) 55%, rgba(125,122,255,0.031) 78%, rgba(125,122,255,0.000) 100%),
+  radial-gradient(90% 32% at 28% -4%, rgba(100,210,255,0.240) 0%, rgba(100,210,255,0.149) 30%, rgba(100,210,255,0.072) 55%, rgba(100,210,255,0.022) 78%, rgba(100,210,255,0.000) 100%),
+  linear-gradient(180deg, #06101f 0%, #0a1c37 48%, #0f2d57 100%); }
 
 </style>
 </head>
