@@ -275,12 +275,13 @@ html.hig .phone.ambient::before, html.hig .phone.ambient::after {
    so the top stays dark and nothing floats on its own (user: the separate oval top-right made no composition).
    Every ellipse ends inside the layer. */
 html.hig .phone.ambient::before { animation-name: hig-aur-sweep; animation-duration: 45s;
+  /* dimmer (user: the bottom blue was too bright) and the glow reaches higher before it fades out */
   background:
-    radial-gradient(20% 18% at 20% 82%, rgba(150,225,255,0.36) 0%, rgba(150,225,255,0.21) 35%, rgba(150,225,255,0.08) 65%, rgba(150,225,255,0) 100%),
-    radial-gradient(32% 22% at 26% 78%, rgba(40,180,255,0.50) 0%, rgba(40,180,255,0.31) 35%, rgba(40,180,255,0.11) 65%, rgba(40,180,255,0) 100%),
-    radial-gradient(50% 22% at 48% 78%, rgba(10,132,255,0.50) 0%, rgba(10,132,255,0.31) 35%, rgba(10,132,255,0.11) 65%, rgba(10,132,255,0) 100%),
-    radial-gradient(44% 18% at 56% 82%, rgba(10,100,240,0.42) 0%, rgba(10,100,240,0.26) 35%, rgba(10,100,240,0.09) 65%, rgba(10,100,240,0) 100%),
-    radial-gradient(50% 34% at 46% 66%, rgba(10,90,230,0.16) 0%, rgba(10,90,230,0.09) 40%, rgba(10,90,230,0.03) 72%, rgba(10,90,230,0) 100%); }
+    radial-gradient(20% 22% at 20% 78%, rgba(150,225,255,0.24) 0%, rgba(150,225,255,0.149) 35%, rgba(150,225,255,0.053) 65%, rgba(150,225,255,0) 100%),
+    radial-gradient(32% 28% at 26% 72%, rgba(40,180,255,0.36) 0%, rgba(40,180,255,0.223) 35%, rgba(40,180,255,0.079) 65%, rgba(40,180,255,0) 100%),
+    radial-gradient(50% 28% at 48% 72%, rgba(10,132,255,0.36) 0%, rgba(10,132,255,0.223) 35%, rgba(10,132,255,0.079) 65%, rgba(10,132,255,0) 100%),
+    radial-gradient(44% 24% at 56% 76%, rgba(10,100,240,0.30) 0%, rgba(10,100,240,0.186) 35%, rgba(10,100,240,0.066) 65%, rgba(10,100,240,0) 100%),
+    radial-gradient(50% 42% at 46% 58%, rgba(10,90,230,0.14) 0%, rgba(10,90,230,0.087) 35%, rgba(10,90,230,0.031) 65%, rgba(10,90,230,0) 100%); }
 /* grain: a faint static film over the light so the dark blues never show steps (banding) — it doesn't move or tint */
 html.hig .phone.ambient::after { animation: none; will-change: auto; inset: 0; left: 0; top: 0; transform: none; opacity: 0.05;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -0.2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 160px 160px repeat; }
