@@ -17,6 +17,8 @@ Usage:  python3 tools/bundle.py                     → dist/samo-home.html
         python3 tools/bundle.py --edition leak      → dist/samo-home-leak.html (water leak sensors only)
         python3 tools/bundle.py --edition smoke     → dist/samo-home-smoke.html (smoke detectors only)
         python3 tools/bundle.py --edition lock|valve|gas|air|presence|vibration|meter|ir → one file per wave-2 device
+        python3 tools/bundle.py --variant hig       → dist/samo-home-hig.html (all devices; Apple iOS 26 HIG + Liquid Glass controls,
+                                                      css/variant-hig.css; home tiles and device cards untouched, main build untouched)
         python3 tools/bundle.py --variant glass     → dist/samo-home-glass.html (all devices; device-page surfaces in the
                                                       Figma remote style 5767:16508 — css/variant-glass.css, main build untouched)
 """
@@ -327,7 +329,9 @@ ROUTER = r"""
 
 
 VARIANTS = {'glass': {'out': 'samo-home-glass.html', 'title': 'Samo-home · Glass variant', 'css': 'css/variant-glass.css',
-                      'pre': "document.documentElement.classList.toggle('vg-device', window.__ROUTE.page === 'device.html');"}}
+                      'pre': "document.documentElement.classList.toggle('vg-device', window.__ROUTE.page === 'device.html');"},
+            'hig': {'out': 'samo-home-hig.html', 'title': 'Samo-home · iOS 26 (HIG + Liquid Glass)', 'css': 'css/variant-hig.css',
+                    'pre': "document.documentElement.classList.add('hig');"}}
 
 
 def build(edition=None, variant=None):
