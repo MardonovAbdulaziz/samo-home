@@ -331,7 +331,7 @@ ROUTER = r"""
 VARIANTS = {'glass': {'out': 'samo-home-glass.html', 'title': 'Samo-home · Glass variant', 'css': 'css/variant-glass.css',
                       'pre': "document.documentElement.classList.toggle('vg-device', window.__ROUTE.page === 'device.html');"},
             'hig': {'out': 'samo-home-hig.html', 'title': 'Samo-home · iOS 26 (HIG + Liquid Glass)', 'css': 'css/variant-hig.css',
-                    'pre': "document.documentElement.classList.add('hig');"}}
+                    'pre': "document.documentElement.classList.add('hig'); document.documentElement.style.setProperty('--aur-t', -(Date.now() / 1000 % 25200) + 's');"}}
 
 
 def build(edition=None, variant=None):
@@ -382,7 +382,7 @@ def build(edition=None, variant=None):
 
 HIG_HEAD = """<base href="../">
   <script>/* iOS 26 HIG version: same pages, same files (cached), one extra stylesheet; links stay inside hig/ */
-    window.SAMO_PREFIX = 'hig/'; document.documentElement.classList.add('hig');
+    window.SAMO_PREFIX = 'hig/'; document.documentElement.classList.add('hig'); document.documentElement.style.setProperty('--aur-t', -(Date.now() / 1000 % 25200) + 's');
     document.addEventListener('click', function (e) { if (e.defaultPrevented) return; var a = e.target.closest && e.target.closest('a[href]'); if (!a || a.target) return;
       var h = a.getAttribute('href'); if (/^[\\w-]+\\.html/.test(h)) { e.preventDefault(); location.href = 'hig/' + h; } });
   </script>"""

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <base href="../">
   <script>/* iOS 26 HIG version: same pages, same files (cached), one extra stylesheet; links stay inside hig/ */
-    window.SAMO_PREFIX = 'hig/'; document.documentElement.classList.add('hig');
+    window.SAMO_PREFIX = 'hig/'; document.documentElement.classList.add('hig'); document.documentElement.style.setProperty('--aur-t', -(Date.now() / 1000 % 25200) + 's');
     document.addEventListener('click', function (e) { if (e.defaultPrevented) return; var a = e.target.closest && e.target.closest('a[href]'); if (!a || a.target) return;
       var h = a.getAttribute('href'); if (/^[\w-]+\.html/.test(h)) { e.preventDefault(); location.href = 'hig/' + h; } });
   </script>
