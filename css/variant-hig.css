@@ -225,7 +225,7 @@ html.hig :is(.toolbar .icon-btn, header > .icon-btn):active { transform: scale(1
 html.hig {
   --cg-bg: rgba(255, 255, 255, 0.085);
   --cg-sheen: linear-gradient(160deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 40%, rgba(255, 255, 255, 0) 66%);
-  --cg-rim: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.18), inset 0 -0.5px 0 0 rgba(255, 255, 255, 0.04), 0 6px 18px rgba(0, 0, 0, 0.10);
+  --cg-rim: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.18), inset 0 -0.5px 0 0 rgba(255, 255, 255, 0.04);   /* no drop shadow on tiles/cards (user: looked rough) */
   --cg-blur: blur(24px) saturate(165%);
 }
 html.hig .phone.ambient :is(.tile:not(.on):not(.alert), .quick-chip, .info-card, .ir-tile, .list, .cw-ctl button, .cw-chip, .btn-pill, .btn-sm,
