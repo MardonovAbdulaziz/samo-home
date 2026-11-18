@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presence Variants</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #0b0b0d; color: var(--label-primary); font: var(--body-md); font-family: var(--font); -webkit-font-smoothing: antialiased; padding: 40px 32px 80px; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; letter-spacing: .3px; }
+  .lead { color: var(--label-secondary); max-width: 900px; margin: 0 0 20px; font: var(--body-lg); }
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; padding: 12px 0 16px; margin-bottom: 12px; background: linear-gradient(#0b0b0d 78%, rgba(11,11,13,0)); }
+  .seg { display: inline-flex; flex-wrap: wrap; padding: 2px; border-radius: 10px; background: var(--fill-tertiary); }
+  .seg button { appearance: none; border: 0; background: transparent; color: var(--label-primary); font: var(--body-sm-accent); font-family: var(--font); height: 32px; padding: 0 12px; border-radius: 8px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--segment-active); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(375px, 1fr)); gap: 40px 28px; }
+  .card h2 { font: var(--body-lg-accent); margin: 0; display: flex; gap: 10px; align-items: baseline; }
+  .card h2 i { font-style: normal; color: var(--primary); font: var(--body-sm-accent); }
+  .card p { margin: 4px 0 12px; color: var(--label-secondary); font: var(--body-sm); min-height: 32px; }
+  .mock { width: 375px; max-width: 100%; border-radius: 32px; overflow: hidden; padding: 20px 16px 4px;
+    background: radial-gradient(120% 60% at 50% 115%, rgba(20,150,160,.45) 0%, rgba(20,150,160,.28) 30%, rgba(20,150,160,.13) 55%, rgba(20,150,160,.04) 78%, rgba(20,150,160,0) 100%), linear-gradient(180deg, #03070f 0%, #071a33 60%, #0a2f4a 100%); }
+  .mock canvas { display: block; width: 343px; max-width: 100%; aspect-ratio: 343 / 300; }
+  .ro { padding: 16px 4px 16px; }
+  .ro .w { font: 700 28px/34px var(--font); letter-spacing: .3px; }
+  .ro .w.on { color: var(--primary); }
+  .ro .s { font: var(--body-md); color: var(--label-secondary); margin-top: 2px; }
+  @media (max-width: 480px) { body { padding: 24px 12px 60px; } .grid { grid-template-columns: 1fr; } .mock { width: 100%; } }
+</style>
+</head>
+<body>
+<h1>Presence — 20 pictures for the device page</h1>
+<p class="lead">Twenty different ideas for the picture at the top of the presence sensor's device page. Same data in all of them: the room, the places (Sofa, Desk, Door), roughly where each person is, sitting still or walking. Inner pages (Places, settings) stay as they are. Use the buttons to see every picture in every state.</p>
+<div class="bar">
+  <div class="seg" id="st"><button data-s="sit" aria-pressed="true">Sitting still</button><button data-s="walk">Walking</button><button data-s="two">2 people</button><button data-s="empty">Empty</button><button data-s="off">Offline</button></div>
+  <div class="seg" id="zn"><button data-z="1" aria-pressed="true">With places</button><button data-z="0">No places</button></div>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+/* ---------- shared scene: room, places, people (one simulation, every picture draws it its own way) ---------- */
+const GW = 68, GH = 60, W = 343, H = 300, DPR = Math.min(2, window.devicePixelRatio || 1), TAU = Math.PI * 2, B = '10,132,255';
+const RM = { x: 8, y: 8, w: 327, h: 284 };
+const ZONES = [{ name: 'Sofa', u: .05, v: .55, w: .38, h: .27 }, { name: 'Desk', u: .67, v: .08, w: .28, h: .33 }, { name: 'Door', u: .40, v: .85, w: .24, h: .115 }].map((z) => Object.assign(z, { k: 0 }));
+const ROUTE = [[.25, .66, 3], [.50, .50, .2], [.80, .26, 3], [.62, .62, .2], [.52, .90, 2], [.34, .40, .2]];
+const ROUTE2 = [[.80, .26, 2.5], [.55, .55, .2], [.52, .90, 2.5], [.62, .40, .2]];
+const px = (u) => RM.x + u * RM.w, py = (v) => RM.y + v * RM.h;
+const mkP = (u, v) => ({ u, v, tu: u, tv: v, a: 0, ta: 1, route: null, ri: 0, wait: 0, trail: [] });
+let mode = 'sit', zonesOn = true, people = [], frozenT = 0;
+function setMode(m) {
+  mode = m;
+  const want = m === 'sit' ? [{ u: .22, v: .68 }] : m === 'walk' ? [{ route: ROUTE }] : m === 'two' ? [{ u: .2, v: .7 }, { route: ROUTE2 }] : [];
+  want.forEach((w, i) => { let p = people.filter((q) => q.ta > 0)[i]; if (!p) { p = mkP(w.u ?? w.route[0][0], w.v ?? w.route[0][1]); people.push(p); } Object.assign(p, { ta: 1, route: w.route || null, ri: 0, wait: 0 }); if (!w.route) { p.tu = w.u; p.tv = w.v; } });
+  people.filter((q) => q.ta > 0).slice(want.length).forEach((q) => { q.ta = 0; });
+  if (m === 'off') people = [];   // like the app: nobody is shown while the sensor is offline
+  document.querySelectorAll('#st button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === m));
+  text();
+}
+const smooth = (cur, to, dt, tau) => cur + (to - cur) * (1 - Math.exp(-dt / tau));
+const zoneAt = (u, v) => zonesOn ? ZONES.find((z) => u >= z.u && u <= z.u + z.w && v >= z.v && v <= z.v + z.h) : null;
+function sim(dt, t) {
+  if (mode === 'off') return;
+  people.forEach((p) => {
+    if (p.route) { const [tu, tv, wait] = p.route[p.ri]; p.tu = tu; p.tv = tv; if (Math.hypot(p.u - tu, p.v - tv) < .01) { p.wait += dt; if (p.wait > wait) { p.wait = 0; p.ri = (p.ri + 1) % p.route.length; } } }
+    const du = p.tu - p.u, dv = p.tv - p.v, d = Math.hypot(du, dv), sp = Math.min(d, .16 * dt * Math.min(1, d / .08 + .2));
+    if (d > 1e-4) { p.u += du / d * sp; p.v += dv / d * sp; }
+    p.moving = d > .01;
+    const last = p.trail[p.trail.length - 1];
+    if (!last || Math.hypot(px(p.u) - last[0], py(p.v) - last[1]) > 3) p.trail.push([px(p.u), py(p.v), t]);
+    p.trail = p.trail.filter((q) => t - q[2] < 14);
+    p.a = smooth(p.a, p.ta, dt, .45);
+  });
+  people = people.filter((p) => p.ta > 0 || p.a > .01);
+  const busy = new Set(people.filter((p) => p.ta > 0).map((p) => zoneAt(p.u, p.v)).filter(Boolean));
+  ZONES.forEach((z) => { z.k = smooth(z.k, busy.has(z) ? 1 : 0, dt, .3); });
+}
+function text() {
+  const here = people.filter((p) => p.ta > 0);
+  const W = mode === 'off' ? 'Unknown' : mode === 'empty' ? 'Empty' : here.length > 1 ? `${here.length} people here` : 'Someone here';
+  const z = here[0] && zoneAt(here[0].tu, here[0].tv);
+  const S = mode === 'off' ? 'Last report 8:40' : mode === 'empty' ? 'Empty since 9:12' : mode === 'two' ? '1 at the sofa · 1 walking' : mode === 'walk' ? 'Walking' : `${z ? 'At the ' + z.name.toLowerCase() : 'In the middle of the room'} · sitting still · for 47 min`;
+  document.querySelectorAll('.ro').forEach((r) => { r.querySelector('.w').textContent = W; r.querySelector('.w').classList.toggle('on', mode !== 'off' && mode !== 'empty'); r.querySelector('.s').textContent = S; });
+}
+
+/* ---------- drawing helpers ---------- */
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+const STOPS = [[0, 1], [.18, .82], [.36, .56], [.54, .32], [.72, .14], [.88, .04], [1, 0]];
+function glow(c, x, y, r, rgb, a) { const g = c.createRadialGradient(x, y, 0, x, y, r); STOPS.forEach(([o, k]) => g.addColorStop(o, `rgba(${rgb},${(a * k).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); }
+function zbox(z) { return { x: px(z.u), y: py(z.v), w: z.w * RM.w, h: z.h * RM.h }; }
+function label(c, s, x, y, a = .55, size = 12, w = 600) { c.font = `${w} ${size}px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif`; c.textBaseline = 'top'; c.fillStyle = `rgba(255,255,255,${a})`; c.fillText(s, x, y); }
+function pin(c, x, y, a = 1) { c.globalAlpha *= a; c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y, 8, 0, TAU); c.fill(); c.fillStyle = mode === 'off' ? '#8e8e93' : '#0A84FF'; c.beginPath(); c.arc(x, y, 5.75, 0, TAU); c.fill(); c.globalAlpha /= a || 1; }
+const still = (p) => !p.moving;
+const breathe = (t, p) => (still(p) ? (1 - Math.cos(t * TAU / 5.5 + p.u * 7)) / 2 : 0);
+const roomPath = (c, r = 16) => rr(c, RM.x, RM.y, RM.w, RM.h, r);
+const wall = (c, a = .1, r = 16) => { roomPath(c, r); c.strokeStyle = `rgba(255,255,255,${a})`; c.lineWidth = 1; c.stroke(); };
+const floor = (c, a = .05, r = 16) => { roomPath(c, r); c.fillStyle = `rgba(255,255,255,${a})`; c.fill(); };
+const live = () => people.filter((p) => p.a > .01);
+const off = () => mode === 'off';
+
+/* ---------- the 20 pictures ---------- */
+const V = [];
+const add = (name, idea, init, draw) => V.push({ name, idea, init, draw });
+
+add('Radar light', 'Today’s picture: a very soft light turning around the room; the place with someone in it turns blue.', null, (c, t) => {
+  floor(c); c.save(); roomPath(c); c.clip(); glow(c, W / 2, H / 2, 210, B, off() ? .03 : .07);
+  ZONES.forEach((z) => { if (!zonesOn) return; const b = zbox(z); rr(c, b.x, b.y, b.w, b.h, 8); c.fillStyle = `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.06 + .16 * z.k).toFixed(3)})`; c.fill(); label(c, z.name, b.x + 10, b.y + 9, .5 + .45 * z.k); });
+  if (!off()) { const beam = (t / 16) * TAU % TAU, g = c.createConicGradient(beam - 1.9, W / 2, H / 2); [[0, 0], [.2, .05], [.28, .2], [.3, 0]].forEach(([o, k]) => g.addColorStop(o, `rgba(${B},${(.075 * k / .2).toFixed(3)})`)); g.addColorStop(1, `rgba(${B},0)`); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  live().forEach((p) => { const x = px(p.u), y = py(p.v); glow(c, x, y, 42 + 4 * breathe(t, p), B, .26 * p.a); pin(c, x, y, p.a); });
+  c.restore(); wall(c);
+});
+
+add('Floor light', 'Each person stands in a soft pool of light on the floor — like a lamp follows them. Places are thin rugs.', null, (c, t) => {
+  floor(c, .035); c.save(); roomPath(c); c.clip();
+  ZONES.forEach((z) => { if (!zonesOn) return; const b = zbox(z); rr(c, b.x + 2, b.y + 2, b.w - 4, b.h - 4, 10); c.strokeStyle = `rgba(255,255,255,${(.12 + .3 * z.k).toFixed(3)})`; c.lineWidth = 1; c.stroke(); label(c, z.name.toUpperCase(), b.x + 12, b.y + 11, .45 + .4 * z.k, 10, 600); });
+  live().forEach((p) => { const x = px(p.u), y = py(p.v), b = breathe(t, p); glow(c, x, y + 4, 70 + 6 * b, '200,225,255', .22 * p.a); glow(c, x, y + 4, 34, '255,255,255', .18 * p.a); c.fillStyle = `rgba(255,255,255,${.95 * p.a})`; c.beginPath(); c.arc(x, y, 4.5, 0, TAU); c.fill(); });
+  c.restore(); wall(c, .08);
+});
+
+add('Dot matrix', 'The floor is a field of tiny dots, like an LED panel; the dots around a person light up and breathe.', null, (c, t) => {
+  c.save(); roomPath(c); c.clip(); const s = 11;
+  for (let y = RM.y + 6; y < RM.y + RM.h; y += s) for (let x = RM.x + 6; x < RM.x + RM.w; x += s) {
+    let k = 0; live().forEach((p) => { const d = Math.hypot(x - px(p.u), y - py(p.v)); k = Math.max(k, p.a * Math.exp(-(d * d) / (2 * (28 + 4 * breathe(t, p)) ** 2))); });
+    const z = zonesOn && ZONES.find((q) => { const b = zbox(q); return x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h; });
+    const base = z ? .16 + .12 * z.k : .08, a = off() ? base * .6 : base + .85 * k;
+    c.fillStyle = k > .05 && !off() ? `rgba(${Math.round(10 + 245 * k * .6)},${Math.round(132 + 123 * k * .6)},255,${a.toFixed(3)})` : `rgba(255,255,255,${a.toFixed(3)})`;
+    c.beginPath(); c.arc(x, y, 1.1 + 1.6 * k, 0, TAU); c.fill();
+  }
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); label(c, z.name, b.x + 8, b.y + 6, .55 + .4 * z.k); });
+  c.restore();
+});
+
+add('Heat of the day', 'Where people spent time stays warm (in blue) and slowly cools — you see the busy spots of the room.',
+  () => ({ g: new Float32Array(GW * GH), cv: Object.assign(document.createElement('canvas'), { width: GW, height: GH }) }),
+  (c, t, dt, S) => {
+    floor(c, .04); const { g, cv } = S, oc = cv.getContext('2d'), img = oc.createImageData(GW, GH);
+    if (!off()) for (let i = 0; i < g.length; i++) { const gx = (i % GW + .5) / GW, gy = (Math.floor(i / GW) + .5) / GH; let add = 0; live().forEach((p) => { const d = Math.hypot(gx - p.u, (gy - p.v) * .87); add += p.a * Math.exp(-(d * d) / .006); }); g[i] = Math.min(1, g[i] * Math.exp(-dt / 25) + add * dt * .7); }
+    for (let i = 0; i < g.length; i++) { const k = g[i]; img.data[i * 4] = 10 + 180 * k * k; img.data[i * 4 + 1] = 132 + 100 * k; img.data[i * 4 + 2] = 255; img.data[i * 4 + 3] = Math.round(255 * Math.min(.8, k * k * .5 + k * .4)); }
+    oc.putImageData(img, 0, 0); c.save(); roomPath(c); c.clip(); c.imageSmoothingEnabled = true; c.globalAlpha = off() ? .4 : 1; c.drawImage(cv, RM.x, RM.y, RM.w, RM.h); c.globalAlpha = 1;
+    if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); rr(c, b.x, b.y, b.w, b.h, 8); c.strokeStyle = `rgba(255,255,255,${(.12 + .3 * z.k).toFixed(3)})`; c.stroke(); label(c, z.name, b.x + 10, b.y + 9, .6); });
+    live().forEach((p) => pin(c, px(p.u), py(p.v), p.a)); c.restore(); wall(c);
+  });
+
+add('Isometric room', 'The room as a small 3D model seen from a corner; places are raised slabs, a person is a glowing pillar.', null, (c, t) => {
+  const ox = W / 2, A = 158, Bv = 88, oy = (H - 2 * Bv) / 2 + 12, iso = (u, v) => [ox + (u - v) * A, oy + (u + v) * Bv];
+  const poly = (pts, fill, stroke) => { c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); if (fill) { c.fillStyle = fill; c.fill(); } if (stroke) { c.strokeStyle = stroke; c.lineWidth = 1; c.stroke(); } };
+  poly([iso(0, 0), iso(1, 0), iso(1, 1), iso(0, 1)], 'rgba(255,255,255,.05)', 'rgba(255,255,255,.12)');
+  poly([iso(0, 0), iso(1, 0), [iso(1, 0)[0], iso(1, 0)[1] - 26], [iso(0, 0)[0], iso(0, 0)[1] - 26]], 'rgba(255,255,255,.035)');
+  poly([iso(0, 0), iso(0, 1), [iso(0, 1)[0], iso(0, 1)[1] - 26], [iso(0, 0)[0], iso(0, 0)[1] - 26]], 'rgba(255,255,255,.025)');
+  if (zonesOn) ZONES.forEach((z) => { const h = 5, p = [iso(z.u, z.v), iso(z.u + z.w, z.v), iso(z.u + z.w, z.v + z.h), iso(z.u, z.v + z.h)].map(([x, y]) => [x, y - h]);
+    poly([p[1], p[2], [p[2][0], p[2][1] + h], [p[1][0], p[1][1] + h]], 'rgba(255,255,255,.06)'); poly([p[3], p[2], [p[2][0], p[2][1] + h], [p[3][0], p[3][1] + h]], 'rgba(255,255,255,.09)');
+    poly(p, `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.1 + .25 * z.k).toFixed(3)})`); const [lx, ly] = iso(z.u + z.w / 2, z.v + z.h / 2); c.textAlign = 'center'; label(c, z.name, lx, ly - 12, .6 + .35 * z.k, 11); c.textAlign = 'left'; });
+  live().sort((a, b) => a.u + a.v - b.u - b.v).forEach((p) => { const [x, y] = iso(p.u, p.v), b = breathe(t, p); c.globalAlpha = p.a * (off() ? .5 : 1);
+    glow(c, x, y, 26, B, .35); const g = c.createLinearGradient(0, y - 40 - 3 * b, 0, y); g.addColorStop(0, 'rgba(120,190,255,0)'); g.addColorStop(1, 'rgba(120,190,255,.9)'); c.fillStyle = g; rr(c, x - 4, y - 40 - 3 * b, 8, 40 + 3 * b, 4); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y - 42 - 3 * b, 5, 0, TAU); c.fill(); c.globalAlpha = 1; });
+});
+
+add('Contour map', 'Thin contour lines ripple out around each person like a map of the room — calm, slow, no hard rings.', null, (c, t) => {
+  floor(c, .04); c.save(); roomPath(c); c.clip();
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); rr(c, b.x, b.y, b.w, b.h, 8); c.fillStyle = `rgba(255,255,255,${(.04 + .06 * z.k).toFixed(3)})`; c.fill(); label(c, z.name, b.x + 10, b.y + 9, .55 + .4 * z.k); });
+  live().forEach((p) => { const x = px(p.u), y = py(p.v), ph = off() ? 0 : t * .35;
+    for (let i = 1; i <= 7; i++) { const r = ((i + ph) % 7) * 14 + 10, a = p.a * .32 * (1 - r / 110); if (a <= 0) continue; c.beginPath();
+      for (let k = 0; k <= 48; k++) { const an = k / 48 * TAU, w = r + Math.sin(an * 3 + i + t * .4) * 2.2; const X = x + Math.cos(an) * w, Y = y + Math.sin(an) * w * .9; k ? c.lineTo(X, Y) : c.moveTo(X, Y); }
+      c.strokeStyle = `rgba(110,180,255,${a.toFixed(3)})`; c.lineWidth = 1; c.stroke(); }
+    pin(c, x, y, p.a); });
+  c.restore(); wall(c);
+});
+
+add('Constellation', 'Places are stars joined by faint lines; a person is the brightest star, linked to the place they are in.',
+  () => ({ stars: Array.from({ length: 60 }, () => [Math.random(), Math.random(), Math.random()]) }),
+  (c, t, dt, S) => {
+    c.save(); roomPath(c); c.clip(); S.stars.forEach(([u, v, k]) => { c.fillStyle = `rgba(255,255,255,${(.05 + .1 * k * (off() ? .5 : (1 + Math.sin(t * .8 + k * 20)) / 2)).toFixed(3)})`; c.beginPath(); c.arc(px(u), py(v), .7 + k * .6, 0, TAU); c.fill(); });
+    const C = ZONES.map((z) => [px(z.u + z.w / 2), py(z.v + z.h / 2)]);
+    if (zonesOn) { c.strokeStyle = 'rgba(255,255,255,.1)'; c.beginPath(); C.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); c.stroke();
+      ZONES.forEach((z, i) => { const [x, y] = C[i]; glow(c, x, y, 16, B, .3 * z.k); c.fillStyle = `rgba(255,255,255,${(.5 + .5 * z.k).toFixed(2)})`; c.beginPath(); c.arc(x, y, 3 + z.k, 0, TAU); c.fill(); label(c, z.name, x + 8, y - 6, .55 + .4 * z.k); }); }
+    live().forEach((p) => { const x = px(p.u), y = py(p.v); const z = zoneAt(p.u, p.v); if (z) { const [zx, zy] = C[ZONES.indexOf(z)]; c.strokeStyle = `rgba(120,190,255,${(.5 * p.a).toFixed(2)})`; c.beginPath(); c.moveTo(x, y); c.lineTo(zx, zy); c.stroke(); }
+      glow(c, x, y, 30 + 4 * breathe(t, p), B, .4 * p.a); c.save(); c.translate(x, y); c.globalAlpha = p.a; c.fillStyle = '#fff'; c.beginPath(); for (let k = 0; k < 8; k++) { const r = k % 2 ? 2.2 : 8; c.lineTo(Math.cos(k * Math.PI / 4 - Math.PI / 2) * r, Math.sin(k * Math.PI / 4 - Math.PI / 2) * r); } c.closePath(); c.fill(); c.restore(); });
+    c.restore(); wall(c, .06);
+  });
+
+add('Blueprint', 'An architect’s plan: hairline grid, double walls, small caps labels; a person is a cross-hair marker.', null, (c, t) => {
+  c.save(); roomPath(c, 6); c.fillStyle = 'rgba(10,80,170,.18)'; c.fill(); c.clip();
+  c.strokeStyle = 'rgba(160,200,255,.07)'; c.lineWidth = 1; for (let x = RM.x; x < RM.x + RM.w; x += 20) { c.beginPath(); c.moveTo(x + .5, RM.y); c.lineTo(x + .5, RM.y + RM.h); c.stroke(); } for (let y = RM.y; y < RM.y + RM.h; y += 20) { c.beginPath(); c.moveTo(RM.x, y + .5); c.lineTo(RM.x + RM.w, y + .5); c.stroke(); }
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); c.strokeStyle = `rgba(160,200,255,${(.35 + .5 * z.k).toFixed(2)})`; c.strokeRect(b.x + .5, b.y + .5, b.w, b.h); if (z.k > .02) { c.fillStyle = `rgba(10,132,255,${(.18 * z.k).toFixed(3)})`; c.fillRect(b.x, b.y, b.w, b.h); } c.font = '600 9px -apple-system, Inter, sans-serif'; c.fillStyle = 'rgba(180,215,255,.75)'; c.fillText(z.name.toUpperCase().split('').join(' '), b.x + 6, b.y + 13); });
+  live().forEach((p) => { const x = px(p.u), y = py(p.v), r = 11 + 2 * breathe(t, p); c.globalAlpha = p.a; c.strokeStyle = '#cfe4ff'; c.lineWidth = 1.2; c.beginPath(); c.arc(x, y, r, 0, TAU); c.stroke(); [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { c.beginPath(); c.moveTo(x + dx * (r - 4), y + dy * (r - 4)); c.lineTo(x + dx * (r + 6), y + dy * (r + 6)); c.stroke(); }); c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y, 2.5, 0, TAU); c.fill(); c.globalAlpha = 1; });
+  c.restore(); rr(c, RM.x, RM.y, RM.w, RM.h, 6); c.strokeStyle = 'rgba(180,215,255,.5)'; c.lineWidth = 1; c.stroke(); rr(c, RM.x + 4, RM.y + 4, RM.w - 8, RM.h - 8, 3); c.strokeStyle = 'rgba(180,215,255,.2)'; c.stroke();
+});
+
+add('Glass places', 'Places are panes of frosted glass; the one with someone in it glows softly from inside. A slow sheen passes.', null, (c, t) => {
+  floor(c, .03); c.save(); roomPath(c); c.clip();
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); c.save(); rr(c, b.x, b.y, b.w, b.h, 10); c.clip();
+    const g = c.createLinearGradient(b.x, b.y, b.x, b.y + b.h); g.addColorStop(0, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(255,255,255,.04)'); c.fillStyle = g; c.fillRect(b.x, b.y, b.w, b.h);
+    if (z.k > .01) glow(c, b.x + b.w / 2, b.y + b.h / 2, Math.max(b.w, b.h) * .8, B, .5 * z.k);
+    const sx = b.x - 60 + ((t * 20 + b.x) % (b.w + 120)); const sg = c.createLinearGradient(sx, 0, sx + 40, 0); sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(.5, 'rgba(255,255,255,.06)'); sg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = sg; c.fillRect(b.x, b.y, b.w, b.h);
+    c.restore(); rr(c, b.x + .5, b.y + .5, b.w - 1, b.h - 1, 10); c.strokeStyle = 'rgba(255,255,255,.14)'; c.stroke(); label(c, z.name, b.x + 10, b.y + 9, .6 + .35 * z.k); });
+  live().forEach((p) => { const x = px(p.u), y = py(p.v); glow(c, x, y, 30, B, .25 * p.a); pin(c, x, y, p.a); });
+  c.restore(); wall(c, .08);
+});
+
+add('Swarm', 'A cloud of soft particles drifts in the room; around a person they gather and circle slowly.',
+  () => ({ ps: Array.from({ length: 140 }, () => ({ x: RM.x + Math.random() * RM.w, y: RM.y + Math.random() * RM.h, vx: 0, vy: 0, s: Math.random() })) }),
+  (c, t, dt, S) => {
+    floor(c, .03); c.save(); roomPath(c); c.clip();
+    if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); label(c, z.name, b.x + 6, b.y + 4, .45 + .45 * z.k); if (z.k > .02) { rr(c, b.x, b.y, b.w, b.h, 8); c.fillStyle = `rgba(${B},${(.08 * z.k).toFixed(3)})`; c.fill(); } });
+    const L = live();
+    S.ps.forEach((q) => {
+      if (!off()) {
+        let ax = Math.sin(q.y * .03 + t * .3 + q.s * 6) * 6, ay = Math.cos(q.x * .03 + t * .25 + q.s * 6) * 6;
+        L.forEach((p) => { const dx = px(p.u) - q.x, dy = py(p.v) - q.y, d = Math.hypot(dx, dy) + 1; if (d < 170) { const pull = p.a * (d > 34 ? 46 : -10), spin = p.a * 26 * Math.min(1, 50 / d); ax += dx / d * pull - dy / d * spin; ay += dy / d * pull + dx / d * spin; } });
+        q.vx = smooth(q.vx, ax, dt, .6); q.vy = smooth(q.vy, ay, dt, .6); q.x += q.vx * dt; q.y += q.vy * dt;
+        if (q.x < RM.x) q.x += RM.w; if (q.x > RM.x + RM.w) q.x -= RM.w; if (q.y < RM.y) q.y += RM.h; if (q.y > RM.y + RM.h) q.y -= RM.h;
+      }
+      let k = 0; L.forEach((p) => { k = Math.max(k, p.a * Math.exp(-(Math.hypot(px(p.u) - q.x, py(p.v) - q.y) ** 2) / 2000)); });
+      c.fillStyle = `rgba(${Math.round(150 + 105 * (1 - k))},${Math.round(200 + 55 * (1 - k))},255,${(.12 + .6 * k).toFixed(3)})`; c.beginPath(); c.arc(q.x, q.y, 1 + 1.3 * k, 0, TAU); c.fill();
+    });
+    c.restore(); wall(c, .07);
+  });
+
+add('Path of the day', 'You see the way each person came: a soft fading line behind them, and the place they stopped.', null, (c, t) => {
+  floor(c); c.save(); roomPath(c); c.clip();
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); rr(c, b.x, b.y, b.w, b.h, 8); c.fillStyle = `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.06 + .14 * z.k).toFixed(3)})`; c.fill(); label(c, z.name, b.x + 10, b.y + 9, .55 + .4 * z.k); });
+  live().forEach((p) => { const tr = p.trail; if (tr.length > 2) { for (let i = 1; i < tr.length; i++) { const age = (t - tr[i][2]) / 14; c.strokeStyle = `rgba(110,180,255,${(p.a * .55 * (1 - age)).toFixed(3)})`; c.lineWidth = 1 + 3 * (1 - age); c.lineCap = 'round'; c.beginPath(); c.moveTo(tr[i - 1][0], tr[i - 1][1]); c.lineTo(tr[i][0], tr[i][1]); c.stroke(); } }
+    const x = px(p.u), y = py(p.v); glow(c, x, y, 34 + 4 * breathe(t, p), B, .24 * p.a); pin(c, x, y, p.a); });
+  c.restore(); wall(c);
+});
+
+add('Sensor squares', 'The room in the sensor’s own 4 × 7 squares — the square where someone is lights up, its neighbours a little.', null, (c, t) => {
+  c.save(); roomPath(c); c.clip(); const cw = RM.w / 4, ch = RM.h / 7;
+  for (let r = 0; r < 7; r++) for (let q = 0; q < 4; q++) { const x = RM.x + q * cw, y = RM.y + r * ch, cu = (q + .5) / 4, cv = (r + .5) / 7;
+    let k = 0; live().forEach((p) => { const d = Math.hypot((cu - p.u) * 4, (cv - p.v) * 7); k = Math.max(k, p.a * Math.max(0, 1 - d * .75) * (.92 + .08 * breathe(t, p))); });
+    const z = zonesOn && zoneAt(cu, cv); rr(c, x + 2, y + 2, cw - 4, ch - 4, 6);
+    c.fillStyle = k > .02 && !off() ? `rgba(${B},${(.08 + .45 * k).toFixed(3)})` : `rgba(255,255,255,${z ? .09 : .04})`; c.fill(); }
+  if (zonesOn) ZONES.forEach((z) => { for (let r = 0; r < 7; r++) for (let q = 0; q < 4; q++) if (zoneAt((q + .5) / 4, (r + .5) / 7) === z) { label(c, z.name, RM.x + q * cw + 10, RM.y + r * ch + 10, .6 + .35 * z.k); return; } });
+  c.restore();
+});
+
+add('Aurora', 'A soft wash of colour drifts toward wherever people are — no lines at all, just light; places are quiet labels.', null, (c, t) => {
+  floor(c, .03); c.save(); roomPath(c); c.clip();
+  const L = live(), cx = L.length ? L.reduce((s, p) => s + px(p.u) * p.a, 0) / L.reduce((s, p) => s + p.a, 0) : W / 2, cy = L.length ? L.reduce((s, p) => s + py(p.v) * p.a, 0) / L.reduce((s, p) => s + p.a, 0) : H / 2;
+  const A = off() ? .03 : L.length ? .16 : .05;
+  glow(c, cx + Math.sin(t * .3) * 30, cy + Math.cos(t * .25) * 20, 180, '10,132,255', A); glow(c, cx + Math.cos(t * .22) * 50, cy - 20 + Math.sin(t * .2) * 25, 140, '100,210,255', A * .8); glow(c, cx - 40 + Math.sin(t * .17) * 30, cy + 30, 120, '191,90,242', A * .55);
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); label(c, z.name, b.x + 6, b.y + 6, .45 + .5 * z.k, 13, 600); c.fillStyle = `rgba(255,255,255,${(.15 + .6 * z.k).toFixed(2)})`; c.fillRect(b.x + 6, b.y + 24, 18 + 20 * z.k, 1.5); });
+  L.forEach((p) => { c.fillStyle = `rgba(255,255,255,${(.95 * p.a).toFixed(2)})`; c.beginPath(); c.arc(px(p.u), py(p.v), 5, 0, TAU); c.fill(); });
+  c.restore(); wall(c, .05);
+});
+
+add('Near · far', 'No room drawing: the sensor’s view as rings — near, middle, far — places are arcs, people sit on the rings.', null, (c, t) => {
+  const R0 = 250, sx = W / 2, sy = 22, polar = (u, v) => { const dx = (u - .5) * 1.25, dy = v * .95 + .06; return [Math.atan2(dy, dx), Math.min(1, Math.hypot(dx, dy))]; }, toXY = (an, r) => [sx + Math.cos(an) * r * R0, sy + Math.sin(an) * r * R0];
+  [['Near', .36], ['Middle', .68], ['Far', 1]].forEach(([n, r]) => { c.beginPath(); c.arc(sx, sy, r * R0 * .98, Math.PI * .2, Math.PI * .8); c.strokeStyle = 'rgba(255,255,255,.1)'; c.lineWidth = 1; c.stroke(); const [x, y] = toXY(Math.PI * .2, r * .98); label(c, n, x + 4, y - 14, .35, 10); });
+  if (zonesOn) ZONES.forEach((z) => { const [a0, r0] = polar(z.u, z.v + z.h / 2), [a1] = polar(z.u + z.w, z.v + z.h / 2), [, rr0] = polar(z.u + z.w / 2, z.v), [, rr1] = polar(z.u + z.w / 2, z.v + z.h);
+    c.beginPath(); c.arc(sx, sy, rr0 * R0, Math.min(a0, a1), Math.max(a0, a1)); c.arc(sx, sy, rr1 * R0, Math.max(a0, a1), Math.min(a0, a1), true); c.closePath(); c.fillStyle = `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.06 + .2 * z.k).toFixed(3)})`; c.fill();
+    const [lx, ly] = toXY((a0 + a1) / 2, (rr0 + rr1) / 2); c.textAlign = 'center'; label(c, z.name, lx, ly - 6, .55 + .4 * z.k, 11); c.textAlign = 'left'; });
+  c.fillStyle = '#e9edf2'; rr(c, sx - 12, sy - 4, 24, 8, 4); c.fill();
+  live().forEach((p) => { const [an, r] = polar(p.u, p.v), [x, y] = toXY(an, r); glow(c, x, y, 30, B, .25 * p.a); pin(c, x, y, p.a); });
+});
+
+add('Field lines', 'Fine lines run across the room and bend softly around each person, like a field that feels them.', null, (c, t) => {
+  c.save(); roomPath(c); c.clip(); const L = live();
+  for (let y0 = RM.y + 8; y0 < RM.y + RM.h; y0 += 9) { c.beginPath();
+    for (let x = RM.x; x <= RM.x + RM.w; x += 4) { let dy = 0; L.forEach((p) => { const X = px(p.u), Y = py(p.v), d2 = (x - X) ** 2 + ((y0 - Y) * 1.4) ** 2; dy += p.a * (y0 < Y ? -1 : 1) * 14 * (1 + .15 * breathe(t, p)) * Math.exp(-d2 / 1800); }); x === RM.x ? c.moveTo(x, y0 + dy) : c.lineTo(x, y0 + dy); }
+    const z = zonesOn && ZONES.find((q) => y0 > py(q.v) && y0 < py(q.v + q.h)); c.strokeStyle = `rgba(255,255,255,${off() ? .05 : .09})`; c.lineWidth = 1; c.stroke(); }
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); rr(c, b.x, b.y, b.w, b.h, 8); c.fillStyle = `rgba(${B},${(.03 + .15 * z.k).toFixed(3)})`; c.fill(); label(c, z.name, b.x + 10, b.y + 9, .6 + .35 * z.k); });
+  L.forEach((p) => pin(c, px(p.u), py(p.v), p.a));
+  c.restore(); wall(c, .07);
+});
+
+add('Through the door', 'The room seen from the doorway in perspective; places are painted on the floor, a person is a soft beam of light.', null, (c, t) => {
+  const P = (u, v) => { const d = 1 - v, sc = .42 + .58 * (1 - d * .0); const yTop = 40, yBot = 286, y = yTop + (yBot - yTop) * Math.pow(v, 1.15), half = 80 + 92 * Math.pow(v, 1.15); return [W / 2 + (u - .5) * 2 * half, y]; };
+  const poly = (pts, fill, stroke) => { c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); if (fill) { c.fillStyle = fill; c.fill(); } if (stroke) { c.strokeStyle = stroke; c.stroke(); } };
+  poly([P(0, 0), P(1, 0), P(1, 1), P(0, 1)], 'rgba(255,255,255,.045)', 'rgba(255,255,255,.1)');
+  c.strokeStyle = 'rgba(255,255,255,.05)'; for (let i = 1; i < 6; i++) { const v = i / 6; c.beginPath(); c.moveTo(...P(0, v)); c.lineTo(...P(1, v)); c.stroke(); } for (let i = 1; i < 4; i++) { const u = i / 4; c.beginPath(); c.moveTo(...P(u, 0)); c.lineTo(...P(u, 1)); c.stroke(); }
+  if (zonesOn) ZONES.forEach((z) => { poly([P(z.u, z.v), P(z.u + z.w, z.v), P(z.u + z.w, z.v + z.h), P(z.u, z.v + z.h)], `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.07 + .22 * z.k).toFixed(3)})`); const [lx, ly] = P(z.u + z.w / 2, z.v + z.h / 2); c.textAlign = 'center'; label(c, z.name, lx, ly - 6, .6 + .35 * z.k, 11); c.textAlign = 'left'; });
+  live().sort((a, b) => a.v - b.v).forEach((p) => { const [x, y] = P(p.u, p.v), s = .55 + .45 * p.v, b = breathe(t, p); c.globalAlpha = p.a * (off() ? .5 : 1);
+    c.save(); c.translate(x, y); c.scale(1, .35); glow(c, 0, 0, 34 * s, B, .5); c.restore();
+    const g = c.createLinearGradient(0, y - 70 * s, 0, y); g.addColorStop(0, 'rgba(120,190,255,0)'); g.addColorStop(1, 'rgba(120,190,255,.55)'); c.fillStyle = g; rr(c, x - 9 * s, y - (70 + 4 * b) * s, 18 * s, (70 + 4 * b) * s, 9 * s); c.fill(); c.globalAlpha = 1; });
+});
+
+add('Soft tray', 'The room is a soft pressed-in tray; places are little wells, the busy one lit; a person is a glossy bead.', null, (c, t) => {
+  roomPath(c, 22); c.fillStyle = 'rgba(255,255,255,.04)'; c.fill(); c.save(); roomPath(c, 22); c.clip();
+  const sh = c.createLinearGradient(RM.x, RM.y, RM.x, RM.y + 26); sh.addColorStop(0, 'rgba(0,0,0,.35)'); sh.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = sh; c.fillRect(RM.x, RM.y, RM.w, 26);
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); rr(c, b.x, b.y, b.w, b.h, 14); c.fillStyle = 'rgba(0,0,0,.18)'; c.fill(); c.save(); rr(c, b.x, b.y, b.w, b.h, 14); c.clip(); const g = c.createLinearGradient(0, b.y, 0, b.y + 14); g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(b.x, b.y, b.w, 14); if (z.k > .01) glow(c, b.x + b.w / 2, b.y + b.h * .6, Math.max(b.w, b.h) * .7, B, .45 * z.k); c.restore();
+    c.beginPath(); c.moveTo(b.x + 14, b.y + b.h - .5); c.lineTo(b.x + b.w - 14, b.y + b.h - .5); c.strokeStyle = 'rgba(255,255,255,.12)'; c.stroke(); label(c, z.name, b.x + 12, b.y + 11, .55 + .4 * z.k); });
+  live().forEach((p) => { const x = px(p.u), y = py(p.v), b = 1 + .05 * breathe(t, p); c.globalAlpha = p.a; glow(c, x + 2, y + 5, 16, '0,0,0', .5); const g = c.createRadialGradient(x - 3, y - 3, 1, x, y, 9 * b); g.addColorStop(0, '#9fd0ff'); g.addColorStop(.5, '#2f95ff'); g.addColorStop(1, off() ? '#555' : '#0a5fc0'); c.fillStyle = g; c.beginPath(); c.arc(x, y, 9 * b, 0, TAU); c.fill(); c.globalAlpha = 1; });
+  c.restore();
+});
+
+add('Neon outline', 'Everything is drawn with one thin glowing line — the room, the places, the person — like a light sign.', null, (c, t) => {
+  const neon = (path, a) => { path(); c.strokeStyle = `rgba(10,132,255,${(a * .25).toFixed(3)})`; c.lineWidth = 6; c.stroke(); path(); c.strokeStyle = `rgba(120,190,255,${a.toFixed(3)})`; c.lineWidth = 1.2; c.stroke(); };
+  const A = off() ? .25 : 1; neon(() => roomPath(c), .45 * A);
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); if (z.k > .01) { rr(c, b.x + 4, b.y + 4, b.w - 8, b.h - 8, 8); c.fillStyle = `rgba(${B},${(.08 * z.k).toFixed(3)})`; c.fill(); } neon(() => rr(c, b.x + 4, b.y + 4, b.w - 8, b.h - 8, 8), (.25 + .65 * z.k) * A); label(c, z.name, b.x + 13, b.y + 12, .5 + .45 * z.k); });
+  live().forEach((p) => { const x = px(p.u), y = py(p.v), r = 9 + 2 * breathe(t, p); neon(() => { c.beginPath(); c.arc(x, y, r, 0, TAU); }, p.a * A); c.fillStyle = `rgba(220,238,255,${p.a.toFixed(2)})`; c.beginPath(); c.arc(x, y, 3, 0, TAU); c.fill(); });
+});
+
+add('Honeycomb', 'The floor is a honeycomb of small cells; cells near a person glow, places are tinted groups of cells.', null, (c, t) => {
+  c.save(); roomPath(c); c.clip(); const r = 9, hx = r * Math.sqrt(3), L = live();
+  for (let row = 0, y = RM.y + r; y < RM.y + RM.h + r; y += r * 1.5, row++) for (let x = RM.x + (row % 2 ? hx / 2 : 0); x < RM.x + RM.w + hx; x += hx) {
+    let k = 0; L.forEach((p) => { const d = Math.hypot(x - px(p.u), y - py(p.v)); k = Math.max(k, p.a * Math.exp(-(d * d) / (2 * (24 + 3 * breathe(t, p)) ** 2))); });
+    const z = zonesOn && ZONES.find((q) => { const b = zbox(q); return x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h; });
+    c.beginPath(); for (let i = 0; i < 6; i++) { const an = Math.PI / 6 + i * Math.PI / 3; c.lineTo(x + Math.cos(an) * (r - 1.2), y + Math.sin(an) * (r - 1.2)); } c.closePath();
+    c.fillStyle = k > .04 && !off() ? `rgba(${B},${(.06 + .6 * k).toFixed(3)})` : `rgba(255,255,255,${z ? (.08 + .06 * z.k).toFixed(3) : .035})`; c.fill(); }
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z); label(c, z.name, b.x + 8, b.y + 6, .6 + .35 * z.k); });
+  c.restore();
+});
+
+add('Place cards', 'Words first: each place is a card that says who is there and for how long; the dot shows roughly where.', null, (c, t) => {
+  floor(c, .035); c.save(); roomPath(c); c.clip();
+  if (zonesOn) ZONES.forEach((z) => { const b = zbox(z), n = live().filter((p) => p.ta > 0 && zoneAt(p.u, p.v) === z).length; rr(c, b.x, b.y, b.w, b.h, 10); c.fillStyle = `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.06 + .18 * z.k).toFixed(3)})`; c.fill();
+    label(c, z.name, b.x + 10, b.y + 9, .95, 13, 600); label(c, off() ? '—' : n ? (n > 1 ? `${n} people` : still(live().find((p) => zoneAt(p.u, p.v) === z) || {}) ? 'Someone · 47 min' : 'Someone') : 'Empty', b.x + 10, b.y + 26, n ? .85 : .4, 11, 400); });
+  live().forEach((p) => { const z = zoneAt(p.u, p.v), b = z && zbox(z); let x = px(p.u), y = py(p.v); if (b) { y = Math.min(b.y + b.h - 10, Math.max(y, b.y + 50)); }
+    glow(c, x, y, 26, B, .25 * p.a); c.fillStyle = `rgba(255,255,255,${p.a.toFixed(2)})`; c.beginPath(); c.arc(x, y, 4, 0, TAU); c.fill(); });
+  c.restore(); wall(c, .08);
+});
+
+/* ---------- page ---------- */
+const grid = document.getElementById('grid');
+grid.innerHTML = V.map((v, i) => `<section class="card"><h2><i>${String(i + 1).padStart(2, '0')}</i>${v.name}</h2><p>${v.idea}</p><div class="mock"><canvas width="${W * DPR}" height="${H * DPR}" data-i="${i}"></canvas><div class="ro"><div class="w">Someone here</div><div class="s"></div></div></div></section>`).join('');
+const CV = [...document.querySelectorAll('canvas[data-i]')].map((cv) => { const v = V[+cv.dataset.i]; return { cv, c: cv.getContext('2d'), v, S: v.init ? v.init() : {}, vis: true }; });
+const io = new IntersectionObserver((es) => es.forEach((e) => { const o = CV.find((x) => x.cv === e.target); if (o) o.vis = e.isIntersecting; }), { rootMargin: '200px' });
+CV.forEach((o) => io.observe(o.cv));
+document.getElementById('st').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setMode(b.dataset.s); });
+document.getElementById('zn').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; zonesOn = b.dataset.z === '1'; document.querySelectorAll('#zn button').forEach((x) => x.setAttribute('aria-pressed', x === b)); text(); });
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  const t = mode === 'off' ? frozenT : (frozenT = now / 1000);
+  sim(dt, t);
+  CV.forEach((o) => { if (!o.vis) return; o.c.setTransform(DPR, 0, 0, DPR, 0, 0); o.c.clearRect(0, 0, W, H); o.c.globalAlpha = mode === 'off' ? .55 : 1; o.v.draw(o.c, t, dt, o.S); o.c.globalAlpha = 1; });
+  requestAnimationFrame(frame);
+}
+setMode('sit'); requestAnimationFrame(frame);
+window.PV = { setMode };
+</script>
+</body>
+</html>
