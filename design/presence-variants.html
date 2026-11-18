@@ -81,7 +81,7 @@ function text() {
   const W = mode === 'off' ? 'Unknown' : mode === 'empty' ? 'Empty' : here.length > 1 ? `${here.length} people here` : 'Someone here';
   const z = here[0] && zoneAt(here[0].tu, here[0].tv);
   const S = mode === 'off' ? 'Last report 8:40' : mode === 'empty' ? 'Empty since 9:12' : mode === 'two' ? '1 at the sofa · 1 walking' : mode === 'walk' ? 'Walking' : `${z ? 'At the ' + z.name.toLowerCase() : 'In the middle of the room'} · sitting still · for 47 min`;
-  document.querySelectorAll('.ro').forEach((r) => { r.querySelector('.w').textContent = W; r.querySelector('.w').classList.toggle('on', mode !== 'off' && mode !== 'empty'); r.querySelector('.s').textContent = S; });
+  document.querySelectorAll('.ro').forEach((r) => { r.querySelector('.w').textContent = W; r.querySelector('.w').classList.remove('on');   /* the state word stays white (user, 2026-11-18) */ r.querySelector('.s').textContent = S; });
 }
 
 /* ---------- drawing helpers ---------- */

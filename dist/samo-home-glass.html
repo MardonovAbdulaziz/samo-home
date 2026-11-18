@@ -9309,7 +9309,7 @@ Devices.presence = (() => {
   /* ---------- Text ---------- */
   const MOVE = { large: 'walking', small: 'moving a little', still: 'sitting still', none: '' };
   function word(d) { if (!d.online) return 'Unknown'; if (d.st.learnUntil) return 'Learning…'; return d.st.occ ? (d.st.emptyAt ? 'Leaving…' : 'Someone here') : 'Empty'; }
-  const tone = (d) => (!d.online ? '' : d.st.occ && !d.st.emptyAt ? 'on' : 'closed');
+  const tone = (d) => (!d.online ? '' : 'closed');   // “Someone here” stays white like every neutral state word (user, 2026-11-18)
   function subText(d) {
     const st = d.st;
     if (!d.online) return `Last report ${when(st.lastSeen)}`;

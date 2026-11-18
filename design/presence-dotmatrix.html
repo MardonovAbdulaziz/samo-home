@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presence Dot Matrix</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #0b0b0d; color: var(--label-primary); font: var(--body-md); font-family: var(--font); -webkit-font-smoothing: antialiased; padding: 40px 32px 80px; }
+  h1 { font: 700 30px/36px var(--font); margin: 0 0 8px; letter-spacing: .3px; }
+  h2 { font: 700 20px/26px var(--font); margin: 40px 0 6px; }
+  .lead { color: var(--label-secondary); max-width: 900px; margin: 0 0 20px; font: var(--body-lg); }
+  .bar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; padding: 12px 0 16px; margin-bottom: 8px; background: linear-gradient(#0b0b0d 78%, rgba(11,11,13,0)); }
+  .seg { display: inline-flex; flex-wrap: wrap; padding: 2px; border-radius: 10px; background: var(--fill-tertiary); }
+  .seg button { appearance: none; border: 0; background: transparent; color: var(--label-primary); font: var(--body-sm-accent); font-family: var(--font); height: 32px; padding: 0 12px; border-radius: 8px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--segment-active); }
+  .studio { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+  .knobs { flex: 1; min-width: 300px; max-width: 520px; display: grid; gap: 18px; padding-top: 8px; }
+  .knob .k { font: var(--body-sm); color: var(--label-tertiary); margin-bottom: 8px; }
+  .knob .note { font: var(--body-sm); color: var(--label-tertiary); margin-top: 6px; }
+  .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(375px, 1fr)); gap: 36px 28px; }
+  .card h3 { font: var(--body-lg-accent); margin: 0; display: flex; gap: 10px; align-items: baseline; }
+  .card h3 i { font-style: normal; color: var(--primary); font: var(--body-sm-accent); }
+  .card p { margin: 4px 0 12px; color: var(--label-secondary); font: var(--body-sm); min-height: 32px; }
+  .card .use { appearance: none; border: 0; margin-top: 10px; height: 32px; padding: 0 14px; border-radius: 16px; background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-sm-accent); font-family: var(--font); cursor: pointer; }
+  .mock { width: 375px; max-width: 100%; border-radius: 32px; overflow: hidden; padding: 20px 16px 4px;
+    background: radial-gradient(120% 60% at 50% 115%, rgba(20,150,160,.45) 0%, rgba(20,150,160,.28) 30%, rgba(20,150,160,.13) 55%, rgba(20,150,160,.04) 78%, rgba(20,150,160,0) 100%), linear-gradient(180deg, #03070f 0%, #071a33 60%, #0a2f4a 100%); }
+  .mock canvas { display: block; width: 343px; max-width: 100%; aspect-ratio: 343 / 300; }
+  .ro { padding: 16px 4px 16px; }
+  .ro .w { font: 700 28px/34px var(--font); letter-spacing: .3px; }
+  .ro .w.on { color: var(--primary); }
+  .ro .s { font: var(--body-md); color: var(--label-secondary); margin-top: 2px; }
+  @media (max-width: 480px) { body { padding: 24px 12px 60px; } .presets { grid-template-columns: 1fr; } .mock { width: 100%; } }
+</style>
+</head>
+<body>
+<h1>Presence — Dot matrix, refined</h1>
+<p class="lead">The room drawn only with dots, like a calm LED panel. No outlines: the dots make the room, the places are a change in the dots, and a person is a soft patch of light that breathes when they sit and leaves a fading afterglow when they walk. A slow scan comes down from the sensor on the top wall.</p>
+<div class="bar">
+  <div class="seg" id="st"><button data-s="sit" aria-pressed="true">Sitting still</button><button data-s="walk">Walking</button><button data-s="two">2 people</button><button data-s="empty">Empty</button><button data-s="off">Offline</button></div>
+  <div class="seg" id="zn"><button data-z="1" aria-pressed="true">With places</button><button data-z="0">No places</button></div>
+</div>
+
+<h2>Studio</h2>
+<div class="studio">
+  <div class="mock"><canvas id="studio" width="686" height="600"></canvas><div class="ro"><div class="w">Someone here</div><div class="s"></div></div></div>
+  <div class="knobs" id="knobs"></div>
+</div>
+
+<h2>Six directions</h2>
+<p class="lead" style="font:var(--body-md)">Tap “Open in studio” to fine-tune one.</p>
+<div class="presets" id="presets"></div>
+
+<script>
+/* ---------- shared scene (same as the 20-pictures page) ---------- */
+const W = 343, H = 300, DPR = Math.min(2, window.devicePixelRatio || 1), TAU = Math.PI * 2;
+const RM = { x: 8, y: 8, w: 327, h: 284, r: 18 };
+const ZONES = [{ name: 'Sofa', u: .05, v: .55, w: .38, h: .27 }, { name: 'Desk', u: .67, v: .08, w: .28, h: .33 }, { name: 'Door', u: .40, v: .85, w: .24, h: .115 }].map((z) => Object.assign(z, { k: 0 }));
+const ROUTE = [[.25, .66, 3], [.50, .50, .2], [.80, .26, 3], [.62, .62, .2], [.52, .90, 2], [.34, .40, .2]];
+const ROUTE2 = [[.80, .26, 2.5], [.55, .55, .2], [.52, .90, 2.5], [.62, .40, .2]];
+const px = (u) => RM.x + u * RM.w, py = (v) => RM.y + v * RM.h;
+const mkP = (u, v) => ({ u, v, tu: u, tv: v, a: 0, ta: 1, route: null, ri: 0, wait: 0 });
+let mode = 'sit', zonesOn = true, people = [], frozenT = 0;
+const smooth = (cur, to, dt, tau) => cur + (to - cur) * (1 - Math.exp(-dt / tau));
+const zoneAt = (u, v) => zonesOn ? ZONES.find((z) => u >= z.u && u <= z.u + z.w && v >= z.v && v <= z.v + z.h) : null;
+function setMode(m) {
+  mode = m;
+  const want = m === 'sit' ? [{ u: .22, v: .68 }] : m === 'walk' ? [{ route: ROUTE }] : m === 'two' ? [{ u: .2, v: .7 }, { route: ROUTE2 }] : [];
+  want.forEach((w, i) => { let p = people.filter((q) => q.ta > 0)[i]; if (!p) { p = mkP(w.u ?? w.route[0][0], w.v ?? w.route[0][1]); people.push(p); } Object.assign(p, { ta: 1, route: w.route || null, ri: 0, wait: 0 }); if (!w.route) { p.tu = w.u; p.tv = w.v; } });
+  people.filter((q) => q.ta > 0).slice(want.length).forEach((q) => { q.ta = 0; });
+  if (m === 'off') people = [];
+  document.querySelectorAll('#st button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.s === m));
+  text();
+}
+function sim(dt) {
+  if (mode === 'off') return;
+  people.forEach((p) => {
+    if (p.route) { const [tu, tv, wait] = p.route[p.ri]; p.tu = tu; p.tv = tv; if (Math.hypot(p.u - tu, p.v - tv) < .01) { p.wait += dt; if (p.wait > wait) { p.wait = 0; p.ri = (p.ri + 1) % p.route.length; } } }
+    const du = p.tu - p.u, dv = p.tv - p.v, d = Math.hypot(du, dv), sp = Math.min(d, .16 * dt * Math.min(1, d / .08 + .2));
+    if (d > 1e-4) { p.u += du / d * sp; p.v += dv / d * sp; }
+    p.moving = d > .01; p.a = smooth(p.a, p.ta, dt, .45);
+  });
+  people = people.filter((p) => p.ta > 0 || p.a > .01);
+  const busy = new Set(people.filter((p) => p.ta > 0).map((p) => zoneAt(p.u, p.v)).filter(Boolean));
+  ZONES.forEach((z) => { z.k = smooth(z.k, busy.has(z) ? 1 : 0, dt, .35); });
+}
+function text() {
+  const here = people.filter((p) => p.ta > 0), z = here[0] && zoneAt(here[0].tu, here[0].tv);
+  const w = mode === 'off' ? 'Unknown' : mode === 'empty' ? 'Empty' : here.length > 1 ? `${here.length} people here` : 'Someone here';
+  const s = mode === 'off' ? 'Last report 8:40' : mode === 'empty' ? 'Empty since 9:12' : mode === 'two' ? '1 at the sofa · 1 walking' : mode === 'walk' ? 'Walking' : `${z ? 'At the ' + z.name.toLowerCase() : 'In the middle of the room'} · sitting still · for 47 min`;
+  document.querySelectorAll('.ro').forEach((r) => { r.querySelector('.w').textContent = w; r.querySelector('.w').classList.remove('on');   /* the state word stays white (user, 2026-11-18) */ r.querySelector('.s').textContent = s; });
+}
+
+/* ---------- the dot-matrix renderer ----------
+   Every dot keeps its own brightness and eases toward its target (quick to light, slow to fade = afterglow),
+   so nothing ever jumps. Options are the knobs in the studio. */
+const DEF = { shape: 'round', pitch: 11, colour: 'blue', glow: 'soft', scan: 'on', places: 'tint', size: 'halftone', sensor: 'on', bloom: 'on' };
+function inRR(x, y, m) { const { x: X, y: Y, w, h, r } = RM; if (x < X + m || x > X + w - m || y < Y + m || y > Y + h - m) return false; const cx = Math.min(Math.max(x, X + r), X + w - r), cy = Math.min(Math.max(y, Y + r), Y + h - r); return Math.hypot(x - cx, y - cy) <= r - m; }
+function makeGrid(o) {
+  const p = o.pitch, cols = Math.floor((RM.w - p) / p) + 1, rows = Math.floor((RM.h - p) / p) + 1;
+  const ox = RM.x + (RM.w - (cols - 1) * p) / 2, oy = RM.y + (RM.h - (rows - 1) * p) / 2, dots = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { const x = ox + c * p, y = oy + r * p; if (inRR(x, y, p * .35)) dots.push({ x, y, v: 0, z: null, kn: 0, row: r, col: c }); }
+  return { dots, cols, rows, ox, oy };
+}
+function renderer(o) {
+  let G = makeGrid(o), key = o.pitch;
+  const labels = [];
+  return function draw(c, t, dt) {
+    if (o.pitch !== key) { G = makeGrid(o); key = o.pitch; }
+    const off = mode === 'off', P = people.filter((p) => p.a > .01), pitch = o.pitch;
+    const sigma = pitch * 2.1, persist = o.glow === 'trail' ? 1.8 : o.glow === 'soft' ? .55 : .18;
+    // places: which dots belong where, and the label knock-outs
+    labels.length = 0;
+    if (zonesOn) ZONES.forEach((z) => labels.push({ z, x: px(z.u) + 2, y: py(z.v) + 2, w: z.name.length * 7 + 10, h: 15 }));
+    // sensor sits on the top wall, in the middle; the scan travels down from it
+    const scanY = RM.y + ((t / 7.5) % 1.25) * RM.h, scanOn = o.scan === 'on' && !off;
+    if (o.bloom !== 'off' && !off) P.forEach((p) => { const x = px(p.u), y = py(p.v), r = sigma * 3.2, g = c.createRadialGradient(x, y, 0, x, y, r);
+      [[0, .16], [.3, .1], [.55, .045], [.8, .012], [1, 0]].forEach(([q, a]) => g.addColorStop(q, `rgba(10,132,255,${(a * p.a).toFixed(4)})`)); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); });
+    c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top';
+    for (const d of G.dots) {
+      const z = zonesOn ? ZONES.find((q) => d.x >= px(q.u) && d.x <= px(q.u + q.w) && d.y >= py(q.v) && d.y <= py(q.v + q.h)) : null;
+      let target = 0;
+      P.forEach((p) => { const br = p.moving ? 0 : (1 - Math.cos(t * TAU / 5.5 + p.u * 7)) / 2, s = sigma * (1 + .1 * br), dx = d.x - px(p.u), dy = d.y - py(p.v); target = Math.max(target, p.a * (.9 + .1 * br) * Math.exp(-(dx * dx + dy * dy) / (2 * s * s))); });
+      if (off) target = 0;
+      d.v = target > d.v ? smooth(d.v, target, dt, .12) : smooth(d.v, target, dt, persist);
+      let base = o.colour === 'mono' ? .1 : .085;
+      if (z && o.places !== 'labels') base = o.places === 'denser' ? .24 : .2 + .1 * z.k;
+      if (scanOn) base += .07 * Math.exp(-((d.y - scanY) ** 2) / (2 * 9 * 9));
+      if (o.sensor === 'on' && d.row === 0 && Math.abs(d.x - W / 2) < pitch * 1.6) base = off ? .25 : .55;
+      const knock = labels.some((L) => d.x > L.x - 2 && d.x < L.x + L.w && d.y > L.y - 2 && d.y < L.y + L.h);
+      if (knock) base *= .2;
+      const I = Math.min(1, d.v), a = off ? base * .55 : Math.min(1, base + (knock ? .25 : .9) * I);
+      // colour: dim white → app blue → bright blue-white core
+      let col;
+      if (o.colour === 'mono') col = `rgba(255,255,255,${a.toFixed(3)})`;
+      else if (I < .04 || off) col = z && o.places === 'tint' && z.k > .02 && !off ? `rgba(${Math.round(255 - 235 * z.k)},${Math.round(255 - 115 * z.k)},255,${(a + .12 * z.k).toFixed(3)})` : `rgba(255,255,255,${a.toFixed(3)})`;
+      else { const k = Math.min(1, I * 1.1), w = o.colour === 'core' ? Math.max(0, (I - .55) / .45) : Math.max(0, (I - .75) / .25) * .6;
+        col = `rgba(${Math.round(10 + 245 * w)},${Math.round(132 + 123 * w)},255,${a.toFixed(3)})`; }
+      const zr = z && o.places !== 'labels' ? 1.18 : 1, r0 = pitch * (o.size === 'halftone' ? .1 : .14) * zr, r = o.size === 'halftone' ? r0 + pitch * .26 * I : o.size === 'even' ? pitch * .18 * zr : r0 + pitch * .12 * I;
+      c.fillStyle = col; c.beginPath();
+      if (o.shape === 'square') { const s = r * 1.7; c.roundRect ? c.roundRect(d.x - s / 2, d.y - s / 2, s, s, s * .28) : c.rect(d.x - s / 2, d.y - s / 2, s, s); } else c.arc(d.x, d.y, r, 0, TAU);
+      c.fill();
+    }
+    labels.forEach((L) => { c.fillStyle = `rgba(255,255,255,${(off ? .3 : .55 + .4 * L.z.k).toFixed(3)})`; c.fillText(L.z.name, L.x + 2, L.y + 1); });
+  };
+}
+
+/* ---------- presets ---------- */
+const PRESETS = [
+  ['Classic LED', 'Round dots, the person a blue patch with a bright core, soft afterglow and the slow scan from the sensor.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'tint', size: 'halftone', sensor: 'on' }],
+  ['Fine grain', 'Twice as many, tiny dots — reads like a soft photo of light; very calm.', { shape: 'round', pitch: 7, colour: 'blue', glow: 'soft', scan: 'on', places: 'tint', size: 'halftone', sensor: 'on' }],
+  ['Pixels', 'Rounded-square pixels like an LED sign; places are a denser texture.', { shape: 'square', pitch: 12, colour: 'core', glow: 'soft', scan: 'off', places: 'denser', size: 'grow', sensor: 'on' }],
+  ['Monochrome', 'White only — the person is simply where the dots grow and brighten; the most quiet one.', { shape: 'round', pitch: 10, colour: 'mono', glow: 'soft', scan: 'off', places: 'denser', size: 'halftone', sensor: 'on' }],
+  ['Halftone', 'Brightness is the size of the dot, like print; colour stays the app blue.', { shape: 'round', pitch: 9, colour: 'blue', glow: 'quick', scan: 'on', places: 'labels', size: 'halftone', sensor: 'off' }],
+  ['Afterglow', 'Long phosphor fade: when someone walks, the dots behind them glow out slowly — you see where they went.', { shape: 'round', pitch: 11, colour: 'core', glow: 'trail', scan: 'on', places: 'tint', size: 'halftone', sensor: 'on' }],
+];
+
+/* ---------- studio knobs ---------- */
+const studio = Object.assign({ bloom: 'on' }, PRESETS[0][2]);
+const KNOBS = [
+  ['shape', 'Dot shape', [['round', 'Round'], ['square', 'Rounded square']]],
+  ['pitch', 'Density', [[7, 'Fine'], [9, 'Medium'], [11, 'Classic'], [13, 'Large']]],
+  ['size', 'Dot size', [['halftone', 'Grows with light'], ['grow', 'Grows a little'], ['even', 'Always the same']]],
+  ['colour', 'Colour', [['core', 'Blue + bright core'], ['blue', 'Blue'], ['mono', 'White only']]],
+  ['glow', 'Fade', [['quick', 'Quick'], ['soft', 'Soft'], ['trail', 'Long afterglow']]],
+  ['scan', 'Scan from the sensor', [['on', 'On'], ['off', 'Off']]],
+  ['places', 'Places', [['tint', 'Tint, blue when busy'], ['denser', 'Brighter dots'], ['labels', 'Name only']]],
+  ['sensor', 'Sensor on the top wall', [['on', 'Show'], ['off', 'Hide']]],
+  ['bloom', 'Soft light under the person', [['on', 'On'], ['off', 'Off']]],
+];
+const knobs = document.getElementById('knobs');
+function drawKnobs() {
+  knobs.innerHTML = KNOBS.map(([k, name, opts]) => `<div class="knob"><div class="k">${name}</div><div class="seg" data-k="${k}">${opts.map(([v, l]) => `<button data-v="${v}" aria-pressed="${String(studio[k]) === String(v)}">${l}</button>`).join('')}</div></div>`).join('');
+}
+knobs.addEventListener('click', (e) => { const b = e.target.closest('button'), s = e.target.closest('[data-k]'); if (!b || !s) return; const k = s.dataset.k; studio[k] = k === 'pitch' ? +b.dataset.v : b.dataset.v; drawKnobs(); });
+drawKnobs();
+
+document.getElementById('presets').innerHTML = PRESETS.map(([n, idea], i) => `<section class="card"><h3><i>${String.fromCharCode(65 + i)}</i>${n}</h3><p>${idea}</p><div class="mock"><canvas width="686" height="600" data-i="${i}"></canvas><div class="ro"><div class="w">Someone here</div><div class="s"></div></div></div><button class="use" data-use="${i}">Open in studio</button></section>`).join('');
+document.getElementById('presets').addEventListener('click', (e) => { const b = e.target.closest('[data-use]'); if (!b) return; Object.assign(studio, PRESETS[+b.dataset.use][2]); drawKnobs(); document.getElementById('studio').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+
+const views = [{ cv: document.getElementById('studio'), o: studio, vis: true }, ...[...document.querySelectorAll('canvas[data-i]')].map((cv) => ({ cv, o: Object.assign({ bloom: 'on' }, PRESETS[+cv.dataset.i][2]), vis: true }))];
+views.forEach((v) => { v.cv.width = W * DPR; v.cv.height = H * DPR; v.c = v.cv.getContext('2d'); v.draw = renderer(v.o); });
+const io = new IntersectionObserver((es) => es.forEach((e) => { const v = views.find((x) => x.cv === e.target); if (v) v.vis = e.isIntersecting; }), { rootMargin: '200px' });
+views.forEach((v) => io.observe(v.cv));
+document.getElementById('st').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setMode(b.dataset.s); });
+document.getElementById('zn').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; zonesOn = b.dataset.z === '1'; document.querySelectorAll('#zn button').forEach((x) => x.setAttribute('aria-pressed', x === b)); text(); });
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  const t = mode === 'off' ? frozenT : (frozenT = now / 1000);
+  sim(dt);
+  views.forEach((v) => { if (!v.vis) return; v.c.setTransform(DPR, 0, 0, DPR, 0, 0); v.c.clearRect(0, 0, W, H); v.draw(v.c, t, dt); });
+  requestAnimationFrame(frame);
+}
+setMode('sit'); requestAnimationFrame(frame);
+window.DM = { setMode, studio };
+</script>
+</body>
+</html>
