@@ -224,14 +224,14 @@ html.hig :is(.toolbar .icon-btn, header > .icon-btn):active { transform: scale(1
    ========================================================================== */
 html.hig {
   --cg-bg: rgba(255, 255, 255, 0.09);
-  --cg-sheen: none;
-  --cg-rim: none;   /* tiles/cards are plain surfaces like iOS Home — no sheen, rim, glow or shadow (user, 2026-11-18) */
+  --cg-sheen: linear-gradient(165deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.015) 38%, rgba(255, 255, 255, 0) 60%);
+  --cg-rim: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.13);   /* light glass: faint sheen + a fine top edge — no outline, glow or shadow (user, 2026-11-18) */
   --cg-blur: none;   /* speed: tiles/cards sit on a smooth gradient, a live blur there costs a lot and shows nothing — the floating layer keeps the real blur */
 }
 html.hig .phone.ambient :is(.tile:not(.on):not(.alert), .quick-chip, .info-card, .ir-tile, .list, .cw-ctl button, .cw-chip, .btn-pill, .btn-sm,
   .power-toggle, .lt-bar, .lk-disc, .segmented, .stepper, .chip:not(.on):not([aria-pressed="true"]),
   .scn-card, .scn-idea, .all-pill, .master, .all-action, .lo-code, .va-chip, .gs-steps, .ir-dpad, .ir-k, .ir-step, .ir-search,
-  .preset-grid button, .name-chip, .pr-chip:not(.on), .dir-test .btn, .cw-chips > button:not(.on)) {
+  .preset-grid button, .name-chip, .pr-chip, .dir-test .btn, .cw-chips > button, .lt-ct):not(.on):not(.active):not([aria-pressed="true"]):not([aria-selected="true"]):not(.is-colour) {
   background-color: var(--cg-bg); background-image: var(--cg-sheen);
   -webkit-backdrop-filter: var(--cg-blur); backdrop-filter: var(--cg-blur);
   box-shadow: var(--cg-rim);
@@ -258,8 +258,23 @@ html.hig .tabbar .tab.on .icon { color: var(--primary); }
 html.hig .sheet :is(.btn-secondary, .btn-danger, .btn-glass) { background: rgba(255, 255, 255, 0.10); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
 html.hig .sheet .sheet-x { background: rgba(255, 255, 255, 0.10); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
 
-/* ---------- Background: calm night, one soft blue light low on the screen (like Apple's dark wallpapers) — no other hues ---------- */
-html.hig .phone.ambient::before, html.hig .phone.ambient::after { content: none; }
-html.hig .phone.ambient { background:
-  radial-gradient(95% 42% at 80% 104%, rgba(10, 132, 255, .30) 0%, rgba(10, 132, 255, .186) 30%, rgba(10, 132, 255, .09) 55%, rgba(10, 132, 255, .027) 78%, rgba(10, 132, 255, 0) 100%),
-  linear-gradient(180deg, #03060D 0%, #050B1A 60%, #071430 100%); }
+/* ---------- Background: dark blue aurora — soft blurred ribbons of the app blue and sky blue across a night sky
+   (user's references: "artistic blurry wallpaper, blue dark aurora" + the Figma home 3255:27955). The brightest band stays
+   mid-dark so white text always reads; the bottom (tab bar) stays deep. Static gradients on a rotated layer, no filters. ---------- */
+html.hig .phone.ambient { background: linear-gradient(180deg, #02050E 0%, #03102A 52%, #041636 100%); }
+html.hig .phone.ambient::before { content: ""; position: absolute; inset: -35% -45%; z-index: -1; pointer-events: none; transform: rotate(-26deg); filter: none; opacity: 1; border-radius: 0; width: auto; height: auto; left: -45%; top: -35%;
+  background:
+    radial-gradient(42% 7% at 44% 47%, rgba(120,205,255,0.300) 0%, rgba(120,205,255,0.186) 30%, rgba(120,205,255,0.090) 55%, rgba(120,205,255,0.027) 78%, rgba(120,205,255,0.000) 100%),
+    radial-gradient(60% 12% at 52% 50%, rgba(60,180,255,0.340) 0%, rgba(60,180,255,0.211) 30%, rgba(60,180,255,0.102) 55%, rgba(60,180,255,0.031) 78%, rgba(60,180,255,0.000) 100%),
+    radial-gradient(75% 18% at 58% 55%, rgba(10,132,255,0.360) 0%, rgba(10,132,255,0.223) 30%, rgba(10,132,255,0.108) 55%, rgba(10,132,255,0.032) 78%, rgba(10,132,255,0.000) 100%),
+    radial-gradient(55% 10% at 38% 38%, rgba(10,110,240,0.240) 0%, rgba(10,110,240,0.149) 30%, rgba(10,110,240,0.072) 55%, rgba(10,110,240,0.022) 78%, rgba(10,110,240,0.000) 100%),
+    radial-gradient(90% 26% at 50% 75%, rgba(10,80,210,0.260) 0%, rgba(10,80,210,0.161) 30%, rgba(10,80,210,0.078) 55%, rgba(10,80,210,0.023) 78%, rgba(10,80,210,0.000) 100%); }
+html.hig .phone.ambient::after { content: none; }
+
+/* switch with a little glass: the track has a soft inner depth, the thumb a light gloss */
+html.hig .switch { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28), inset 0 0 0 0.5px rgba(255, 255, 255, 0.06); }
+html.hig .switch::after { background: linear-gradient(180deg, #FFFFFF 0%, #F1F4F9 100%); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22), inset 0 0.5px 0 rgba(255, 255, 255, 1), inset 0 -0.5px 0 rgba(0, 0, 0, 0.06); }
+/* the big power toggle and the light sliders: the same light glass as cards */
+html.hig .phone.ambient .power-toggle .knob { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9); }
+html.hig .phone.ambient .power-toggle[aria-pressed="false"] .knob { background: rgba(255, 255, 255, 0.14); box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.22); }
+html.hig .phone.ambient .lt-ct { box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.16); }
