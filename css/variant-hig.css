@@ -27,7 +27,7 @@ html.hig {
   --ios-fill: rgba(120, 120, 128, 0.36);
   --ios-fill-2: rgba(120, 120, 128, 0.32);
   --ios-fill-3: rgba(118, 118, 128, 0.24);
-  --ios-sep: rgba(84, 84, 88, 0.65);
+  --ios-sep: rgba(255, 255, 255, 0.15);   /* a light hairline that reads on glass and on the sheet (user, 2026-11-18: the grey one vanished) */
   --ios-label-2: rgba(235, 235, 245, 0.60);
   --ios-label-3: rgba(235, 235, 245, 0.30);
   --ios-grouped: #1C1C1E;
@@ -298,3 +298,46 @@ html.hig .switch::after { background: linear-gradient(180deg, #FFFFFF 0%, #F1F4F
 html.hig .phone.ambient .power-toggle .knob { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9); }
 html.hig .phone.ambient .power-toggle[aria-pressed="false"] .knob { background: rgba(255, 255, 255, 0.14); box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.22); }
 html.hig .phone.ambient .lt-ct { box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.16); }
+
+/* ==========================================================================
+   Sheet details (user, 2026-11-18: header icons misplaced, ✕ ugly, bottom of the sheet rough, dividers invisible)
+   ========================================================================== */
+/* header: title and ✕ on one centre line; ✕ = the iOS close button — a small plain grey circle with a bold xmark
+   (no glass on glass, no circle inside a circle); 44 px tap area, the 30 px circle sits 16 px from the sheet edge */
+html.hig .sheet .sheet-head { min-height: 44px; padding: 8px 16px 0; align-items: center; }
+html.hig .sheet .sheet-head .sheet-x, html.hig .sheet .sheet-top .sheet-x { margin: 0 -7px 0 0; }
+html.hig .sheet .sheet-top { padding: 8px 16px 0; }
+html.hig .sheet .sheet-x { position: relative; width: 44px; height: 44px; flex: none; border-radius: 22px;
+  background: none !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.hig .sheet .sheet-x .icon { display: none !important; }
+html.hig .sheet .sheet-x::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: rgba(118, 118, 128, 0.24); transition: background-color 160ms; }
+html.hig .sheet .sheet-x::after { content: ""; position: absolute; left: 50%; top: 50%; width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; background: rgba(235, 235, 245, 0.72);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11'%3E%3Cpath d='M1.3 1.3l8.4 8.4M9.7 1.3L1.3 9.7' stroke='%23000' stroke-width='2.1' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11'%3E%3Cpath d='M1.3 1.3l8.4 8.4M9.7 1.3L1.3 9.7' stroke='%23000' stroke-width='2.1' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+html.hig .sheet .sheet-x:active { transform: none; }
+html.hig .sheet .sheet-x:active::before { background: rgba(118, 118, 128, 0.40); }
+html.hig .sheet .sheet-title { padding-left: 0; }
+html.hig .sheet .sheet-sub { padding-left: 16px; padding-right: 16px; }
+
+/* rhythm: title → content 12 (+ 8 above a section caption); between groups 28 — not the old 50+ */
+html.hig .sheet .sheet-head + .sheet-body, html.hig .sheet .sheet-sub + .sheet-body, html.hig .sheet .sheet-tabs + .sheet-body { padding-top: 12px; }
+html.hig .sheet .sheet-body > .list-header:first-child { padding-top: 8px; margin-top: 0; }
+html.hig .sheet .sheet-body > :is(.list, .group-card) + .list-header { padding-top: 28px; margin-top: 0; }
+
+/* bottom: no stripe of empty sheet under the button — the button sits 16 from the sides and 16 from the bottom
+   (capsule nested in the 36 px corner). Content that scrolls under the header or the button fades out softly
+   instead of being cut by a hard line. */
+html.hig .sheet:not(.sheet-full) { padding-bottom: 0; }
+html.hig .sheet .sheet-body { padding-bottom: 20px;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 12px, #000 calc(100% - 20px), transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 12px, #000 calc(100% - 20px), transparent 100%); }
+html.hig .sheet .sheet-footer { padding: 4px 16px 16px; }
+
+/* dividers: one system — a light hairline, inset to where the text starts (not under the − / + or the icon);
+   the old full-width line under each row is gone, so there are no double lines */
+html.hig :is(.list, .group-card) > .cell:has(+ .cell) { border-bottom: 0; }
+html.hig :is(.list, .group-card) > .cell + .cell::before { content: ""; position: absolute; top: 0; left: var(--sep-l, 0px); right: -16px; height: 0.5px; background: var(--ios-sep); }
+html.hig .cell:has(> .cell-icon:first-child) { --sep-l: 42px; }
+html.hig .sheet .cell:has(> .cell-icon:first-child) { --sep-l: 40px; }
+html.hig .cell:has(> .tr-btn + .cell-icon) { --sep-l: 76px; }
+html.hig :is(.list, .group-card) > :is(.cell, .option) { border-bottom-width: 0.5px; border-bottom-color: var(--ios-sep); }
