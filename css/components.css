@@ -1532,7 +1532,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
    colour patches with their name; the occupied one lights up. The person is a small figure: it glides when they
    walk (transform transition), breathes when they sit still, fades while the room empties. No metres anywhere. ---------- */
 /* presence — device page: the radar canvas (drawn in js/devices/presence.js); zone-painting sheets: the same calm room as SVG */
-.pr-radar { margin-top: 12px; }
+.pr-radar { margin-top: 20px; }   /* 20 px under the navbar (user, 2026-11-18) */
 .pr-radar canvas { display: block; width: 100%; aspect-ratio: 1 / 1; }
 /* room drawings (Places pages, Parts not to watch): no card behind — the wall is the shape; places = fill only */
 .pr-room { margin-top: 0; }
