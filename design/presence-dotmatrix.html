@@ -176,7 +176,11 @@ function renderer(o) {
     const poolName = (z) => { const b = zr(z), w = z.name.length * 7.2 + 12, pos = o.pname || 'tl';
       return pos === 'center' ? { x: b.x + b.w / 2 - w / 2, y: b.y + b.h / 2 - 10, w, h: 21, name: true } : pos === 'below' ? { x: b.x + b.w / 2 - w / 2, y: b.y + b.h - 20, w, h: 21, name: true } : { x: b.x + 4, y: b.y + 4, w, h: 21, name: true }; };
     const showName = (z) => (o.places !== 'pools' && o.places !== 'prog') || o.pname !== 'busy' || (z.k > .3 && !off);
-    if (zonesOn && (o.places === 'pools' || o.places === 'prog')) ZONES.forEach((z) => { if (showName(z)) isles.push(Object.assign(poolName(z), { k: z.k })); });
+    if (zonesOn && o.places === 'pools') ZONES.forEach((z) => { if (showName(z)) isles.push(Object.assign(poolName(z), { k: z.k })); });
+    // progressive places: the name never removes dots. 'gap' = the name sits exactly between two dot rows; 'shrink' = dots under it get small; 'over' = right on the dots
+    const ns = o.nstyle || 'gap', pitch0 = o.pitch;
+    const gapName = (z) => { const nb = poolName(z), k = Math.round((nb.y + 10 - G.oy) / pitch0 - .5); return { x: nb.x + 2, y: G.oy + (k + .5) * pitch0, w: nb.w, k }; };
+    const shrinkBoxes = zonesOn && o.places === 'prog' && ns === 'shrink' ? ZONES.filter(showName).map((z) => { const nb = poolName(z); return { x: nb.x + 3, y: nb.y + 3, w: nb.w - 6, h: nb.h - 5 }; }) : [];
     if (zonesOn && o.places === 'rings') ZONES.forEach((z) => isles.push(nameBox(z)));
     if (zonesOn && o.places === 'icons') ZONES.forEach((z) => { const b = zr(z); isles.push({ x: b.x + b.w / 2 - 16, y: b.y + b.h / 2 - 13, w: 32, h: 26, name: true }); });
     for (const d of G.dots) {
@@ -208,7 +212,8 @@ function renderer(o) {
       else { const k = Math.min(1, I * 1.1), w = o.colour === 'core' ? Math.max(0, (I - .55) / .45) : Math.max(0, (I - .75) / .25) * .6;
         col = `rgba(${Math.round(10 + 245 * w)},${Math.round(132 + 123 * w)},255,${a.toFixed(3)})`; }
       const r0 = pitch * (o.size === "halftone" ? .1 : .14), r = o.size === "halftone" ? r0 + pitch * .26 * I : o.size === "even" ? pitch * .18 : r0 + pitch * .12 * I
-      const rp = pz && I < .04 ? r * (1 + .6 * pw) : r;   // a place's dots are a little bigger too
+      let rp = pz && I < .04 ? r * (1 + .6 * pw) : r;   // a place's dots are a little bigger too
+      if (shrinkBoxes.length && shrinkBoxes.some((q) => d.x > q.x && d.x < q.x + q.w && d.y > q.y && d.y < q.y + q.h)) { rp = Math.min(rp, .6); col = col.replace(/,([\d.]+)\)$/, (m0, al) => `,${(Math.min(+al, .35)).toFixed(3)})`); }
       c.fillStyle = col; c.beginPath();
       const ring = o.places === 'rings' && zonesOn && I < .04 && ZONES.some((q) => { const b = zr(q); return d.x > b.x && d.x < b.x + b.w && d.y > b.y && d.y < b.y + b.h; });
       if (o.shape === 'square') { const s = rp * 1.7; c.roundRect ? c.roundRect(d.x - s / 2, d.y - s / 2, s, s, s * .28) : c.rect(d.x - s / 2, d.y - s / 2, s, s); } else c.arc(d.x, d.y, ring ? r * 1.9 : rp, 0, TAU);
@@ -218,7 +223,12 @@ function renderer(o) {
     if (zonesOn) ZONES.forEach((z) => {
       const b = zr(z), busy = z.k > .5 && !off;
       if (o.places === 'rings') { const nb = nameBox(z); plain(z, nb.x + 6, nb.y + 5, .55 + .45 * z.k); }
-      if ((o.places === 'pools' || o.places === 'prog') && showName(z)) { const nb = poolName(z); c.globalAlpha = o.pname === 'busy' ? Math.min(1, (z.k - .3) / .4) : 1; plain(z, nb.x + 6, nb.y + 5, .55 + .45 * z.k); c.globalAlpha = 1; }
+      if (o.places === 'prog' && showName(z) && ns !== 'legend') { const al = (o.pname === 'busy' ? Math.min(1, (z.k - .3) / .4) : 1);
+        c.globalAlpha = Math.max(0, al); c.fillStyle = `rgba(255,255,255,${(off ? .35 : .62 + .38 * z.k).toFixed(3)})`;
+        if (ns === 'gap') { const g = gapName(z); c.font = '600 10px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'middle'; c.fillText(z.name, g.x, g.y + .5); c.textBaseline = 'top'; }
+        else { const nb = poolName(z); c.font = '600 12px -apple-system, "SF Pro Text", Inter, system-ui, sans-serif'; c.textBaseline = 'top'; c.fillText(z.name, nb.x + 6, nb.y + 5); }
+        c.globalAlpha = 1; }
+      if (o.places === 'pools' && showName(z)) { const nb = poolName(z); c.globalAlpha = o.pname === 'busy' ? Math.min(1, (z.k - .3) / .4) : 1; plain(z, nb.x + 6, nb.y + 5, .55 + .45 * z.k); c.globalAlpha = 1; }
       if (o.places === 'icons') { const ic = ICON[z.name] || ICON.Other, cx = b.x + b.w / 2, cy = b.y + b.h / 2; ledIcon(c, ic, cx, cy, off ? 'rgba(255,255,255,.25)' : `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.5 + .5 * z.k).toFixed(3)})`); }
       if (o.places === 'rulers') {   // where the place runs along the walls: a short bar on the left wall and on the bottom wall
         const col = off ? 'rgba(255,255,255,.2)' : `rgba(${Math.round(255 - 245 * z.k)},${Math.round(255 - 123 * z.k)},255,${(.3 + .6 * z.k).toFixed(3)})`;
@@ -240,12 +250,12 @@ function renderer(o) {
 /* ---------- presets ---------- */
 const BASE = { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', size: 'halftone', sensor: 'on' };
 const PROG = [
-  ['Blue places', 'The dots of a place turn softly blue from the edge in; the busy one is brighter. Name top left.', Object.assign({}, BASE, { places: 'prog', pfall: 'edge', ptone: 'blue', pbusy: 'bright', pname: 'tl' })],
-  ['Grows to the centre', 'Colour builds up toward the middle of the place, like a hill of light.', Object.assign({}, BASE, { places: 'prog', pfall: 'center', ptone: 'blue', pbusy: 'bright', pname: 'tl' })],
-  ['Own colours', 'Each place in its own soft colour (teal, purple, green) — easy to tell apart.', Object.assign({}, BASE, { places: 'prog', pfall: 'edge', ptone: 'hue', pbusy: 'bright', pname: 'tl' })],
-  ['Only when busy', 'Places are white and just a little brighter; a place turns blue only while someone is in it.', Object.assign({}, BASE, { places: 'prog', pfall: 'edge', ptone: 'neutral', pbusy: 'bright', pname: 'tl' })],
-  ['Breathing place', 'The busy place breathes slowly with the person. Name in the middle.', Object.assign({}, BASE, { places: 'prog', pfall: 'center', ptone: 'blue', pbusy: 'breathe', pname: 'center' })],
-  ['Fine and colourful', 'Fine dots, own colours, names only where someone is.', Object.assign({}, BASE, { pitch: 7, colour: 'blue', places: 'prog', pfall: 'edge', ptone: 'hue', pbusy: 'bright', pname: 'busy' })],
+  ['Between the rows', 'Blue places; the name sits exactly in the gap between two rows of dots — no dot is covered or removed.', Object.assign({}, BASE, { places: 'prog', pfall: 'edge', ptone: 'blue', pbusy: 'bright', pname: 'tl', nstyle: 'gap' })],
+  ['Dots step aside', 'Under the name the dots only get small and faint — the pattern stays, the word reads.', Object.assign({}, BASE, { places: 'prog', pfall: 'edge', ptone: 'blue', pbusy: 'bright', pname: 'tl', nstyle: 'shrink' })],
+  ['Right on the dots', 'Nothing changes under the name; it simply sits on top of the dots.', Object.assign({}, BASE, { places: 'prog', pfall: 'edge', ptone: 'blue', pbusy: 'bright', pname: 'tl', nstyle: 'over' })],
+  ['Names under the picture', 'Each place in its own soft colour on the map; names with the same colour dot in a row under the picture.', Object.assign({}, BASE, { places: 'prog', pfall: 'edge', ptone: 'hue', pbusy: 'bright', pname: 'tl', nstyle: 'legend' })],
+  ['Only when busy', 'White places; a place turns blue only while someone is in it. Name between the rows.', Object.assign({}, BASE, { places: 'prog', pfall: 'edge', ptone: 'neutral', pbusy: 'bright', pname: 'tl', nstyle: 'gap' })],
+  ['Hill of light', 'Colour grows to the middle of the place; the name between the rows at the top left, away from the person.', Object.assign({}, BASE, { places: 'prog', pfall: 'center', ptone: 'blue', pbusy: 'bright', pname: 'tl', nstyle: 'gap' })],
 ];
 const PRESETS = [
   ['Round pools', 'A soft round pool of light for each place; the busy one turns blue and brighter. Name top left.', { shape: 'round', pitch: 11, colour: 'core', glow: 'soft', scan: 'on', places: 'pools', size: 'halftone', sensor: 'on', pshape: 'round', ptone: 'neutral', pbusy: 'bright', pname: 'tl' }],
@@ -266,6 +276,7 @@ const KNOBS = [
   ['glow', 'Fade', [['quick', 'Quick'], ['soft', 'Soft'], ['trail', 'Long afterglow']]],
   ['scan', 'Scan from the sensor', [['on', 'On'], ['off', 'Off']]],
   ['places', 'Places (background dots stay one colour)', [['prog', 'Progressive dot colour'], ['legend', 'Names under the picture'], ['icons', 'Dot icons'], ['pools', 'Soft pools'], ['rulers', 'Edge rulers'], ['rings', 'Ring dots'], ['callout', 'Callout when someone is there']]],
+  ['nstyle', 'Progressive: the name (dots are never removed)', [['gap', 'Between the dot rows'], ['shrink', 'Dots step aside'], ['over', 'Right on the dots'], ['legend', 'Under the picture']]],
   ['pfall', 'Progressive: how the colour grows', [['edge', 'Soft edge'], ['center', 'Grows to the centre']]],
   ['pshape', 'Pool shape', [['round', 'Round'], ['soft', 'Shape of the place']]],
   ['ptone', 'Pool / place colour', [['neutral', 'Neutral'], ['blue', 'App blue'], ['hue', 'Own colour per place']]],
@@ -298,8 +309,8 @@ function frame(now) {
   const t = mode === 'off' ? frozenT : (frozenT = now / 1000);
   sim(dt);
   views.forEach((v) => { if (!v.vis) return; v.c.setTransform(DPR, 0, 0, DPR, 0, 0); v.c.clearRect(0, 0, W, H); const zs = v.draw(v.c, t, dt);
-    const lg = v.cv.parentElement.querySelector('.lg'), show = v.o.places === 'legend' && zonesOn, key = show ? zs.map((z) => z.name + (z.k > .5 && mode !== 'off' ? 1 : 0)).join() : '';
-    if (lg && lg.dataset.k !== key) { lg.dataset.k = key; lg.style.visibility = show ? 'visible' : 'hidden'; lg.innerHTML = show ? zs.map((z) => `<span class="${z.k > .5 && mode !== 'off' ? 'on' : ''}"><i></i>${z.name}</span>`).join('') : ''; } });
+    const lg = v.cv.parentElement.querySelector('.lg'), show = (v.o.places === 'legend' || (v.o.places === 'prog' && v.o.nstyle === 'legend')) && zonesOn, key = show ? zs.map((z) => z.name + (z.k > .5 && mode !== 'off' ? 1 : 0)).join() : '';
+    if (lg && lg.dataset.k !== key) { lg.dataset.k = key; lg.style.visibility = show ? 'visible' : 'hidden'; lg.innerHTML = show ? zs.map((z, zi) => `<span class="${z.k > .5 && mode !== 'off' ? 'on' : ''}"><i${v.o.ptone === 'hue' ? ` style="background:rgb(${['100,210,255', '191,90,242', '48,209,88'][zi % 3]});opacity:1"` : ''}></i>${z.name}</span>`).join('') : ''; } });
   requestAnimationFrame(frame);
 }
 setMode('sit'); requestAnimationFrame(frame);
