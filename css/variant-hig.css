@@ -345,3 +345,15 @@ html.hig :is(.list, .group-card) > :is(.cell, .option) { border-bottom-width: 0.
 /* section caption → its block: 8 px, the same as on pages (user, 2026-11-18: sheets had 20 — an extra 12 px margin) */
 html.hig .sheet .list-header { margin-bottom: 0; padding-bottom: 7px; }
 html.hig .sheet .sheet-group .group-title { margin-bottom: 0; padding-bottom: 8px; }
+
+/* Home: the header (My Home + bell / plus) stays put while the page scrolls (user, 2026-11-18). Content slides under it;
+   once scrolled, a soft scroll-edge backing (dark fade + light blur, same as the device-page nav bar) keeps it readable.
+   The status-bar backing is off on Home — the header's own backing covers that strip, no double blur. */
+html.hig .phone.ambient .home-header { position: sticky; top: 0; z-index: 20; isolation: isolate; }
+html.hig .phone.ambient .home-header::before { content: ""; position: absolute; inset: 0 0 -28px; z-index: -1; pointer-events: none;
+  background: linear-gradient(rgba(2, 6, 16, 0.92), rgba(2, 6, 16, 0.84) calc(100% - 28px), rgba(2, 6, 16, 0));   /* solid behind the title, fades only in the 28 px below it; dark enough to read even where a browser skips the blur */
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 28px), transparent); mask-image: linear-gradient(#000 calc(100% - 28px), transparent);
+  opacity: 0; transition: opacity 240ms var(--ease-out); }
+html.hig .phone.ambient.scrolled .home-header::before { opacity: 1; }
+html.hig .phone.ambient:has(.home-header) .statusbar::before { display: none; }
