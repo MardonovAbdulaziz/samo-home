@@ -357,3 +357,9 @@ html.hig .phone.ambient .home-header::before { content: ""; position: absolute; 
   opacity: 0; transition: opacity 240ms var(--ease-out); }
 html.hig .phone.ambient.scrolled .home-header::before { opacity: 1; }
 html.hig .phone.ambient:has(.home-header) .statusbar::before { display: none; }
+
+/* background parallax: while the page scrolls, the light drifts up slowly — 6 % of the scroll, at most 70 px — so the
+   content glides over a deeper layer (user, 2026-11-18). `translate` is its own property, so it adds to the slow drift
+   animation instead of replacing it; composited only. Light only — the grain stays put. Off with Reduce Motion. */
+html.hig .phone.ambient::before { translate: 0 max(-70px, calc(var(--scroll-y, 0) * -0.06px)); transition: translate 120ms linear; }
+@media (prefers-reduced-motion: reduce) { html.hig .phone.ambient::before { translate: none; } }

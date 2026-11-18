@@ -2587,6 +2587,12 @@ html.hig .phone.ambient .home-header::before { content: ""; position: absolute; 
 html.hig .phone.ambient.scrolled .home-header::before { opacity: 1; }
 html.hig .phone.ambient:has(.home-header) .statusbar::before { display: none; }
 
+/* background parallax: while the page scrolls, the light drifts up slowly — 6 % of the scroll, at most 70 px — so the
+   content glides over a deeper layer (user, 2026-11-18). `translate` is its own property, so it adds to the slow drift
+   animation instead of replacing it; composited only. Light only — the grain stays put. Off with Reduce Motion. */
+html.hig .phone.ambient::before { translate: 0 max(-70px, calc(var(--scroll-y, 0) * -0.06px)); transition: translate 120ms linear; }
+@media (prefers-reduced-motion: reduce) { html.hig .phone.ambient::before { translate: none; } }
+
 </style>
 </head>
 <body>
@@ -2936,6 +2942,7 @@ const UI = (() => {
         ticking = false;
         const y = screen.scrollTop;
         phone.classList.toggle('scrolled', y > 2);
+        phone.style.setProperty('--scroll-y', Math.round(y));   // background parallax (HIG version) reads it
         // bar material follows the scroll position itself (0 → 1 over the first 24 px), like UIKit's
         // scrollEdge → standard appearance: no timed fade that trails behind the finger
         const a = Math.min(1, Math.max(0, y / 24)).toFixed(3);

@@ -284,6 +284,7 @@ const UI = (() => {
         ticking = false;
         const y = screen.scrollTop;
         phone.classList.toggle('scrolled', y > 2);
+        phone.style.setProperty('--scroll-y', Math.round(y));   // background parallax (HIG version) reads it
         // bar material follows the scroll position itself (0 → 1 over the first 24 px), like UIKit's
         // scrollEdge → standard appearance: no timed fade that trails behind the finger
         const a = Math.min(1, Math.max(0, y / 24)).toFixed(3);
