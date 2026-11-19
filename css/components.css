@@ -1551,8 +1551,11 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .pr-sq.other { fill: var(--label-quaternary); fill-opacity: 1; cursor: default; }   /* taken by another place: clearly filled; empty squares stay faint */
 .pr-sq.sel { fill: var(--primary); fill-opacity: .32; }
 .pr-sq:not(.other):active { fill-opacity: .7; }
-.pr-stripbtn { fill: var(--fill-quaternary); cursor: pointer; transition: fill 200ms var(--ease-out); }
-.pr-stripbtn.on { fill: var(--fill-secondary, var(--fill-tertiary)); }
+.pr-stripbtn { fill: var(--fill-tertiary); cursor: pointer; transition: fill 200ms var(--ease-out), stroke 200ms var(--ease-out); }
+/* not watched (you switched it off) or out of range: an empty strip with a dashed edge + its word */
+.pr-stripbtn.on, .pr-stripbtn.out { fill: transparent; stroke: var(--label-quaternary); stroke-width: 1; stroke-dasharray: 4 4; }
+.pr-stripbtn.out { cursor: default; }
+.pr-strip-lbl { fill: var(--label-tertiary); font: 500 12px/1 var(--font); dominant-baseline: middle; pointer-events: none; }
 /* name suggestions under a name field — Figma “Add room” chips (5439:58025): 36 px pill, fills/tertiary, 13/16, 6 px apart */
 .name-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }   /* law of proximity: suggestions belong to the field above them */
 .name-chip { height: 36px; padding: 0 14px; border-radius: var(--radius-pill); background: var(--fill-tertiary); color: var(--label-primary); font: var(--body-sm); letter-spacing: var(--body-sm-ls); border: 0; }

@@ -154,7 +154,14 @@ Devices.presence = (() => {
       d.zones.forEach((z, k) => { if (!z.cells.length) return; const first = z.cells.map((c) => c.split(',').map(Number)).sort((p, q) => p[1] - q[1] || p[0] - q[0])[0];
         body += `<text class="pr-lbl ${k === o.sel ? 'sel' : ''}" x="${(cx(first[0] - 1) + 12).toFixed(1)}" y="${cy(first[1] - 1) + 24}">${esc(z.name)}</text>`; });
     } else if (o.strips) {
-      body = ign.map((on, r) => `<rect x="${PD}" y="${cy(r) + 2}" width="${W - PD * 2}" height="${CH - 4}" rx="${SR}" class="pr-stripbtn ${on || r + 1 <= R.min || r >= R.max ? 'on' : ''}" data-action="pr-band" data-i="${r}"/>`).join('');
+      // a strip is watched (filled), switched off by you ("Not watched": empty, dashed) or past the detection range
+      // ("Out of range": empty, not tappable) — the words sit in the strip, so it reads without a legend (user, 2026-11-19)
+      body = ign.map((on, r) => {
+        const out = r + 1 <= R.min || r >= R.max, y = cy(r) + 2, h = CH - 4;
+        const rect = `<rect x="${PD}" y="${y}" width="${W - PD * 2}" height="${h}" rx="${SR}" class="pr-stripbtn ${out ? 'out' : on ? 'on' : ''}"${out ? '' : ` data-action="pr-band" data-i="${r}"`}/>`;
+        const word = out ? 'Out of range' : on ? 'Not watched' : '';
+        return rect + (word ? `<text class="pr-strip-lbl" x="${PD + 14}" y="${(y + h / 2).toFixed(1)}">${word}</text>` : '');
+      }).join('');
     } else {
       // a full rectangle of squares = one tile; any other shape = its squares
       d.zones.forEach((z, i) => {
@@ -352,7 +359,7 @@ Devices.presence = (() => {
   function openIgnore(d, ctx) {
     const s = UI.sheet({
       title: 'Parts not to watch', sub: 'Tap a strip of the room where a fan or a curtain moves — the radar will ignore it (a person there won’t be seen either)',
-      render: () => `<div class="pad"><div class="pr-room">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Dark strips are not watched.</div></div>`,
+      render: () => `<div class="pad"><div class="pr-room">${plan(d, { strips: true })}</div><div class="list-footer" style="padding-left:4px;padding-right:4px">Tap a strip to stop watching it, tap it again to watch it again.${has(d, 'range') ? ` Strips past ${S(d, 'range').max} m are out of range — change it in Detection range.` : ''}</div></div>`,
     });
     UI.on({ 'pr-band': ({ i }) => { S(d, 'ignore')[+i] = !S(d, 'ignore')[+i]; Store.save(); ctx.render(); s.refresh(); } });
   }
