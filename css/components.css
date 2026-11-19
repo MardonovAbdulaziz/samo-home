@@ -2069,3 +2069,73 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* a room title is a button (opens rename / remove) — it keeps the heading look */
 button.section-title { width: 100%; background: none; border: 0; color: inherit; text-align: left; -webkit-tap-highlight-color: transparent; }
 button.section-title:active { opacity: .6; }
+
+/* ===== Notifications (Figma "Уведомления" 5412:21693) ===== */
+.nt-row { position: relative; overflow: hidden; }
+.nt-row + .nt-row .nt-cell::before { left: 42px !important; }
+.nt-cell { position: relative; z-index: 1; background: inherit; width: 100%; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.nt-list { overflow: hidden; }
+.nt-list .nt-cell { background: var(--nt-bg, transparent); }
+.nt-ic { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, 0.10); flex: none; }
+.nt-ic .icon { width: 20px !important; height: 20px !important; }
+.nt-ic.is-danger { background: rgba(255, 69, 58, 0.18); color: var(--red); }
+.nt-ic.is-warn { background: rgba(255, 159, 10, 0.18); color: var(--orange, #FF9F0A); }
+.nt-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; align-self: flex-start; padding-top: 2px; flex: none; }
+.nt-time { font: var(--body-sm); color: var(--label-secondary); font-variant-numeric: tabular-nums; }
+.nt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); transform: scale(0); transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.nt-dot.on { transform: scale(1); }
+/* the Delete button under the row, revealed by the swipe; a long swipe stretches it */
+.nt-del { position: absolute; top: 0; bottom: 0; right: -16px; width: 100px; padding-right: 16px; display: grid; place-items: center; background: var(--red); color: #fff; z-index: 0;
+  opacity: 0; transition: opacity 160ms; }
+.nt-del .icon { width: 22px; height: 22px; transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.nt-row.is-open .nt-del { opacity: 1; }
+.nt-row.is-far .nt-del { width: 100%; }
+.nt-row.is-far .nt-del .icon { transform: scale(1.15); }
+.nt-body { font: var(--body-lg); color: var(--label-primary); white-space: pre-line; }
+.nt-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 160px 0 40px; color: var(--label-secondary); }
+.nt-empty-ic { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, 0.10); color: var(--label-primary); }
+.nt-empty p { margin: 0; font: var(--body-md); }
+.nt-tools .icon-btn[disabled] { opacity: .3; pointer-events: none; }
+
+/* ===== Room view / Room Settings (Figma 5426:24209, 5426:24259) ===== */
+a.section-title { color: inherit; text-decoration: none; }
+a.section-title:active { opacity: .6; }
+.is-hidden-tiles .tile { opacity: .55; }
+.rm-pen { width: 20px !important; height: 20px !important; color: var(--label-secondary); margin-left: auto; }
+.cell-sub.is-danger { color: var(--red); } .cell-sub.is-warn { color: var(--orange, #FF9F0A); }
+
+/* ===== Edit Home (Figma "Edit 1" 5429:44767): iOS-style jiggle, ×, drag ===== */
+.phone.is-editing .tabbar { opacity: 0; transform: translateY(24px); pointer-events: none; }
+.tabbar { transition: opacity 240ms var(--ease-out, ease), transform 300ms cubic-bezier(0.23, 1, 0.32, 1); }
+.ed-done { position: absolute; left: 16px; right: 16px; bottom: 34px; z-index: 26; opacity: 0; transform: translateY(24px); pointer-events: none;
+  transition: opacity 240ms ease, transform 300ms cubic-bezier(0.23, 1, 0.32, 1); }
+.phone.is-editing .ed-done { opacity: 1; transform: none; pointer-events: auto; }
+.ed-done .btn { height: 52px; background: var(--static-white, #fff); color: var(--static-black, #000); }
+.ed-head .home-name { pointer-events: none; }
+.ed-room { position: relative; border-radius: 24px; }
+.ed-title { gap: 8px; }
+.ed-grip { display: inline-grid; place-items: center; width: 28px; height: 28px; margin-left: -6px; color: var(--label-secondary); cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
+.ed-grip .icon { width: 22px; height: 22px; }
+.ed-pen { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--label-secondary); }
+.ed-pen:active { background: rgba(255, 255, 255, 0.10); }
+.ed-cell { position: relative; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; cursor: grab; }
+.ed-cell .tile { pointer-events: none; height: 100%; }
+.ed-cell .tile .tile-power, .ed-cell .tile .tile-pair { opacity: 0; transition: opacity 200ms; }
+/* jiggle: each tile its own phase and pace, so they don't swing in step (like the iOS home screen) */
+@keyframes ed-jiggle { 0% { transform: rotate(calc(var(--jr, 1) * -1.1deg)); } 50% { transform: rotate(calc(var(--jr, 1) * 1.1deg)); } 100% { transform: rotate(calc(var(--jr, 1) * -1.1deg)); } }
+.ed-cell .tile { animation: ed-jiggle var(--jt, 260ms) ease-in-out var(--jd, 0ms) infinite; transform-origin: 50% 55%; }
+.ed-x { position: absolute; top: -7px; left: -7px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; z-index: 2;
+  background: rgba(58, 58, 60, 0.92); color: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); animation: ed-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.ed-x .icon { width: 12px; height: 12px; }
+.ed-x::after { content: ""; position: absolute; inset: -9px; }   /* 44 px tap area */
+@keyframes ed-pop { from { transform: scale(0); } to { transform: scale(1); } }
+/* lifted: no jiggle, a little bigger, a soft shadow, above everything */
+.ed-cell.ed-lift { z-index: 40; cursor: grabbing; }
+.ed-cell.ed-lift .tile { animation: none; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); }
+.ed-cell.ed-lift .ed-x { opacity: 0; }
+.ed-room.ed-lift { z-index: 40; background: rgba(28, 28, 32, 0.6); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); }
+.ed-room.ed-lift .ed-cell .tile { animation: none; }
+.is-dragging { cursor: grabbing; }
+.ed-drop { display: none; }
+.ed-grid:not(:has(.ed-cell)) .ed-drop { display: grid; place-items: center; grid-column: 1 / -1; min-height: 76px; border-radius: 24px; border: 1.5px dashed rgba(255, 255, 255, 0.18); color: var(--label-secondary); font: var(--body-sm); }
+@media (prefers-reduced-motion: reduce) { .ed-cell .tile { animation: none; } }

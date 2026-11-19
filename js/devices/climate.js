@@ -129,10 +129,7 @@ Devices.climate = (() => {
 
   /* ---------- Behaviour ---------- */
   function logEv(d, k, text) { d.log.unshift({ t: Date.now(), k, text }); d.log.length = Math.min(d.log.length, 60); }
-  function notifyPush(d, title, body = '', tone = '') {
-    Store.state.notifications = (Store.state.notifications || 0) + 1;
-    UI.push({ title, body, tone });
-  }
+  function notifyPush(d, title, body = '', tone = '') { Store.notify({ title, body, tone, dev: d && d.id }); }
   /** Outside a set of limits? → { k: 'cold' | 'hot' | 'dry' | 'humid', text } or null (temperature first) */
   function outside(d, v, t, h) {
     if (t < v.tlow) return { k: 'cold', text: `Too cold · ${fmtT(t)} °C` };

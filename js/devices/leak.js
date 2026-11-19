@@ -88,7 +88,7 @@ Devices.leak = (() => {
 
   /* ---------- Behaviour ---------- */
   function logEv(d, k, extra) { d.log.unshift(Object.assign({ t: Date.now(), k }, extra || {})); d.log.length = Math.min(d.log.length, 60); }
-  function notifyPush(d, title, body = '', tone = '') { Store.state.notifications = (Store.state.notifications || 0) + 1; UI.push({ title, body, tone }); }
+  function notifyPush(d, title, body = '', tone = '') { Store.notify({ title, body, tone, dev: d && d.id }); }
   /** The alarm state: a leak normally; in "water disappears" mode, the alarm is when it is dry. */
   const alarm = (d) => (absence(d) ? !d.st.wet : d.st.wet);
 

@@ -129,10 +129,7 @@ Devices.contact = (() => {
   const W = (d) => d.name;
   function logEv(d, k, extra) { d.log.unshift(Object.assign({ t: Date.now(), k }, extra || {})); d.log.length = Math.min(d.log.length, 60); }
   /** Simulated push message on the phone (+ the home bell counter). */
-  function notifyPush(d, title, body = '', tone = '') {
-    Store.state.notifications = (Store.state.notifications || 0) + 1;
-    UI.push({ title, body, tone });
-  }
+  function notifyPush(d, title, body = '', tone = '') { Store.notify({ title, body, tone, dev: d && d.id }); }
   const breakOn = (d) => d.st.breakUntil > Date.now();
 
   /** The sensor sends a new open / closed state. */

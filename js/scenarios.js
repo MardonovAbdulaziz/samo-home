@@ -338,7 +338,7 @@ const Scenarios = (() => {
       const p = applyDev(a); if (p) return p;
       if (a.back) pending().push({ at: Date.now() + a.back * 60000, id: a.id, ch: a.ch || 0, to: a.to === 'on' ? 'off' : 'on' });
     }
-    if (a.k === 'notify') UI.push({ title: s.name, body: a.text || sentence(s), tone: a.critical ? 'danger' : '' });
+    if (a.k === 'notify') Store.notify({ kind: 'scene', title: s.name, body: a.text || sentence(s), tone: a.critical ? 'danger' : '' });
     if (a.k === 'auto') { const o = get(a.sid); if (o && !o.manual) o.on = !!a.on; else return 'the automation was removed'; }
     if (a.k === 'run' && depth < 3) { const o = get(a.sid); if (o && o.id !== s.id) { runActions(o, 0, depth + 1); log(o, { ok: true, cause: `Started by “${s.name}”` }); } }
     return null;

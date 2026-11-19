@@ -86,7 +86,7 @@ Devices.smoke = (() => {
 
   /* ---------- Behaviour ---------- */
   function logEv(d, k, extra) { d.log.unshift(Object.assign({ t: Date.now(), k }, extra || {})); d.log.length = Math.min(d.log.length, 60); }
-  function notifyPush(d, title, body = '', tone = '') { Store.state.notifications = (Store.state.notifications || 0) + 1; UI.push({ title, body, tone }); }
+  function notifyPush(d, title, body = '', tone = '') { Store.notify({ title, body, tone, dev: d && d.id }); }
   /** What the detector reports from the real room: clear / pre-alarm / alarm (+ heat, CO). */
   function evaluate(d) {
     const st = d.st, P = d.phys, now = Date.now();

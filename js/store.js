@@ -1,6 +1,6 @@
 /* Samo-home data store (localStorage). One source of truth for every page.
    Shape:
-   { home: { name }, rooms: [{ id, name }], devices: [Device], notifications: n }
+   { home: { name }, rooms: [{ id, name }], devices: [Device], notes: [{ id, t, title, body, tone, dev | kind, read }] }
    Device (common): { id, type, name, roomId, model, manufacturer, protocol, online, showOnHome, isNew, createdAt, ... }
    Type-specific fields are owned by the device module (see js/devices/*.js). */
 const Store = (() => {
@@ -108,9 +108,25 @@ const Store = (() => {
       const d = wave2Seed(t); d.isNew = true; if (!state.rooms.some((r) => r.id === d.roomId)) d.roomId = (state.rooms[0] || {}).id || null;
       state.devices.push(d); state.wave2 = Object.assign({}, state.wave2, { [t[0]]: true }); save();
     });
+    // notifications: a real list (was only a count) — seeded once with a few everyday examples (Figma "Уведомления" 5412:21693)
+    if (!Array.isArray(state.notes)) { state.notes = noteSeed(); save(); }
     // bring saved devices up to the current model (new settings get defaults, renamed values are mapped)
     state.devices.forEach((d) => { const T = Devices[d.type]; if (T && T.applyDefaults && d.settings) T.applyDefaults(d); });
     return state;
+  }
+  function noteSeed() {
+    const now = Date.now(), H = 3600000, D = 24 * H, has = (id) => state.devices.some((d) => d.id === id);
+    const n = (min, o) => Object.assign({ id: uid('n'), t: now - min * 60000, read: false, tone: '' }, o);
+    return [
+      has('d-hub') && n(20, { dev: 'd-hub', title: 'T-HUB 320 went offline', body: 'Devices in this home can’t be controlled until the hub is back online.', tone: 'warn' }),
+      has('d-air') && n(45, { dev: 'd-air', title: 'Bedroom air: clean the particle sensor', body: 'Dust has built up — readings may be off. Blow it out gently, then tap Clean the particle sensor.' }),
+      has('d-leak') && n(90, { dev: 'd-leak', title: 'Kitchen sink: water detected!', body: 'The sensor felt water at 12:04. The main water valve was closed by your hub.', tone: 'danger', read: true }),
+      has('d-gas') && n(180, { dev: 'd-gas', title: 'Kitchen gas: battery low (5 %)', body: 'Replace the battery soon so the detector keeps protecting you.', tone: 'warn', read: true }),
+      n(5 * 60, { kind: 'home', title: 'Access granted', body: 'You joined the home “Apartment”.', read: true }),
+      n(D / 60000 + 120, { kind: 'scene', title: 'Scenario “Left home” ran', body: 'Lights off, curtains closed, the front door locked.', read: true }),
+      n(D / 60000 + 300, { kind: 'news', title: 'Happy Youth Day', body: 'Youth Day is a celebration of the country’s young people, observed every year on June 30 in Uzbekistan.', read: true }),
+      n(2 * D / 60000, { kind: 'home', title: 'Join request', body: 'Azizbek wants to join the home “My Home”.', read: true }),
+    ].filter(Boolean);
   }
   function save() {
     SafeStorage.local.setItem(KEY, JSON.stringify(state));
@@ -128,6 +144,18 @@ const Store = (() => {
     device: (id) => (state || load()).devices.find((d) => d.id === id),
     room: (id) => (state || load()).rooms.find((r) => r.id === id),
     roomName: (id) => ((state || load()).rooms.find((r) => r.id === id) || {}).name || 'No room',
+
+    /* ---------- Notifications ----------
+       notify({ title, body, tone: '' | 'warn' | 'danger', dev: deviceId, kind: 'scene' | 'home' | 'news' }) — stores it,
+       shows the banner (UI.push) and the bell counts what's unread */
+    notify(o) { const st = this.state; st.notes = st.notes || []; st.notifications = (st.notifications || 0) + 1;   // the old running count stays for the checks; the bell shows unread notes
+      st.notes.unshift(Object.assign({ id: uid('n'), t: Date.now(), read: false, tone: '' }, o)); st.notes.length = Math.min(st.notes.length, 100); save(); if (typeof UI !== 'undefined' && UI.push) UI.push({ title: o.title, body: o.body || '', tone: o.tone || '' }); },
+    get unread() { return ((state || load()).notes || []).filter((n) => !n.read).length; },
+    readNote(id) { const n = (this.state.notes || []).find((x) => x.id === id); if (n && !n.read) { n.read = true; save(); } },
+    readAll() { (this.state.notes || []).forEach((n) => { n.read = true; }); save(); },
+    removeNote(id) { this.state.notes = (this.state.notes || []).filter((n) => n.id !== id); save(); },
+    clearNotes() { this.state.notes = []; save(); },
+    removeRoom(id) { const st = this.state; st.devices.forEach((d) => { if (d.roomId === id) d.roomId = null; }); st.rooms = st.rooms.filter((r) => r.id !== id); save(); },
 
     addRoom(name) { const r = { id: uid('r'), name }; this.state.rooms.push(r); save(); return r; },
     addDevice(d) { this.state.devices.push(d); save(); return d; },

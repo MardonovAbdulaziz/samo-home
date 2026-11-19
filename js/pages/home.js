@@ -112,13 +112,36 @@
     return `<button class="quick-chip scn-chip" data-action="all-off" data-key="qc-all-off">${busy ? Scenarios.ringHTML(Scenarios.ALL_OFF, 'power') : icon('power')}<span><b>Turn off all</b><span data-num>${busy ? UI.esc(Scenarios.statusText(ao)) : n ? `${n} device${n > 1 ? 's' : ''} on` : 'No devices on'}</span></span></button>`;
   }
 
+  /* ---------- Edit Home (Figma "Edit 1" 5429:44767): tiles jiggle like iOS app icons, drag a tile to reorder it or move it
+     to another room, drag a room by its handle, × hides a tile from Home, the pen renames / removes a room, Add room, Done.
+     Devices without a room sit under the rooms. */
+  let editing = false;
+  const jig = (s) => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };   // a steady random per tile (no re-sync on re-render)
+  function editHTML() {
+    const st = S();
+    let h = `<header class="home-header ed-head"><div class="home-name">Editing</div></header>`;
+    const rooms = [...st.rooms, { id: null, name: 'No room' }];
+    for (const r of rooms) {
+      const devs = st.devices.filter((d) => (d.roomId || null) === r.id && d.showOnHome !== false);
+      h += `<section class="ed-room ${r.id ? '' : 'is-none'}" data-key="ed-r-${r.id || 'none'}" data-room="${r.id || ''}">
+        <div class="section-title ed-title">${r.id ? `<span class="ed-grip" aria-label="Move ${UI.esc(r.name)}">${icon('drag')}</span>` : ''}<span>${UI.esc(r.name)}</span>${r.id ? `<button class="ed-pen" data-action="room-edit" data-room="${r.id}" aria-label="Rename ${UI.esc(r.name)}">${icon('pen', 'icon', 'style="width:18px;height:18px"')}</button>` : ''}</div>
+        <div class="tile-grid ed-grid">${devs.map((d) => DeviceAPI(d).homeTiles().map((t) => { const k = `${d.id}-${t.ch}`, j = jig(k);
+          return `<div class="ed-cell" data-key="ed-${k}" data-dev="${d.id}" style="--jd:${-(j % 300)}ms;--jt:${250 + (j % 40)}ms;--jr:${j % 2 ? 1 : -1}">${homeTileHTML(d, t)}<button class="ed-x" data-action="ed-hide" data-id="${d.id}" aria-label="Hide ${UI.esc(t.name)} from Home">${icon('cross', 'icon')}</button></div>`; }).join('')).join('')}
+          <div class="ed-drop">${devs.length ? '' : r.id ? 'Drag devices here' : 'Devices with no room'}</div></div></section>`;
+    }
+    h += `<div class="pad" data-key="ed-add" style="margin-top:8px"><button class="btn btn-glass btn-block" data-action="add-room">${icon('plus')} Add room</button></div>
+      <div style="height:120px"></div>`;
+    return h;
+  }
   function render() {
+    UI.phone.classList.toggle('is-editing', editing);
+    if (editing) { UI.patch(UI.screen, editHTML()); UI.screen.classList.add('with-tabbar'); return; }
     const st = S();
     const n = onCount();
     let h = `<header class="home-header">
         <button class="home-name" data-action="homes">${UI.esc(st.home.name)} ${icon('chevron-down', 'icon icon-sm')}</button>
         <div class="row" style="gap:0">
-          <button class="icon-btn" data-action="bell" aria-label="Notifications">${icon('bell')}${st.notifications ? `<span class="badge-count">${st.notifications}</span>` : ''}</button>
+          <button class="icon-btn" data-action="bell" aria-label="Notifications">${icon('bell')}${Store.unread ? `<span class="badge-count">${Store.unread}</span>` : ''}</button>
           <button class="icon-btn" data-action="plus" aria-label="Add">${icon('plus')}</button>
         </div></header>
       <div class="chips-row">
@@ -129,17 +152,18 @@
     const homeScenes = scenesOK() ? Scenarios.list().filter((x) => x.manual && !x.sys && Scenarios.homeOf(x) && x.do.length) : [];
     if (homeScenes.length) h += `<div class="tile-grid scn-home-grid" data-key="home-scenes">${homeScenes.map(Scenarios.tileHTML).join('')}</div>`;
 
+    // rooms in their order, then the devices that are in no room (Figma: "No room" list under the rooms)
     const rooms = [...st.rooms, { id: null, name: 'No room' }];
     for (const r of rooms) {
       const devs = st.devices.filter((d) => (d.roomId || null) === r.id && d.showOnHome !== false);
       if (r.id === null && !devs.length) continue;
-      // a real room's title opens the room (rename / remove); 'No room' is only a heading
-      h += r.id ? `<button class="section-title" data-action="room-edit" data-room="${r.id}">${UI.esc(r.name)} ${icon('chevron-right', 'icon icon-sm')}</button><div class="tile-grid">` : `<div class="section-title">${UI.esc(r.name)}</div><div class="tile-grid">`;
+      // a room's title opens the room (Figma "Room view" 5426:24209)
+      h += `<a class="section-title" href="room.html?id=${r.id || 'none'}" data-key="rt-${r.id || 'none'}">${UI.esc(r.name)} ${icon('chevron-right', 'icon icon-sm')}</a><div class="tile-grid" data-key="rg-${r.id || 'none'}">`;
       devs.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { h += tileHTML(d, t); }));
       if (!devs.length) h += `<button class="tile add" data-action="add-device" data-room="${r.id}"><span class="plus">${icon('plus', 'icon icon-sm')}</span><span>Add a device</span></button>`;
       h += '</div>';
     }
-    h += `<div style="display:flex;justify-content:center;padding:24px 0"><button class="btn-pill" data-action="edit">${icon('pen', 'icon icon-xs')} Edit</button></div>`;
+    h += `<div style="display:flex;justify-content:center;padding:24px 0" data-key="edit-pill"><button class="btn-pill" data-action="edit">${icon('pen', 'icon icon-xs')} Edit</button></div>`;
     UI.patch(UI.screen, h);
     UI.screen.classList.add('with-tabbar');
   }
@@ -152,6 +176,10 @@
     <a class="tab" href="scenarios.html">${icon('tab-scenarios')}Scenarios</a>
     <button class="tab" data-action="soon">${icon('tab-more')}More</button></div>`;
   UI.phone.appendChild(tb);
+  const done = document.createElement('div');
+  done.className = 'ed-done';
+  done.innerHTML = '<button class="btn btn-opposite btn-block" data-action="ed-done">Done</button>';
+  UI.phone.appendChild(done);
 
   function openAddDevice(roomId) {
     UI.sheet({
@@ -213,14 +241,110 @@
       });
       return s;
     },
-    bell: () => UI.toast('Notifications — coming soon'),
+    bell: () => UI.go('notifications.html'),
     homes: () => UI.toast('Switch home — coming soon'),
-    edit: () => UI.toast('Edit home — coming soon'),
+    edit: () => { editing = true; UI.haptic('medium'); UI.screen.scrollTo({ top: 0, behavior: 'smooth' }); render(); },
+    'ed-done': () => { editing = false; render(); },
+    'ed-hide': ({ id }) => { const d = Store.device(id); if (!d) return; d.showOnHome = false; Store.save(); render(); UI.toast(`${d.name} is hidden — find it in ${Store.roomName(d.roomId)}`); },
     soon: () => UI.toast('Coming soon'),
   });
+
+  /* ---------- Edit Home: drag ----------
+     Touch: hold a tile (or a room's handle) a moment, then move — so a plain swipe still scrolls. Mouse: just drag.
+     The lifted tile follows the finger 1:1; the others make room with a glide (FLIP); near the top / bottom edge the page
+     scrolls by itself. A tile can go to another room (or to No room). Dropping saves the order. */
+  let drag = null;
+  const scr = UI.screen;
+  const rectsOf = (els) => new Map(els.map((x) => [x, x.getBoundingClientRect()]));
+  function glide(before) {   // FLIP the ones that moved
+    before.forEach((r0, x) => { if (x === drag.el || !x.isConnected) return; const r1 = x.getBoundingClientRect(), dx = r0.left - r1.left, dy = r0.top - r1.top; if (Math.abs(dx) + Math.abs(dy) < 1) return; x.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 300, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }); });
+  }
+  function follow() {   // keep the lifted one under the finger
+    const d = drag, el = d.el; el.style.transform = 'none';
+    const r = el.getBoundingClientRect();
+    el.style.transform = `translate(${d.px - d.ox - r.left}px, ${d.py - d.oy - r.top}px) scale(${d.kind === 'tile' ? 1.06 : 1.02})`;
+  }
+  function place() {
+    const d = drag, el = d.el;
+    if (d.kind === 'tile') {
+      const hit = document.elementsFromPoint(d.px, d.py).find((x) => x !== el && !el.contains(x) && (x.classList.contains('ed-cell') || x.classList.contains('ed-grid')));
+      const target = hit && hit.classList.contains('ed-cell') ? hit : null;
+      const grid = target ? target.parentElement : hit && hit.classList.contains('ed-grid') ? hit : null;
+      if (!grid) return;
+      let ref;
+      if (target) { const r = target.getBoundingClientRect(); const after = d.px > r.left + r.width / 2; ref = after ? target.nextElementSibling : target; }
+      else ref = grid.querySelector('.ed-drop');
+      if (ref === el || (ref && ref.previousElementSibling === el && ref.parentElement === el.parentElement && !target)) return;
+      if (el.nextElementSibling === ref && el.parentElement === grid) return;
+      const all = [...scr.querySelectorAll('.ed-cell, .ed-drop, .ed-room')], before = rectsOf(all);
+      grid.insertBefore(el, ref); UI.haptic('selection');
+      follow(); glide(before);
+    } else {
+      const secs = [...scr.querySelectorAll('.ed-room:not(.is-none)')].filter((x) => x !== el);
+      let ref = scr.querySelector('.ed-room.is-none');
+      for (const x of secs) { const r = x.getBoundingClientRect(); if (d.py < r.top + r.height / 2) { ref = x; break; } }
+      if (el.nextElementSibling === ref) return;
+      const before = rectsOf([...scr.querySelectorAll('.ed-room')]);
+      el.parentElement.insertBefore(el, ref); UI.haptic('selection');
+      follow(); glide(before);
+    }
+  }
+  function autoScroll() {
+    if (!drag) return;
+    const r = scr.getBoundingClientRect(), edge = 72; let v = 0;
+    if (drag.py < r.top + edge + 40) v = -Math.ceil((r.top + edge + 40 - drag.py) / 6);
+    else if (drag.py > r.bottom - edge) v = Math.ceil((drag.py - (r.bottom - edge)) / 6);
+    if (v) { scr.scrollTop += v; follow(); place(); }
+    drag.raf = requestAnimationFrame(autoScroll);
+  }
+  function lift(d) {
+    drag = d; const el = d.el, r = el.getBoundingClientRect();
+    d.ox = d.px - r.left; d.oy = d.py - r.top;
+    el.classList.add('ed-lift'); scr.classList.add('is-dragging'); UI.haptic('medium');
+    follow(); d.raf = requestAnimationFrame(autoScroll);
+  }
+  function drop() {
+    const d = drag; if (!d) return; cancelAnimationFrame(d.raf);
+    const el = d.el, from = el.getBoundingClientRect(); el.style.transform = 'none'; const to = el.getBoundingClientRect();
+    el.classList.remove('ed-lift'); scr.classList.remove('is-dragging'); drag = null;
+    el.animate([{ transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${d.kind === 'tile' ? 1.06 : 1.02})` }, { transform: 'none' }], { duration: 280, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' });
+    el.style.transform = '';
+    UI.haptic('light');
+    // save: rooms in screen order; devices in screen order, each in the room it was dropped in
+    const st = S(), secs = [...scr.querySelectorAll('.ed-room')];
+    st.rooms = secs.map((x) => x.dataset.room).filter(Boolean).map((id) => st.rooms.find((r) => r.id === id)).filter(Boolean);
+    // a device with several tiles (a 2-gang relay) has one room: the tile you dragged decides it, its other tiles follow
+    const order = [], moved = d.kind === 'tile' ? el.dataset.dev : null;
+    secs.forEach((sec) => sec.querySelectorAll('.ed-cell').forEach((c) => {
+      const dv = Store.device(c.dataset.dev); if (!dv || order.includes(dv)) return;
+      if (dv.id === moved && c !== el) return;   // wait for the dragged tile
+      dv.roomId = sec.dataset.room || null; order.push(dv);
+    }));
+    st.devices = order.concat(st.devices.filter((x) => !order.includes(x)));
+    Store.save();
+    setTimeout(render, 290);
+  }
+  scr.addEventListener('pointerdown', (e) => {
+    if (!editing || drag || e.button > 0 || e.target.closest('.ed-x, .ed-pen, button.btn')) return;
+    const grip = e.target.closest('.ed-grip'), cell = e.target.closest('.ed-cell');
+    const el = grip ? grip.closest('.ed-room') : cell; if (!el) return;
+    const d = { el, kind: grip ? 'room' : 'tile', px: e.clientX, py: e.clientY, x0: e.clientX, y0: e.clientY, live: false };
+    const touch = e.pointerType !== 'mouse';
+    const hold = touch ? setTimeout(() => { if (!d.gone) lift(d); }, grip ? 120 : 220) : null;
+    const move = (ev) => {
+      d.px = ev.clientX; d.py = ev.clientY;
+      if (drag === d) { follow(); place(); return; }
+      if (Math.hypot(ev.clientX - d.x0, ev.clientY - d.y0) > 6) { if (touch) { d.gone = true; clearTimeout(hold); end(); } else lift(d); }
+    };
+    const end = () => { clearTimeout(hold); document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', end); document.removeEventListener('pointercancel', end); if (drag === d) drop(); };
+    document.addEventListener('pointermove', move); document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
+  });
+  // while something is lifted, a finger move must not scroll the page
+  scr.addEventListener('touchmove', (e) => { if (drag) e.preventDefault(); }, { passive: false });
+  scr.addEventListener('contextmenu', (e) => { if (editing) e.preventDefault(); });
 
   render();
   // Re-render when a device changed, or every second while a countdown is visible
   const hasCountdown = () => S().devices.some((d) => (d.channels || []).some((c) => c.timer) || DeviceAPI(d).busy());
-  startDeviceClock((changed) => { if (changed || hasCountdown()) render(); });
+  startDeviceClock((changed) => { if (drag) return; if (changed || hasCountdown()) render(); });
 })();

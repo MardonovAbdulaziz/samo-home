@@ -33,7 +33,8 @@ const Kit = (() => {
     }, extra);
   }
   function logEv(d, k, extra) { d.log.unshift(Object.assign({ t: Date.now(), k }, extra || {})); d.log.length = Math.min(d.log.length, 80); }
-  function push(title, body = '', tone = '') { Store.state.notifications = (Store.state.notifications || 0) + 1; UI.push({ title, body, tone }); }
+  /* a push from a device module: its title starts with the device's name ("Main water: watering finished") → that's the device */
+  function push(title, body = '', tone = '', d = null) { const dev = d || Store.state.devices.slice().sort((a, b) => b.name.length - a.name.length).find((x) => title.startsWith(x.name)); Store.notify({ title, body, tone, dev: dev && dev.id }); }
 
   /* ---------- Device page pieces ---------- */
   /** The icon inside the sensor mark: Figma “Sensors/*” icons are a disc with the glyph cut out — they fill the 80 px

@@ -233,7 +233,7 @@ function makeSwitch(K) {
     return `${chLabel(d, i)} turns off in ${UI.fmtDur(sec)}`;
   }
 
-  function notifyPush(d, title, body = '', tone = '') { Store.state.notifications = (Store.state.notifications || 0) + 1; UI.push({ title, body, tone }); }
+  function notifyPush(d, title, body = '', tone = '') { Store.notify({ title, body, tone, dev: d && d.id }); }
   function logPlug(d, k, text) { if (!d.log) return; d.log.unshift({ t: Date.now(), k, text }); d.log.length = Math.min(d.log.length, 40); }
   function powerCut(d) {
     d.channels.forEach((c) => { c.before = c.on; c.on = false; c.timer = null; });

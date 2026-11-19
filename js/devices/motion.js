@@ -122,7 +122,7 @@ Devices.motion = (() => {
 
   /* ---------- Behaviour ---------- */
   function logEv(d, k, extra) { d.log.unshift(Object.assign({ t: Date.now(), k }, extra || {})); d.log.length = Math.min(d.log.length, 80); }
-  function notifyPush(d, title, body = '', tone = '') { Store.state.notifications = (Store.state.notifications || 0) + 1; UI.push({ title, body, tone }); }
+  function notifyPush(d, title, body = '', tone = '') { Store.notify({ title, body, tone, dev: d && d.id }); }
 
   /** Something moves in front of the sensor. Returns a short message for the prototype toast ('' = reported). */
   function detect(d, cat = false) {
