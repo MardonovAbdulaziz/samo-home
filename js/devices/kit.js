@@ -239,7 +239,7 @@ const Kit = (() => {
       'pk-pick': ({ v }) => { st.v = +v; s.refresh(); },
       'pk-custom': () => { fromV(); st.custom = true; s.refresh(); bind(); },
       'pk-back': () => { st.custom = false; s.refresh(); },
-      'pk-go': () => { const v = st.custom ? cv() : st.v; if (!v) return; cfg.onGo(v); },
+      'pk-go': () => { const v = st.custom ? cv() : st.v; if (!v) return; cfg.onGo(v); UI.haptic('success'); },
     });
     return s;
   }

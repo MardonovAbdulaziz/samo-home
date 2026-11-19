@@ -93,32 +93,91 @@ const UI = (() => {
   }
   function openIn(el) {
     if (!stacked(el.parentElement)) { el.animate([{ opacity: 0, transform: 'scale(0.96)' }, { opacity: 1, transform: 'none' }], { duration: 280, easing: EASE_OUT }); return; }
-    const cs = getComputedStyle(el), h = el.offsetHeight;
-    el.style.overflow = 'hidden';
+    const cs = getComputedStyle(el), h = el.offsetHeight, next = el.nextElementSibling;
+    el.style.clipPath = 'inset(0)';   // clips like overflow:hidden but lets margins collapse as usual
+    // start exactly where the page was without it: a zero-height block can still hold a margin's worth of room
+    // (flex / collapsing margins) — measure that and take it back, so nothing below hops on the first frame
+    let head = 0;
+    if (next) {
+      const keep = el.getAttribute('style');
+      el.style.display = 'none'; const gone = next.getBoundingClientRect().top;
+      el.style.display = ''; Object.assign(el.style, { height: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px' });
+      head = next.getBoundingClientRect().top - gone;
+      el.setAttribute('style', keep);
+    }
     const a = el.animate([
-      { height: '0px', marginTop: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 },
-      { height: h + 'px', marginTop: cs.marginTop, marginBottom: cs.marginBottom, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 },
+      { height: '0px', marginBottom: `${-head}px`, paddingTop: '0px', paddingBottom: '0px', opacity: 0 },   // the top margin stays put: the block itself doesn't drift
+      { height: h + 'px', marginBottom: cs.marginBottom, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 },
     ], { duration: 340, easing: EASE_OUT });
-    a.onfinish = a.oncancel = () => { el.style.overflow = ''; };
+    a.onfinish = a.oncancel = () => { el.style.clipPath = ''; };
   }
   function closeOut(el, parent, before) {
     if (!parent.isConnected || !stacked(parent) || (before && before.parentNode !== parent)) return;
     el.classList.add('ui-ghost'); el.removeAttribute('data-key'); el.setAttribute('aria-hidden', 'true'); el.inert = true;
     el.querySelectorAll('[data-key],[data-live],[data-action],[id]').forEach((x) => { x.removeAttribute('data-key'); x.removeAttribute('data-live'); x.removeAttribute('data-action'); x.removeAttribute('id'); });
+    const gone = before && before.getBoundingClientRect ? before.getBoundingClientRect().top : null;   // where the next block sits once this one is gone
     parent.insertBefore(el, before);
     const cs = getComputedStyle(el), h = el.offsetHeight;
-    el.style.overflow = 'hidden'; el.style.pointerEvents = 'none';
+    el.style.clipPath = 'inset(0)'; el.style.pointerEvents = 'none';
+    // a zero-height block can still hold a margin's worth of room (flex / collapsing margins): measure that and end there,
+    // so the next block lands exactly where it will stay — no stop and second hop when the ghost is removed
+    let tail = 0;
+    if (gone !== null) {
+      const keep = el.getAttribute('style');
+      Object.assign(el.style, { height: '0px', marginTop: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px' });
+      tail = before.getBoundingClientRect().top - gone;
+      el.setAttribute('style', keep);
+    }
     const a = el.animate([
       { height: h + 'px', marginTop: cs.marginTop, marginBottom: cs.marginBottom, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 },
-      { height: '0px', marginTop: '0px', marginBottom: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 },
-    ], { duration: 240, easing: EASE_OUT, fill: 'forwards' });
+      { height: '0px', marginTop: '0px', marginBottom: `${-tail}px`, paddingTop: '0px', paddingBottom: '0px', opacity: 0 },
+    ], { duration: 260, easing: EASE_OUT, fill: 'forwards' });
     a.onfinish = () => el.remove();
   }
+  /* ---------- Haptics (web-haptics by Lochie Axon, MIT — js/vendor/web-haptics.js) ----------
+     Android: navigator.vibrate · iPhone (iOS 18+ Safari): the system switch's own tap. Feel follows iOS:
+     switch / tile button → light · the big power toggle → medium · picking one of many (segments, chips, tabs,
+     radio rows, stepper, wheel numbers, slider steps) → selection · main button → soft · delete → rigid ·
+     done (timer started, scene ran) → success · wrong input → error · an alarm → warning. Going to another page doesn't buzz. */
+  let hx = null, hxAt = 0;
+  function haptic(kind = 'light') {
+    if (!window.WebHaptics) return;
+    const now = performance.now();
+    if (kind === 'selection' && now - hxAt < 45) return;   // a fast wheel / slider: one tick per step, not a buzz
+    hxAt = now;
+    try { hx = hx || new window.WebHaptics(); hx.trigger(kind); } catch (e) { /* no haptics here */ }
+  }
+  const HX = [
+    ['.power-toggle', 'medium'],
+    ['.btn-danger', 'rigid'],
+    ['[role="switch"], .switch', 'light'],
+    ['.tile-power, [data-action="tile-cmd"]', 'light'],
+    ['.segmented button, .ch-picker button, .seg-tabs button, .va-chip, .cw-chip, .chip, .option, [role="radio"], .tabbar .tab, .preset-grid button, .stepper button, .name-chip, .pr-chip, .tw-wheel span', 'selection'],
+    ['.btn-primary', 'soft'],
+  ];
+  document.addEventListener('click', (e) => {
+    const t = e.target && e.target.closest ? e.target : null; if (!t || !t.closest('.phone')) return;
+    for (const [sel, kind] of HX) {
+      const el = t.closest(sel); if (!el) continue;
+      if (el.disabled || el.getAttribute('aria-disabled') === 'true') return;
+      haptic(kind); return;
+    }
+  }, true);
+  // sliders: a tick at every tenth, a firmer one at the ends
+  document.addEventListener('input', (e) => {
+    const r = e.target; if (!r || r.type !== 'range') return;
+    const min = +r.min || 0, max = r.max === '' ? 100 : +r.max, v = +r.value, step = (max - min) / 10;
+    const band = Math.round((v - min) / step);
+    if (r._hxBand === band) return; r._hxBand = band;
+    haptic(v <= min || v >= max ? 'rigid' : 'selection');
+  });
+
   function patch(target, html, opts = {}) {
-    target.querySelectorAll('.ui-ghost').forEach((g) => g.remove());   // an exit still running: finish it now (keeps the morph indexes right)
     const anim = opts.animate !== false && calm() && target.isConnected;
     const before = new Map();
-    if (anim) target.querySelectorAll('[data-key]').forEach((el) => before.set(el.getAttribute('data-key'), { el, parent: el.parentElement, next: el.nextElementSibling, prev: el.previousElementSibling }));
+    // where every block is on screen right now (before ghosts go and before the morph) — for the FLIP below
+    if (anim) target.querySelectorAll('[data-key]').forEach((el) => { const r = el.getBoundingClientRect(); before.set(el.getAttribute('data-key'), { el, parent: el.parentElement, next: el.nextElementSibling, prev: el.previousElementSibling, x: r.left, y: r.top }); });
+    target.querySelectorAll('.ui-ghost').forEach((g) => g.remove());   // an exit still running: finish it now (keeps the morph indexes right)
     const tpl = document.createElement('template');
     tpl.innerHTML = html;
     morphChildren(target, tpl.content);
@@ -134,6 +193,25 @@ const UI = (() => {
       const ref = next && next.isConnected && next.parentNode === parent ? next : prev && prev.isConnected && prev.parentNode === parent ? prev.nextSibling : null;
       if (ref === null && !(prev && prev.isConnected)) return;          // can't tell where it was
       closeOut(el, parent, ref);
+    });
+    flip(target, before);
+  }
+  /* FLIP (user, 2026-11-19: "the frame jumps"): a block that stayed but now sits somewhere else on screen — because a
+     block above it appeared / went, margins collapsed differently, or an exit was cut short by the next render — starts
+     where it was and glides to its new place (transform only, so it costs nothing). Only the outermost moved block
+     moves; its children travel with it. */
+  function flip(target, before) {
+    const moved = [];
+    before.forEach(({ x, y }, key) => {
+      const el = target.querySelector(`[data-key="${CSS.escape(key)}"]`); if (!el || el.classList.contains('ui-ghost')) return;
+      const r = el.getBoundingClientRect(), dx = x - r.left, dy = y - r.top;
+      if (Math.abs(dy) < 1 && Math.abs(dx) < 1) return;
+      if (getComputedStyle(el).position === 'sticky' || getComputedStyle(el).position === 'fixed') return;
+      moved.push({ el, dx, dy });
+    });
+    moved.forEach(({ el, dx, dy }) => {
+      if (moved.some((m) => m.el !== el && m.el.contains(el))) return;
+      el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 380, easing: EASE_OUT, composite: 'add' });
     });
   }
   /* ---------- Rolling numbers (iOS numericText) ----------
@@ -460,7 +538,7 @@ const UI = (() => {
       'prompt-ok': () => {
         const v = sheetEl.querySelector('#promptInput').value.trim();
         const err = validate ? validate(v) : (!v ? 'Name cannot be empty' : null);
-        if (err) { sheetEl.querySelector('#promptErr').textContent = err; return; }
+        if (err) { sheetEl.querySelector('#promptErr').textContent = err; haptic('error'); return; }
         closeSheet(); onOk(v);
       },
       'prompt-clear': () => { const i = sheetEl.querySelector('#promptInput'); i.value = ''; i.focus(); },
@@ -506,6 +584,7 @@ const UI = (() => {
      Slides in at the top of the phone like an iOS notification; tap or wait 4 s to dismiss. */
   let pushT;
   function push({ title, body = '', tone = '' }) {
+    if (tone === 'danger' || tone === 'warn') haptic(tone === 'danger' ? 'error' : 'warning');
     let el = phone.querySelector('.push');
     if (!el) { el = document.createElement('div'); el.className = 'push'; el.setAttribute('role', 'status'); el.onclick = () => el.classList.remove('show'); phone.appendChild(el); }
     el.innerHTML = `<span class="push-app">${icon('tab-home', 'icon', 'style="width:20px;height:20px"')}</span>
@@ -551,6 +630,7 @@ const UI = (() => {
         const i = Math.max(0, Math.min(w.children.length - 1, Math.round(w.scrollTop / TW_ROW))), v = i * step;
         if (v === get(w.dataset.wheel)) return;
         w.setAttribute('aria-valuenow', v); w.querySelector('.on')?.classList.remove('on'); w.children[i].classList.add('on');
+        haptic('selection');
         set(w.dataset.wheel, v);
       }, { passive: true });
     });
@@ -582,7 +662,7 @@ const UI = (() => {
       const w = e.target; if (!w.classList || !w.classList.contains('tw-wheel')) return;
       const k = w.dataset.wheel, v = Math.max(0, Math.min(w.children.length - 1, Math.round(w.scrollTop / TW_ROW)));
       if (v === st[k]) return;
-      st[k] = v; w.setAttribute('aria-valuenow', v);
+      st[k] = v; w.setAttribute('aria-valuenow', v); haptic('selection');
       w.querySelector('.on')?.classList.remove('on'); w.children[v].classList.add('on');
       const end = document.querySelector('[data-live="tw-end"]'); if (end) end.textContent = endsAt();
       const go = document.querySelector('[data-action="tm-go"]'); if (go) go.disabled = !secs();
@@ -594,7 +674,7 @@ const UI = (() => {
       else if (e) s.refresh();
       else if (st.custom) { const end = document.querySelector('[data-live="tw-end"]'); if (end) end.textContent = endsAt(); }   // the clock moves on
     }, 1000);
-    const start = (sec) => { const m = cfg.start(sec); st.custom = false; s.refresh(); toast(m); };
+    const start = (sec) => { const m = cfg.start(sec); st.custom = false; s.refresh(); toast(m); haptic('success'); };
     on({
       'tm-set': ({ s: sec }) => start(+sec),
       'tm-custom': () => { st.custom = true; s.refresh(); place(); },
@@ -631,5 +711,5 @@ const UI = (() => {
   /** Re-run fn every second (timers, countdowns). */
   const tick = (fn) => setInterval(fn, 1000);
 
-  return { esc, param, go, flash, segTabs, patch, setNum, pulse, collapse, group, mount, on, toolbar, sheet, closeSheet, subSheet, closeSubSheet, confirm, prompt, popover, toast, push, fmtDur, fmtTime, tick, timerSheet, wheelHTML, bindWheels, get screen() { return screen; }, get phone() { return phone; }, get sheetOpen() { return !!sheetState; } };
+  return { haptic, esc, param, go, flash, segTabs, patch, setNum, pulse, collapse, group, mount, on, toolbar, sheet, closeSheet, subSheet, closeSubSheet, confirm, prompt, popover, toast, push, fmtDur, fmtTime, tick, timerSheet, wheelHTML, bindWheels, get screen() { return screen; }, get phone() { return phone; }, get sheetOpen() { return !!sheetState; } };
 })();

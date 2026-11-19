@@ -399,7 +399,7 @@ const Scenarios = (() => {
     prog[id] = { done: 0, total, phase: 'run' }; redraw();
     runScene(s, (d, t) => { prog[id] = { done: d, total: t, phase: 'run' }; redraw(); }).then((r) => {
       prog[id] = r.problems && r.problems.length ? { phase: 'warn', msg: r.problems.length > 1 ? `${r.problems.length} problems` : 'Not all done' } : { phase: 'done' };
-      redraw();
+      redraw(); UI.haptic(r.problems && r.problems.length ? 'warning' : 'success');
       if (r.problems && r.problems.length) UI.toast(`${s.name} · ${r.problems[0]}`);
       setTimeout(() => { delete prog[id]; redraw(); }, 1800);
     });
