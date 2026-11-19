@@ -205,5 +205,43 @@ const Kit = (() => {
   }
   const ppBtn = (act, label, on = true) => (on ? `<button class="pp-btn" data-action="${act}">${label}</button>` : '');
 
-  return { markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, stripLegend, protoHead, protoFeatures, bindProto, ppBtn };
+
+  /* Quick-pick sheet with Custom (user, 2026-11-19: every preset picker gets Custom, like the Timer in light / relay).
+     Presets are chips; the last chip is Custom (pen) and opens the app's own Timer wheel — hours + min for a time,
+     one number wheel for an amount. A custom value that isn't a preset shows on the Custom chip.
+     cfg: { title, sub, presets: [[v, label]], value, time: true (v in minutes) | { max, step, unit } (amount),
+            endText(v)?, go(v) → start label, onGo(v), footerExtra? } */
+  function pickSheet(cfg) {
+    const isTime = cfg.time === true, unit = isTime ? '' : cfg.time.unit;
+    const st = { v: cfg.value, custom: false, h: 0, m: 0, n: 0 };
+    const fromV = () => { if (isTime) { st.h = Math.floor(st.v / 60); st.m = st.v % 60; } else st.n = st.v; };
+    const cv = () => (isTime ? st.h * 60 + st.m : st.n);
+    const isPreset = (v) => cfg.presets.some(([p]) => p === v);
+    const lbl = (v) => (isTime ? dur(v * 60) : `${v} ${unit}`);
+    const s = UI.sheet({
+      title: cfg.title, sub: cfg.sub,
+      render: () => {
+        if (st.custom) return `<div class="pad"><div class="tw">${isTime ? UI.wheelHTML('h', 23, st.h, 'hours') + UI.wheelHTML('m', 59, st.m, 'min') : UI.wheelHTML('n', cfg.time.max, st.n, unit, false, cfg.time.step)}</div>${cfg.endText ? `<p class="tw-end" data-live="pk-end">${cfg.endText(cv())}</p>` : ''}</div>`;
+        const own = !isPreset(st.v);
+        return `<div class="va-chips">${cfg.presets.map(([v, l]) => `<button class="va-chip ${st.v === v ? 'on' : ''}" data-action="pk-pick" data-v="${v}">${l}</button>`).join('')}
+          <button class="va-chip va-custom ${own ? 'on' : ''}" data-action="pk-custom" aria-label="Custom">${own ? lbl(st.v) : `${icon('pen', 'icon')}<span>Custom</span>`}</button></div>`;
+      },
+      footer: () => (st.custom
+        ? `<div class="tw-btns"><button class="btn btn-secondary" data-action="pk-back">Back</button><button class="btn btn-primary" data-action="pk-go" ${cv() ? '' : 'disabled'}>${cfg.go(cv())}</button></div>`
+        : `${cfg.footerExtra ? `<div class="wz-row" style="margin:0">${cfg.footerExtra}` : ''}<button class="btn btn-primary ${cfg.footerExtra ? '' : 'btn-block'}" data-action="pk-go">${cfg.go(st.v)}</button>${cfg.footerExtra ? '</div>' : ''}`),
+    });
+    const bind = () => UI.bindWheels(document.querySelector('.sheet.open') || document, (k) => st[k], (k, v) => {
+      st[k] = v;
+      const e = document.querySelector('[data-live="pk-end"]'); if (e && cfg.endText) e.textContent = cfg.endText(cv());
+      const g = document.querySelector('[data-action="pk-go"]'); if (g) { g.disabled = !cv(); g.textContent = cfg.go(cv()); }
+    });
+    UI.on({
+      'pk-pick': ({ v }) => { st.v = +v; s.refresh(); },
+      'pk-custom': () => { fromV(); st.custom = true; s.refresh(); bind(); },
+      'pk-back': () => { st.custom = false; s.refresh(); },
+      'pk-go': () => { const v = st.custom ? cv() : st.v; if (!v) return; cfg.onGo(v); },
+    });
+    return s;
+  }
+  return { pickSheet, markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, stripLegend, protoHead, protoFeatures, bindProto, ppBtn };
 })();

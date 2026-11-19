@@ -2054,3 +2054,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 /* day buttons stay round: never squeezed by the row (user, 2026-11-14) */
 .scn-day { flex: 0 1 40px; width: 40px; min-width: 0; height: auto; aspect-ratio: 1 / 1; padding: 0; }   /* shrink together on narrow phones, still round */
 .sheet .list > .cell.scn-days { gap: 4px !important; }
+
+/* Custom chip in quick-pick sheets (valve, meter): pen + word, like the Timer's Custom */
+.va-chip.va-custom { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.va-chip.va-custom .icon { width: 20px; height: 20px; }

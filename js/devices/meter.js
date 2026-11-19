@@ -198,13 +198,15 @@ Devices.meter = (() => {
     return `<div class="pad"><div class="info-card wide sm-level"><span>kWh per day</span><b>${d.st.today.toFixed(1)} kWh today</b><div class="pl-bars">${v.map((x, i) => `<i class="${i === 7 ? 'now' : ''}" style="height:${Math.max(4, x / mx * 100).toFixed(0)}%"><s>${lab[i].slice(0, i === 7 ? 5 : 1)}</s></i>`).join('')}</div></div></div><div style="height:24px"></div>`;
   }
   function openTimer(d, ctx) {
-    let pick = 120;
-    const s = UI.sheet({
+    Kit.pickSheet({
       title: 'Turn off later', sub: 'The main switch turns off once, after this time',
-      render: () => `<div class="va-chips">${[[30, '30 min'], [60, '1 h'], [120, '2 h'], [180, '3 h'], [240, '4 h'], [480, '8 h']].map(([v, l]) => `<button class="va-chip ${pick === v ? 'on' : ''}" data-action="em-pick" data-v="${v}">${l}</button>`).join('')}</div>`,
-      footer: `<div class="wz-row" style="margin:0">${d.st.timerEnd ? '<button class="btn btn-glass" data-action="em-tclear">Cancel timer</button>' : ''}<button class="btn btn-primary" data-action="em-tgo">Start</button></div>`,
+      presets: [[30, '30 min'], [60, '1 h'], [120, '2 h'], [240, '4 h'], [480, '8 h']], value: d.sim.lastOffMin || 120, time: true,
+      endText: (m) => `Turns off at ${UI.fmtTime(Date.now() + m * 60000)}`,
+      go: () => 'Start',
+      footerExtra: d.st.timerEnd ? '<button class="btn btn-glass" data-action="em-tclear">Cancel timer</button>' : '',
+      onGo: (pick) => { d.sim.lastOffMin = pick; d.st.timerEnd = Date.now() + pick * 60000; Kit.logEv(d, 'timer', { text: `Timer: off at ${UI.fmtTime(d.st.timerEnd)}` }); Store.save(); UI.closeSheet(); ctx.render(); },
     });
-    UI.on({ 'em-pick': ({ v }) => { pick = +v; s.refresh(); }, 'em-tgo': () => { d.st.timerEnd = Date.now() + pick * 60000; Kit.logEv(d, 'timer', { text: `Timer: off at ${UI.fmtTime(d.st.timerEnd)}` }); Store.save(); UI.closeSheet(); ctx.render(); }, 'em-tclear': () => { d.st.timerEnd = 0; Store.save(); UI.closeSheet(); ctx.render(); } });
+    UI.on({ 'em-tclear': () => { d.st.timerEnd = 0; Store.save(); UI.closeSheet(); ctx.render(); } });
   }
   const EV = { trip: (e) => `Cut for safety · ${e.why}`, alarm: (e) => `Above a limit · ${e.why}`, on: (e) => `Switched on${e.why ? ' · ' + e.why : ''}`, off: (e) => `Switched off${e.why ? ' · ' + e.why : ''}`, grid: (e) => (e.back ? 'Grid power back' : 'Grid power lost'), low: 'Prepaid balance low', top: (e) => `Topped up ${e.kwh} kWh`, reset: 'Counters reset', offline: 'Stopped answering' };
   function bindPage(d, ctx) {

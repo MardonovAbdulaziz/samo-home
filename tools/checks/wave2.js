@@ -45,7 +45,7 @@ const results = []; const ok = (name, cond, info = '') => results.push(`${cond ?
   // ---- valve + leak sensor
   await go('device.html?id=d-valve');
   ok('Valve: “Closed”', (await word()) === 'Closed');
-  await click('[data-action="va-timer"]'); await sl(300); await click('[data-action="va-go"]'); await sl(400);
+  await click('[data-action="va-timer"]'); await sl(300); await click('[data-action="pk-go"]'); await sl(400);
   s = await ev(() => ({ w: document.querySelector('[data-cl="word"]').textContent, ring: document.querySelector('.va-ring').classList.contains('is-run'), left: Math.round((Store.device('d-valve').ch[0].end - Date.now()) / 60000) }));
   ok('Valve: Open for 15 min → “Open”, the ring runs, 15 min left', s.w === 'Open' && s.ring && s.left === 15, JSON.stringify(s));
   await go('device.html?id=d-leak'); await click('[data-action="pp-wet"]'); await sl(300);

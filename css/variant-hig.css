@@ -237,10 +237,12 @@ html.hig .phone.ambient :is(.tile:not(.on):not(.alert), .quick-chip, .info-card,
   box-shadow: var(--cg-rim);
 }
 /* small round buttons sitting on a glass tile: a lighter drop of glass */
-html.hig .phone.ambient :is(.tile-power, .btn-circle, .tile.add .plus, .scn-ic, .scn-add .plus) { background-color: rgba(255, 255, 255, 0.10); box-shadow: none; }
+html.hig .phone.ambient :is(.tile-power, .btn-circle, .tile.add .plus, .scn-ic, .scn-add .plus):not(.active):not(.on):not([aria-pressed="true"]) { background-color: rgba(255, 255, 255, 0.10); box-shadow: none; }
 /* ON tiles stay white, alert tiles stay as they are — they get the same rim so every tile reads as one family */
 html.hig .phone.ambient .tile.on { box-shadow: none; }
-html.hig .phone.ambient .tile.on .tile-power { background-color: rgba(120, 120, 128, 0.16); box-shadow: none; }
+html.hig .phone.ambient .tile.on .tile-power:not(.active) { background-color: rgba(120, 120, 128, 0.16); box-shadow: none; }
+/* a tile button that is running (curtain moving → stop) stays app blue with a white glyph, on dark and on white tiles */
+html.hig .phone.ambient .tile .tile-power.active { background-color: var(--primary); color: #fff; box-shadow: none; }
 /* setup banner on glass */
 html.hig .phone.ambient .cw-setup { -webkit-backdrop-filter: var(--cg-blur); backdrop-filter: var(--cg-blur); box-shadow: none; }
 /* rows you tap into on device pages (Timer, Let a guest in, Air today…): glass rows, the press shows a light wash */
@@ -379,3 +381,7 @@ html.hig .phone.ambient.scrolled .home-header::before, html.hig .phone.ambient.s
 @supports (animation-timeline: scroll()) {
   html.hig .phone.ambient .toolbar::after { animation: bar-in linear both; animation-timeline: --page; animation-range: 0px 24px; }
 }
+
+/* segmented control on device pages: the chosen segment is app blue with a white label — the same "chosen" as the
+   curtain's Position chips (user, 2026-11-19: the grey thumb didn't fit the system) */
+html.hig .phone.ambient .segmented button.on { background: var(--primary); color: #fff; box-shadow: none; }

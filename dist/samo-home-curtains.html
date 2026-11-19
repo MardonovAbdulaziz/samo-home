@@ -2231,6 +2231,10 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .scn-day { flex: 0 1 40px; width: 40px; min-width: 0; height: auto; aspect-ratio: 1 / 1; padding: 0; }   /* shrink together on narrow phones, still round */
 .sheet .list > .cell.scn-days { gap: 4px !important; }
 
+/* Custom chip in quick-pick sheets (valve, meter): pen + word, like the Timer's Custom */
+.va-chip.va-custom { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.va-chip.va-custom .icon { width: 20px; height: 20px; }
+
 </style>
 </head>
 <body>
@@ -8192,7 +8196,45 @@ const Kit = (() => {
   }
   const ppBtn = (act, label, on = true) => (on ? `<button class="pp-btn" data-action="${act}">${label}</button>` : '');
 
-  return { markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, stripLegend, protoHead, protoFeatures, bindProto, ppBtn };
+
+  /* Quick-pick sheet with Custom (user, 2026-11-19: every preset picker gets Custom, like the Timer in light / relay).
+     Presets are chips; the last chip is Custom (pen) and opens the app's own Timer wheel — hours + min for a time,
+     one number wheel for an amount. A custom value that isn't a preset shows on the Custom chip.
+     cfg: { title, sub, presets: [[v, label]], value, time: true (v in minutes) | { max, step, unit } (amount),
+            endText(v)?, go(v) → start label, onGo(v), footerExtra? } */
+  function pickSheet(cfg) {
+    const isTime = cfg.time === true, unit = isTime ? '' : cfg.time.unit;
+    const st = { v: cfg.value, custom: false, h: 0, m: 0, n: 0 };
+    const fromV = () => { if (isTime) { st.h = Math.floor(st.v / 60); st.m = st.v % 60; } else st.n = st.v; };
+    const cv = () => (isTime ? st.h * 60 + st.m : st.n);
+    const isPreset = (v) => cfg.presets.some(([p]) => p === v);
+    const lbl = (v) => (isTime ? dur(v * 60) : `${v} ${unit}`);
+    const s = UI.sheet({
+      title: cfg.title, sub: cfg.sub,
+      render: () => {
+        if (st.custom) return `<div class="pad"><div class="tw">${isTime ? UI.wheelHTML('h', 23, st.h, 'hours') + UI.wheelHTML('m', 59, st.m, 'min') : UI.wheelHTML('n', cfg.time.max, st.n, unit, false, cfg.time.step)}</div>${cfg.endText ? `<p class="tw-end" data-live="pk-end">${cfg.endText(cv())}</p>` : ''}</div>`;
+        const own = !isPreset(st.v);
+        return `<div class="va-chips">${cfg.presets.map(([v, l]) => `<button class="va-chip ${st.v === v ? 'on' : ''}" data-action="pk-pick" data-v="${v}">${l}</button>`).join('')}
+          <button class="va-chip va-custom ${own ? 'on' : ''}" data-action="pk-custom" aria-label="Custom">${own ? lbl(st.v) : `${icon('pen', 'icon')}<span>Custom</span>`}</button></div>`;
+      },
+      footer: () => (st.custom
+        ? `<div class="tw-btns"><button class="btn btn-secondary" data-action="pk-back">Back</button><button class="btn btn-primary" data-action="pk-go" ${cv() ? '' : 'disabled'}>${cfg.go(cv())}</button></div>`
+        : `${cfg.footerExtra ? `<div class="wz-row" style="margin:0">${cfg.footerExtra}` : ''}<button class="btn btn-primary ${cfg.footerExtra ? '' : 'btn-block'}" data-action="pk-go">${cfg.go(st.v)}</button>${cfg.footerExtra ? '</div>' : ''}`),
+    });
+    const bind = () => UI.bindWheels(document.querySelector('.sheet.open') || document, (k) => st[k], (k, v) => {
+      st[k] = v;
+      const e = document.querySelector('[data-live="pk-end"]'); if (e && cfg.endText) e.textContent = cfg.endText(cv());
+      const g = document.querySelector('[data-action="pk-go"]'); if (g) { g.disabled = !cv(); g.textContent = cfg.go(cv()); }
+    });
+    UI.on({
+      'pk-pick': ({ v }) => { st.v = +v; s.refresh(); },
+      'pk-custom': () => { fromV(); st.custom = true; s.refresh(); bind(); },
+      'pk-back': () => { st.custom = false; s.refresh(); },
+      'pk-go': () => { const v = st.custom ? cv() : st.v; if (!v) return; cfg.onGo(v); },
+    });
+    return s;
+  }
+  return { pickSheet, markIcon, esc, clone, when, ago, dur, room, has, applyDefaults, base, logEv, push, banner, mark, readout, cards, bar, actionRow, actionRows, row, sw, radio, stepper, fmtNum, fieldsHTML, bindFields, fieldsSummary, summary, openFeature, settingsHTML, bindSettings, historySheet, stripLegend, protoHead, protoFeatures, bindProto, ppBtn };
 })();
 
 ;
@@ -8673,16 +8715,15 @@ Devices.valve = (() => {
     const r = root.querySelector('[data-live="ring"]'); if (r) { const L = 2 * Math.PI * 60, frac = c.open && c.total ? left(c) * 1000 / c.total : c.open && c.target ? 1 - c.used / c.target : 0; r.style.strokeDashoffset = (L * (1 - frac)).toFixed(1); }
   }
   function openTimer(d, ctx, amount) {
-    const c = cur(d), opts = amount ? [[10, '10'], [20, '20'], [50, '50'], [100, '100'], [200, '200']] : [[5, '5 min'], [10, '10 min'], [15, '15 min'], [20, '20 min'], [30, '30 min'], [60, '1 h']];
-    let pick = amount ? (d.sim.lastL || 20) : (d.sim.lastMin || 15);
-    const s = UI.sheet({
-      title: amount ? `Water ${c.name}` : `${kindOf(d) === 'garden' ? 'Water' : 'Open'} ${c.name} for`, sub: amount ? 'Closes by itself when this much has flowed' : 'Closes by itself when the time is up',
-      render: () => `<div class="va-chips">${opts.map(([v, l]) => `<button class="va-chip ${pick === v ? 'on' : ''}" data-action="va-pick" data-v="${v}">${amount ? `${l} ${unitL(d)}` : l}</button>`).join('')}</div>`,
-      footer: `<button class="btn btn-primary btn-block" data-action="va-go">Start · ${amount ? `${pick} ${unitL(d)}` : Kit.dur(pick * 60)}</button>`,
-    });
-    UI.on({
-      'va-pick': ({ v }) => { pick = +v; s.refresh(); },
-      'va-go': () => { if (amount) d.sim.lastL = pick; else d.sim.lastMin = pick; if (c.open) setOpen(d, d.cur || 0, false, 'app'); setOpen(d, d.cur || 0, true, 'app', amount ? { L: pick } : { min: pick }); Store.save(); UI.closeSheet(); ctx.render(); },
+    const c = cur(d), u = unitL(d), garden = kindOf(d) === 'garden';
+    Kit.pickSheet({
+      title: amount ? `Water ${c.name}` : `${garden ? 'Water' : 'Open'} ${c.name} for`, sub: amount ? 'Closes by itself when this much has flowed' : 'Closes by itself when the time is up',
+      presets: amount ? [[10, `10 ${u}`], [20, `20 ${u}`], [50, `50 ${u}`], [100, `100 ${u}`], [200, `200 ${u}`]] : [[5, '5 min'], [10, '10 min'], [15, '15 min'], [30, '30 min'], [60, '1 h']],
+      value: amount ? (d.sim.lastL || 20) : (d.sim.lastMin || 15),
+      time: amount ? { max: 1000, step: 5, unit: u } : true,
+      endText: amount ? null : (m) => `Closes at ${UI.fmtTime(Date.now() + m * 60000)}`,
+      go: (v) => `Start · ${amount ? `${v} ${u}` : Kit.dur(v * 60)}`,
+      onGo: (pick) => { if (amount) d.sim.lastL = pick; else d.sim.lastMin = pick; if (c.open) setOpen(d, d.cur || 0, false, 'app'); setOpen(d, d.cur || 0, true, 'app', amount ? { L: pick } : { min: pick }); Store.save(); UI.closeSheet(); ctx.render(); },
     });
   }
   function bindPage(d, ctx) {
@@ -10045,13 +10086,15 @@ Devices.meter = (() => {
     return `<div class="pad"><div class="info-card wide sm-level"><span>kWh per day</span><b>${d.st.today.toFixed(1)} kWh today</b><div class="pl-bars">${v.map((x, i) => `<i class="${i === 7 ? 'now' : ''}" style="height:${Math.max(4, x / mx * 100).toFixed(0)}%"><s>${lab[i].slice(0, i === 7 ? 5 : 1)}</s></i>`).join('')}</div></div></div><div style="height:24px"></div>`;
   }
   function openTimer(d, ctx) {
-    let pick = 120;
-    const s = UI.sheet({
+    Kit.pickSheet({
       title: 'Turn off later', sub: 'The main switch turns off once, after this time',
-      render: () => `<div class="va-chips">${[[30, '30 min'], [60, '1 h'], [120, '2 h'], [180, '3 h'], [240, '4 h'], [480, '8 h']].map(([v, l]) => `<button class="va-chip ${pick === v ? 'on' : ''}" data-action="em-pick" data-v="${v}">${l}</button>`).join('')}</div>`,
-      footer: `<div class="wz-row" style="margin:0">${d.st.timerEnd ? '<button class="btn btn-glass" data-action="em-tclear">Cancel timer</button>' : ''}<button class="btn btn-primary" data-action="em-tgo">Start</button></div>`,
+      presets: [[30, '30 min'], [60, '1 h'], [120, '2 h'], [240, '4 h'], [480, '8 h']], value: d.sim.lastOffMin || 120, time: true,
+      endText: (m) => `Turns off at ${UI.fmtTime(Date.now() + m * 60000)}`,
+      go: () => 'Start',
+      footerExtra: d.st.timerEnd ? '<button class="btn btn-glass" data-action="em-tclear">Cancel timer</button>' : '',
+      onGo: (pick) => { d.sim.lastOffMin = pick; d.st.timerEnd = Date.now() + pick * 60000; Kit.logEv(d, 'timer', { text: `Timer: off at ${UI.fmtTime(d.st.timerEnd)}` }); Store.save(); UI.closeSheet(); ctx.render(); },
     });
-    UI.on({ 'em-pick': ({ v }) => { pick = +v; s.refresh(); }, 'em-tgo': () => { d.st.timerEnd = Date.now() + pick * 60000; Kit.logEv(d, 'timer', { text: `Timer: off at ${UI.fmtTime(d.st.timerEnd)}` }); Store.save(); UI.closeSheet(); ctx.render(); }, 'em-tclear': () => { d.st.timerEnd = 0; Store.save(); UI.closeSheet(); ctx.render(); } });
+    UI.on({ 'em-tclear': () => { d.st.timerEnd = 0; Store.save(); UI.closeSheet(); ctx.render(); } });
   }
   const EV = { trip: (e) => `Cut for safety · ${e.why}`, alarm: (e) => `Above a limit · ${e.why}`, on: (e) => `Switched on${e.why ? ' · ' + e.why : ''}`, off: (e) => `Switched off${e.why ? ' · ' + e.why : ''}`, grid: (e) => (e.back ? 'Grid power back' : 'Grid power lost'), low: 'Prepaid balance low', top: (e) => `Topped up ${e.kwh} kWh`, reset: 'Counters reset', offline: 'Stopped answering' };
   function bindPage(d, ctx) {

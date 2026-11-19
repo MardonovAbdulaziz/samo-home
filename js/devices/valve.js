@@ -202,16 +202,15 @@ Devices.valve = (() => {
     const r = root.querySelector('[data-live="ring"]'); if (r) { const L = 2 * Math.PI * 60, frac = c.open && c.total ? left(c) * 1000 / c.total : c.open && c.target ? 1 - c.used / c.target : 0; r.style.strokeDashoffset = (L * (1 - frac)).toFixed(1); }
   }
   function openTimer(d, ctx, amount) {
-    const c = cur(d), opts = amount ? [[10, '10'], [20, '20'], [50, '50'], [100, '100'], [200, '200']] : [[5, '5 min'], [10, '10 min'], [15, '15 min'], [20, '20 min'], [30, '30 min'], [60, '1 h']];
-    let pick = amount ? (d.sim.lastL || 20) : (d.sim.lastMin || 15);
-    const s = UI.sheet({
-      title: amount ? `Water ${c.name}` : `${kindOf(d) === 'garden' ? 'Water' : 'Open'} ${c.name} for`, sub: amount ? 'Closes by itself when this much has flowed' : 'Closes by itself when the time is up',
-      render: () => `<div class="va-chips">${opts.map(([v, l]) => `<button class="va-chip ${pick === v ? 'on' : ''}" data-action="va-pick" data-v="${v}">${amount ? `${l} ${unitL(d)}` : l}</button>`).join('')}</div>`,
-      footer: `<button class="btn btn-primary btn-block" data-action="va-go">Start · ${amount ? `${pick} ${unitL(d)}` : Kit.dur(pick * 60)}</button>`,
-    });
-    UI.on({
-      'va-pick': ({ v }) => { pick = +v; s.refresh(); },
-      'va-go': () => { if (amount) d.sim.lastL = pick; else d.sim.lastMin = pick; if (c.open) setOpen(d, d.cur || 0, false, 'app'); setOpen(d, d.cur || 0, true, 'app', amount ? { L: pick } : { min: pick }); Store.save(); UI.closeSheet(); ctx.render(); },
+    const c = cur(d), u = unitL(d), garden = kindOf(d) === 'garden';
+    Kit.pickSheet({
+      title: amount ? `Water ${c.name}` : `${garden ? 'Water' : 'Open'} ${c.name} for`, sub: amount ? 'Closes by itself when this much has flowed' : 'Closes by itself when the time is up',
+      presets: amount ? [[10, `10 ${u}`], [20, `20 ${u}`], [50, `50 ${u}`], [100, `100 ${u}`], [200, `200 ${u}`]] : [[5, '5 min'], [10, '10 min'], [15, '15 min'], [30, '30 min'], [60, '1 h']],
+      value: amount ? (d.sim.lastL || 20) : (d.sim.lastMin || 15),
+      time: amount ? { max: 1000, step: 5, unit: u } : true,
+      endText: amount ? null : (m) => `Closes at ${UI.fmtTime(Date.now() + m * 60000)}`,
+      go: (v) => `Start · ${amount ? `${v} ${u}` : Kit.dur(v * 60)}`,
+      onGo: (pick) => { if (amount) d.sim.lastL = pick; else d.sim.lastMin = pick; if (c.open) setOpen(d, d.cur || 0, false, 'app'); setOpen(d, d.cur || 0, true, 'app', amount ? { L: pick } : { min: pick }); Store.save(); UI.closeSheet(); ctx.render(); },
     });
   }
   function bindPage(d, ctx) {
