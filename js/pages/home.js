@@ -133,7 +133,8 @@
     for (const r of rooms) {
       const devs = st.devices.filter((d) => (d.roomId || null) === r.id && d.showOnHome !== false);
       if (r.id === null && !devs.length) continue;
-      h += `<div class="section-title">${UI.esc(r.name)} ${icon('chevron-right', 'icon icon-sm')}</div><div class="tile-grid">`;
+      // a real room's title opens the room (rename / remove); 'No room' is only a heading
+      h += r.id ? `<button class="section-title" data-action="room-edit" data-room="${r.id}">${UI.esc(r.name)} ${icon('chevron-right', 'icon icon-sm')}</button><div class="tile-grid">` : `<div class="section-title">${UI.esc(r.name)}</div><div class="tile-grid">`;
       devs.forEach((d) => DeviceAPI(d).homeTiles().forEach((t) => { h += tileHTML(d, t); }));
       if (!devs.length) h += `<button class="tile add" data-action="add-device" data-room="${r.id}"><span class="plus">${icon('plus', 'icon icon-sm')}</span><span>Add a device</span></button>`;
       h += '</div>';
@@ -194,6 +195,24 @@
     'scn-open': ({ id }) => UI.go(`scenario.html?id=${id}`),
     'scene-run': ({ id }) => Scenarios.tapScene(id, render),
     'row-edit': () => openRowEdit(),
+    // a room: rename or remove (user, 2026-11-19 — rooms could be added but never removed). Devices of a removed room move to No room.
+    'room-edit': ({ room }) => {
+      const r = S().rooms.find((x) => x.id === room); if (!r) return;
+      const n = () => S().devices.filter((d) => d.roomId === r.id).length;
+      const s = UI.sheet({
+        title: r.name, sub: n() ? `${n()} device${n() > 1 ? 's' : ''}` : 'No devices yet',
+        render: () => `<div class="list"><button class="cell" data-action="room-rename"><span class="cell-main cell-title">Name</span><span class="cell-value">${UI.esc(r.name)}</span>${icon('chevron-right', 'chev')}</button></div>
+          <div class="pad" style="margin-top:24px"><button class="btn btn-danger btn-block" data-action="room-remove">Remove room</button></div>`,
+      });
+      UI.on({
+        'room-rename': () => UI.prompt({ title: 'Rename room', label: 'Room name', value: r.name, okText: 'Save',
+          validate: (v) => (!v ? 'Enter a room name' : S().rooms.some((x) => x !== r && x.name.toLowerCase() === v.toLowerCase()) ? 'A room with this name already exists' : null),
+          onOk: (v) => { r.name = v; Store.save(); render(); UI.closeSheet(); UI.toast(`Renamed to “${v}”`); } }),
+        'room-remove': () => UI.confirm({ title: `Remove ${r.name}?`, text: n() ? `Its ${n()} device${n() > 1 ? 's' : ''} stay${n() > 1 ? '' : 's'} in your home, under No room.` : 'The room is empty.', ok: 'Remove',
+          onOk: () => { S().devices.forEach((d) => { if (d.roomId === r.id) d.roomId = null; }); S().rooms.splice(S().rooms.indexOf(r), 1); Store.save(); UI.closeSheet(); render(); UI.toast(`${r.name} removed`); } }),
+      });
+      return s;
+    },
     bell: () => UI.toast('Notifications — coming soon'),
     homes: () => UI.toast('Switch home — coming soon'),
     edit: () => UI.toast('Edit home — coming soon'),

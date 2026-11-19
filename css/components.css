@@ -2065,3 +2065,7 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 [data-key="zones"] + .va-power { padding-top: 32px; }
 .va-toggle .knob .icon { color: var(--primary); transition: color var(--dur); }
 .va-toggle[aria-pressed="false"] .knob .icon { color: var(--static-white); }
+
+/* a room title is a button (opens rename / remove) — it keeps the heading look */
+button.section-title { width: 100%; background: none; border: 0; color: inherit; text-align: left; -webkit-tap-highlight-color: transparent; }
+button.section-title:active { opacity: .6; }

@@ -231,17 +231,48 @@ Devices.valve = (() => {
 
   /* ---------- Schedule ---------- */
   function openSchedule(d, ctx) {
+    // a plan row opens the plan (edit / turn off / delete) — like the lock's PIN codes (user, 2026-11-19: no way to delete a plan)
+    const planSub = (p) => (p.on ? (p.every === 1 ? 'Every day' : p.every === 7 ? 'Once a week' : `Every ${p.every} days`) : 'Turned off');
     const s = UI.sheet({
       title: 'Watering schedule', sub: 'Runs on our hub — works without internet',
-      render: () => `${d.plans.length ? `<div class="list">${d.plans.map((p, i) => Kit.sw('va-plan', i, `${p.at} · ${d.ch[p.zone] ? d.ch[p.zone].name : 'Zone'} · ${p.min} min`, p.every === 1 ? 'Every day' : `Every ${p.every} days`, p.on)).join('')}</div>` : '<div class="list-footer" style="padding-top:0">No plans yet.</div>'}
+      render: () => `${d.plans.length ? `<div class="list">${d.plans.map((p, i) => `<button class="cell" data-action="va-plan" data-i="${i}"><span class="cell-main"><span class="cell-title" style="display:block">${p.at} · ${esc(d.ch[p.zone] ? d.ch[p.zone].name : 'Zone')} · ${p.min} min</span><span class="cell-sub" style="display:block">${planSub(p)}</span></span>${icon('chevron-right', 'chev')}</button>`).join('')}</div>` : '<div class="pad"><p class="t-sm c-secondary">No plans yet — add one and the hub waters by itself.</p></div>'}
         <div class="pad" style="margin-top:16px"><button class="btn btn-glass btn-block" data-action="va-plan-add">${icon('plus')} Add a plan</button></div>
         ${has(d, 'weather') && S(d, 'weather').season !== 100 ? `<div class="list-footer">This month every plan waters ${S(d, 'weather').season} % of its time.</div>` : ''}`,
     });
     UI.on({
-      'va-plan': ({ n }) => { d.plans[+n].on = !d.plans[+n].on; Store.save(); ctx.render(); s.refresh(); },
-      'va-plan-add': () => { d.plans.push({ at: ['06:00', '20:00', '07:30'][d.plans.length % 3], every: d.plans.length % 2 ? 1 : 2, min: 10, zone: d.plans.length % d.ch.length, on: true }); Store.save(); ctx.render(); s.refresh(); UI.toast('Plan added'); },
+      'va-plan': ({ i }) => openPlan(d, ctx, +i),
+      'va-plan-add': () => openPlan(d, ctx, -1),
+    });
+    return s;
+  }
+  /* one plan: works on/off, start time (the app's clock wheel), how long, zone, repeat; Delete last.
+     i = -1 → a new plan (a draft until 'Add plan') */
+  function openPlan(d, ctx, i) {
+    const fresh = i < 0, p = fresh ? { at: '06:00', every: 1, min: 10, zone: d.cur || 0, on: true } : d.plans[i];
+    const back = () => openSchedule(d, ctx), keep = () => { if (!fresh) { Store.save(); ctx.render(); } };
+    const s = UI.sheet({
+      title: fresh ? 'New plan' : 'Watering plan', sub: fresh ? 'When the hub should water by itself' : '',
+      render: () => `${fresh ? '' : `<div class="list">${Kit.sw('va-p-on', 'on', 'Plan works', 'Turn off for a while without deleting it', p.on)}</div>`}
+        ${UI.group('Starts at', `<div class="tw tw-clock">${UI.wheelHTML('ph', 23, +p.at.split(':')[0], '', true)}<span class="tw-colon">:</span>${UI.wheelHTML('pm', 59, +p.at.split(':')[1], '', true)}</div>`)}
+        ${UI.group('', `<div class="cell"><span class="cell-main cell-title">How long</span>${Kit.stepper('va-p-min', 'min', `${p.min} min`, p.min <= 5, p.min >= 120)}</div>`)}
+        ${d.ch.length > 1 ? UI.group('Zone', Kit.radio('va-p-zone', p.zone, d.ch.map((c, z) => [z, c.name]))) : ''}
+        ${UI.group('Repeat', Kit.radio('va-p-every', p.every, [[1, 'Every day'], [2, 'Every 2 days'], [3, 'Every 3 days'], [7, 'Once a week']]))}
+        ${fresh ? '' : '<div class="pad" style="margin-top:24px"><button class="btn btn-danger btn-block" data-action="va-p-del">Delete this plan</button></div>'}`,
+      footer: fresh ? '<div class="tw-btns"><button class="btn btn-secondary" data-action="va-p-back">Back</button><button class="btn btn-primary" data-action="va-p-save">Add plan</button></div>'
+        : '<button class="btn btn-glass btn-block" data-action="va-p-back">Back</button>',
+      onMount: (el) => UI.bindWheels(el, (k) => +p.at.split(':')[k === 'ph' ? 0 : 1], (k, v) => { const t = p.at.split(':'); t[k === 'ph' ? 0 : 1] = String(v).padStart(2, '0'); p.at = t.join(':'); keep(); }),
+    });
+    UI.on({
+      'va-p-on': () => { p.on = !p.on; keep(); s.refresh(); },
+      'va-p-min': ({ d: dir }) => { p.min = Math.max(5, Math.min(120, p.min + 5 * +dir)); keep(); s.refresh(); },
+      'va-p-zone': ({ v }) => { p.zone = +v; keep(); s.refresh(); },
+      'va-p-every': ({ v }) => { p.every = +v; keep(); s.refresh(); },
+      'va-p-save': () => { d.plans.push(p); Store.save(); ctx.render(); back(); UI.toast('Plan added'); },
+      'va-p-del': () => UI.confirm({ title: 'Delete this plan?', text: `${p.at} · ${p.min} min — the hub stops watering at this time.`, ok: 'Delete', onOk: () => { d.plans.splice(i, 1); Store.save(); ctx.render(); back(); UI.toast('Plan deleted'); } }),
+      'va-p-back': back,
     });
   }
+
 
   /* ---------- Settings ---------- */
   function settings(d) { return Kit.settingsHTML(F, GROUPS, d, { foot: { Automation: 'Our hub runs these, even without internet.', Safety: 'Stored in the valve — it works without our hub.' } }); }
