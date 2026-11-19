@@ -2060,7 +2060,8 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .va-chip.va-custom .icon { width: 20px; height: 20px; }
 
 /* valve open / close toggle — the relay power toggle with a water drop in the knob (blue on white when open) */
-.va-toggle-row { display: flex; justify-content: center; margin-top: 20px; }
+.va-power .power-sub.is-alarm { color: var(--red); }
+/* under zone tabs the toggle sits closer (32): they belong together */
+[data-key="zones"] + .va-power { padding-top: 32px; }
 .va-toggle .knob .icon { color: var(--primary); transition: color var(--dur); }
 .va-toggle[aria-pressed="false"] .knob .icon { color: var(--static-white); }
-.va-ctl { pointer-events: none; }

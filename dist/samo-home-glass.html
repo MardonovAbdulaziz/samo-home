@@ -2236,10 +2236,11 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .va-chip.va-custom .icon { width: 20px; height: 20px; }
 
 /* valve open / close toggle — the relay power toggle with a water drop in the knob (blue on white when open) */
-.va-toggle-row { display: flex; justify-content: center; margin-top: 20px; }
+.va-power .power-sub.is-alarm { color: var(--red); }
+/* under zone tabs the toggle sits closer (32): they belong together */
+[data-key="zones"] + .va-power { padding-top: 32px; }
 .va-toggle .knob .icon { color: var(--primary); transition: color var(--dur); }
 .va-toggle[aria-pressed="false"] .knob .icon { color: var(--static-white); }
-.va-ctl { pointer-events: none; }
 
 /* ==========================================================================
    VARIANT "glass" — only in dist/samo-home-glass.html (tools/bundle.py --variant glass); the main build does not load it.
@@ -8697,22 +8698,22 @@ Devices.valve = (() => {
     if (st.rainUntil > Date.now()) h += Kit.banner('ban-rain', 'info', 'round-info', `<b>Rain delay</b> · Watering skipped until ${when(st.rainUntil)}`);
     if (battLow(d)) h += Kit.banner('ban-batt', 'warn', 'battery', `<b>Battery low · ${d.battery} %</b>`);
     if (d.ch.length > 1) h += `<div class="pad" data-key="zones" style="margin-top:8px">${UI.segTabs(d.ch.map((x) => x.name), d.cur || 0, 'va-zone-pick')}</div>`;
-    const state = !d.online ? 'calm' : st.fault ? 'alarm' : c.open ? 'on' : 'calm';
-    const frac = c.open && c.total ? left(c) * 1000 / c.total : c.open && c.target ? 1 - c.used / c.target : 0;
-    h += `<div class="pad" data-key="scene"><div class="lk-mark lo-ctl va-ctl ${state === 'alarm' ? 'is-alarm' : state === 'on' ? 'is-on' : ''} ${!d.online ? 'is-off' : ''}" aria-hidden="true">
-        <i class="lk-halo"></i><span class="lk-disc">${Kit.markIcon(d.userIcon || ICON[k])}</span>
-        <svg class="lo-ring va-ring ${frac ? 'is-run' : ''}" viewBox="0 0 124 124" aria-hidden="true"><circle cx="62" cy="62" r="${R}" style="stroke-dasharray:${L.toFixed(1)};stroke-dashoffset:${(L * (1 - frac)).toFixed(1)}" data-live="ring"/></svg></div></div>`;
-    h += Kit.readout(word(d), tone(d), subText(d), c.open ? '' : '');
-    // open / close: the same big toggle as relay and light (user, 2026-11-19) — the picture above only shows the state
-    if (has(d, 'valve')) h += `<div class="pad va-toggle-row" data-key="toggle"><button class="power-toggle va-toggle" aria-pressed="${c.open}" data-action="va-tap" ${!d.online || st.fault ? 'disabled' : ''} aria-label="${c.open ? 'Close' : 'Open'} ${esc(c.name)}">
-        <span class="label">${c.open ? 'Open' : 'Closed'}</span><span class="knob">${icon('dev-drop', 'icon', 'style="width:40px;height:40px"')}</span></button></div>`;
+    // open / close first, right under the zone tabs — the same big toggle as relay and light (user, 2026-11-19);
+    // its label is the state, so there is no big status word and no picture; the line under it tells the rest
+    const garden = kindOf(d) === 'garden', lab = !d.online ? 'Offline' : st.fault ? 'Stuck' : c.open ? (garden ? 'Watering' : 'Open') : 'Closed';
+    if (has(d, 'valve')) h += `<div class="power-area va-power" data-key="toggle"><button class="power-toggle va-toggle" aria-pressed="${d.online && c.open}" data-action="va-tap" ${!d.online || st.fault ? 'disabled' : ''} aria-label="${c.open ? 'Close' : 'Open'} ${esc(c.name)}">
+        <span class="label">${lab}</span><span class="knob">${icon('dev-drop', 'icon', 'style="width:40px;height:40px"')}</span></button>
+        <div class="t-sm c-secondary power-sub ${tone(d) === 'alarm' ? 'is-alarm' : ''}" data-num data-live="sub">${esc(subText(d))}</div></div>`;
+    else h += Kit.readout(word(d), tone(d), subText(d), '');
     // part-way (pipe valves)
     if (has(d, 'position') && c.open) h += `<div class="pad" data-key="pos" style="margin-top:16px"><div class="segmented">${[25, 50, 75, 100].map((p) => `<button class="${c.pos === p ? 'on' : ''}" data-action="va-pos" data-v="${p}">${p} %</button>`).join('')}</div></div>`;
-    // timer / amount
-    const quick = [];
-    if (has(d, 'timer')) quick.push(`<button class="btn btn-glass" data-action="va-timer" ${!d.online || st.fault ? 'disabled' : ''}>${icon('clock')}${c.end ? 'Change time' : k === 'garden' ? 'Water for…' : 'Open for…'}</button>`);
-    if (has(d, 'amount')) quick.push(`<button class="btn btn-glass" data-action="va-amount" ${!d.online || st.fault ? 'disabled' : ''}>${icon('dev-drop')}Water ${unitL(d) === 'L' ? 'litres' : 'gallons'}…</button>`);
-    if (quick.length) h += `<div class="pad sm-acts" data-key="quick" style="margin-top:16px">${quick.join('')}</div>`;
+    // timer / amount: tap-in rows like the Timer on light and relay (user, 2026-11-19 — not two buttons side by side)
+    const dis = !d.online || st.fault ? 'aria-disabled="true"' : '', rows = [];
+    if (has(d, 'timer')) rows.push(`<button class="cell has-icon" data-action="va-timer" ${dis}><span class="cell-icon">${icon('clock')}</span>
+        <span class="cell-main cell-title">${k === 'garden' ? 'Water for' : 'Open for'}</span><span class="cell-value" data-num data-live="va-left">${c.open && c.end ? `${mmss(left(c))} left` : ''}</span>${icon('chevron-right', 'chev')}</button>`);
+    if (has(d, 'amount')) rows.push(`<button class="cell has-icon" data-action="va-amount" ${dis}><span class="cell-icon">${icon('dev-drop')}</span>
+        <span class="cell-main cell-title">Water ${unitL(d) === 'L' ? 'litres' : 'gallons'}</span><span class="cell-value" data-num data-live="va-vol">${c.open && c.target ? `${vol(d, c.used)} of ${vol(d, c.target)}` : ''}</span>${icon('chevron-right', 'chev')}</button>`);
+    if (rows.length) h += `<div class="list" data-key="controls" style="margin-top:24px">${rows.join('')}</div>`;
     h += Kit.cards([
       has(d, 'flow') && ['Flow now', `${flowNow(d, c)} ${unitL(d)}/min`, { count: true }],
       has(d, 'flow') && ['Used today', vol(d, st.todayL), { count: true }],
@@ -8725,6 +8726,8 @@ Devices.valve = (() => {
   }
   function live(d, root) {
     const c = cur(d); UI.setNum(root.querySelector('[data-live="sub"]'), subText(d));
+    const lv = root.querySelector('[data-live="va-left"]'); if (lv) UI.setNum(lv, c.open && c.end ? `${mmss(left(c))} left` : '');
+    const vv = root.querySelector('[data-live="va-vol"]'); if (vv) UI.setNum(vv, c.open && c.target ? `${vol(d, c.used)} of ${vol(d, c.target)}` : '');
     const r = root.querySelector('[data-live="ring"]'); if (r) { const L = 2 * Math.PI * 60, frac = c.open && c.total ? left(c) * 1000 / c.total : c.open && c.target ? 1 - c.used / c.target : 0; r.style.strokeDashoffset = (L * (1 - frac)).toFixed(1); }
   }
   function openTimer(d, ctx, amount) {
@@ -8744,8 +8747,8 @@ Devices.valve = (() => {
       'va-tap': () => { if (!d.online || d.st.fault) return; const c = cur(d); if (!c.open && d.st.rainUntil > Date.now() && kindOf(d) === 'garden') UI.toast('Rain delay is on — opening anyway'); setOpen(d, d.cur || 0, !c.open, 'app'); Store.save(); ctx.render(); },
       'va-zone-pick': ({ ch }) => { d.cur = +ch; Store.save(); ctx.render(); },
       'va-pos': ({ v }) => { cur(d).pos = +v; Kit.logEv(d, 'pos', { text: `${cur(d).name} opened ${v} %` }); Store.save(); ctx.render(); },
-      'va-timer': () => openTimer(d, ctx, false),
-      'va-amount': () => openTimer(d, ctx, true),
+      'va-timer': () => { if (d.online && !d.st.fault) openTimer(d, ctx, false); },
+      'va-amount': () => { if (d.online && !d.st.fault) openTimer(d, ctx, true); },
       'va-dry-ok': () => { d.st.dry = false; Store.save(); ctx.render(); },
       'va-sched': () => openSchedule(d, ctx),
     });
