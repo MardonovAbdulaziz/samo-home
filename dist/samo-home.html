@@ -2235,6 +2235,12 @@ html[data-bg="10"] .phone.ambient { background: radial-gradient(95% 48% at 50% 2
 .va-chip.va-custom { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .va-chip.va-custom .icon { width: 20px; height: 20px; }
 
+/* valve open / close toggle — the relay power toggle with a water drop in the knob (blue on white when open) */
+.va-toggle-row { display: flex; justify-content: center; margin-top: 20px; }
+.va-toggle .knob .icon { color: var(--primary); transition: color var(--dur); }
+.va-toggle[aria-pressed="false"] .knob .icon { color: var(--static-white); }
+.va-ctl { pointer-events: none; }
+
 </style>
 </head>
 <body>
@@ -8672,11 +8678,13 @@ Devices.valve = (() => {
     if (d.ch.length > 1) h += `<div class="pad" data-key="zones" style="margin-top:8px">${UI.segTabs(d.ch.map((x) => x.name), d.cur || 0, 'va-zone-pick')}</div>`;
     const state = !d.online ? 'calm' : st.fault ? 'alarm' : c.open ? 'on' : 'calm';
     const frac = c.open && c.total ? left(c) * 1000 / c.total : c.open && c.target ? 1 - c.used / c.target : 0;
-    h += `<div class="pad" data-key="scene"><button class="lk-mark lo-ctl va-ctl ${state === 'alarm' ? 'is-alarm' : state === 'on' ? 'is-on' : ''} ${!d.online ? 'is-off' : ''}" data-action="va-tap" aria-label="${c.open ? 'Close' : 'Open'} ${esc(c.name)}" ${!d.online || !has(d, 'valve') ? 'disabled' : ''}>
+    h += `<div class="pad" data-key="scene"><div class="lk-mark lo-ctl va-ctl ${state === 'alarm' ? 'is-alarm' : state === 'on' ? 'is-on' : ''} ${!d.online ? 'is-off' : ''}" aria-hidden="true">
         <i class="lk-halo"></i><span class="lk-disc">${Kit.markIcon(d.userIcon || ICON[k])}</span>
-        <svg class="lo-ring va-ring ${frac ? 'is-run' : ''}" viewBox="0 0 124 124" aria-hidden="true"><circle cx="62" cy="62" r="${R}" style="stroke-dasharray:${L.toFixed(1)};stroke-dashoffset:${(L * (1 - frac)).toFixed(1)}" data-live="ring"/></svg></button></div>`;
+        <svg class="lo-ring va-ring ${frac ? 'is-run' : ''}" viewBox="0 0 124 124" aria-hidden="true"><circle cx="62" cy="62" r="${R}" style="stroke-dasharray:${L.toFixed(1)};stroke-dashoffset:${(L * (1 - frac)).toFixed(1)}" data-live="ring"/></svg></div></div>`;
     h += Kit.readout(word(d), tone(d), subText(d), c.open ? '' : '');
-    if (d.online && !st.fault && has(d, 'valve')) h += `<div class="pad lo-hint" data-key="howto"><span>${c.open ? 'Tap to close' : 'Tap to open'}</span></div>`;
+    // open / close: the same big toggle as relay and light (user, 2026-11-19) — the picture above only shows the state
+    if (has(d, 'valve')) h += `<div class="pad va-toggle-row" data-key="toggle"><button class="power-toggle va-toggle" aria-pressed="${c.open}" data-action="va-tap" ${!d.online || st.fault ? 'disabled' : ''} aria-label="${c.open ? 'Close' : 'Open'} ${esc(c.name)}">
+        <span class="label">${c.open ? 'Open' : 'Closed'}</span><span class="knob">${icon('dev-drop', 'icon', 'style="width:40px;height:40px"')}</span></button></div>`;
     // part-way (pipe valves)
     if (has(d, 'position') && c.open) h += `<div class="pad" data-key="pos" style="margin-top:16px"><div class="segmented">${[25, 50, 75, 100].map((p) => `<button class="${c.pos === p ? 'on' : ''}" data-action="va-pos" data-v="${p}">${p} %</button>`).join('')}</div></div>`;
     // timer / amount
