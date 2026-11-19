@@ -8695,7 +8695,7 @@ Devices.valve = (() => {
     // its label is the state, so there is no big status word and no picture; the line under it tells the rest
     const garden = kindOf(d) === 'garden', lab = !d.online ? 'Offline' : st.fault ? 'Stuck' : c.open ? (garden ? 'Watering' : 'Open') : 'Closed';
     if (has(d, 'valve')) h += `<div class="power-area va-power" data-key="toggle"><button class="power-toggle va-toggle" aria-pressed="${d.online && c.open}" data-action="va-tap" ${!d.online || st.fault ? 'disabled' : ''} aria-label="${c.open ? 'Close' : 'Open'} ${esc(c.name)}">
-        <span class="label">${lab}</span><span class="knob">${icon('dev-drop', 'icon', 'style="width:40px;height:40px"')}</span></button>
+        <span class="label">${lab}</span><span class="knob">${icon(k === 'gas' ? 'dev-flame' : 'dev-drop', 'icon', 'style="width:40px;height:40px"')}</span></button>
         <div class="t-sm c-secondary power-sub ${tone(d) === 'alarm' ? 'is-alarm' : ''}" data-num data-live="sub">${esc(subText(d))}</div></div>`;
     else h += Kit.readout(word(d), tone(d), subText(d), '');
     // part-way (pipe valves)
@@ -8793,7 +8793,15 @@ Devices.valve = (() => {
 
 
   /* ---------- Settings ---------- */
-  function settings(d) { return Kit.settingsHTML(F, GROUPS, d, { foot: { Automation: 'Our hub runs these, even without internet.', Safety: 'Stored in the valve — it works without our hub.' } }); }
+  /* a gas valve's settings speak about gas, not water (user, 2026-11-19) */
+  const FG = Object.assign({}, F, {
+    valve: Object.assign({}, F.valve, { short: 'Opens or closes the gas' }),
+    history: Object.assign({}, F.history, { name: 'History', short: 'Every time it opened and closed' }),
+    notify: Object.assign({}, F.notify, { fields: F.notify.fields.filter((f) => f.id === 'stuck' || f.id === 'closedBy').map((f) => (f.id === 'closedBy' ? Object.assign({}, f, { label: 'Closed by a gas alarm' }) : f)) }),
+    linkAlarms: Object.assign({}, F.linkAlarms, { name: 'Close on gas', short: 'Our hub closes this valve the moment a gas detector alarms', fields: F.linkAlarms.fields.filter((f) => f.id === 'gas') }),
+  });
+  const FK = (d) => (kindOf(d) === 'gas' ? FG : F);
+  function settings(d) { return Kit.settingsHTML(FK(d), GROUPS, d, { foot: { Automation: 'Our hub runs these, even without internet.', Safety: 'Stored in the valve — it works without our hub.' } }); }
   const EV = {
     open: (e) => `${e.z} opened${e.min ? ` for ${e.min} min` : e.L ? ` for ${e.L} L` : ''}${e.by && e.by !== 'app' ? ' · ' + e.by : ''}`,
     close: (e) => `${e.z} closed · ${e.min} min${e.L ? ` · ${Math.round(e.L)} L` : ''}${e.by && !['app', 'timer', 'amount'].includes(e.by) ? ' · ' + e.by : ''}`,
@@ -8804,7 +8812,7 @@ Devices.valve = (() => {
     return `<div class="pad"><div class="info-card wide sm-level"><span>Last 7 days</span><b>${vol(d, d.st.todayL)} today</b><div class="pl-bars">${d.st.days.map((v, i) => `<i style="height:${Math.max(6, v / mx * 100).toFixed(0)}%" title="${Math.round(v)} L"><s>${labels[i]}</s></i>`).join('')}</div></div></div><div style="height:24px"></div>`;
   }
   function bindSettings(d, ctx) {
-    Kit.bindSettings(F, d, ctx);
+    Kit.bindSettings(FK(d), d, ctx);
     UI.on({
       'va-zone': ({ k }) => UI.prompt({ title: `Zone ${+k + 1}`, label: 'Name', value: d.ch[+k].name, onOk: (v) => { d.ch[+k].name = v; Store.save(); ctx.render(); } }),
       'va-sched': () => openSchedule(d, ctx),
