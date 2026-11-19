@@ -237,7 +237,7 @@ html.hig .phone.ambient :is(.tile:not(.on):not(.alert), .quick-chip, .info-card,
   box-shadow: var(--cg-rim);
 }
 /* small round buttons sitting on a glass tile: a lighter drop of glass */
-html.hig .phone.ambient :is(.tile-power, .btn-circle, .tile.add .plus, .scn-ic, .scn-add .plus):not(.active):not(.on):not([aria-pressed="true"]) { background-color: rgba(255, 255, 255, 0.10); box-shadow: none; }
+html.hig .phone.ambient :where(.tile-power, .btn-circle, .tile.add .plus, .scn-ic, .scn-add .plus):not(.active):not(.on):not([aria-pressed="true"]) { background-color: rgba(255, 255, 255, 0.10); box-shadow: none; }
 /* ON tiles stay white, alert tiles stay as they are — they get the same rim so every tile reads as one family */
 html.hig .phone.ambient .tile.on { box-shadow: none; }
 html.hig .phone.ambient .tile.on .tile-power:not(.active) { background-color: rgba(120, 120, 128, 0.16); box-shadow: none; }
