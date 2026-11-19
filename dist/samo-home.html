@@ -2491,12 +2491,17 @@ const UI = (() => {
     try { hx = hx || new window.WebHaptics(); hx.trigger(kind); } catch (e) { /* no haptics here */ }
   }
   const HX = [
-    ['.power-toggle', 'medium'],
-    ['.btn-danger', 'rigid'],
+    // things that move or lock: the big toggle, curtain Open / Close / Stop, the lock
+    ['.power-toggle, [data-action="ct-cmd"], [data-action="lo-tap"]', 'medium'],
+    // deleting: the red button, and a delete that happens at once (guest code, trained IR key)
+    ['.btn-danger, [data-action="lo-g-del"], [data-action="ir-untrain"]', 'rigid'],
     ['[role="switch"], .switch', 'light'],
-    ['.tile-power, [data-action="tile-cmd"]', 'light'],
-    ['.segmented button, .ch-picker button, .seg-tabs button, .va-chip, .cw-chip, .chip, .option, [role="radio"], .tabbar .tab, .preset-grid button, .stepper button, .name-chip, .pr-chip, .tw-wheel span', 'selection'],
-    ['.btn-primary', 'soft'],
+    // pressing a control: tile buttons, channel tiles, remote-control keys, running a scene
+    ['.tile-power, [data-action="tile-cmd"], [data-action="relay-toggle"], [data-action="ir-send"], [data-action="ir-ac-t"], [data-action="scene-run"], [data-action="all-off-go"]', 'light'],
+    ['.segmented button, .ch-picker button, .seg-tabs button, .va-chip, .cw-chip, .chip, .option, [role="radio"], .tabbar .tab, .preset-grid button, .stepper button, .name-chip, .pr-chip, .tw-wheel span, [data-action="lt-swatch"], [data-action="lt-white"]', 'selection'],
+    ['.btn-primary, .btn-opposite', 'soft'],
+    // every other button that does something (Top up, Back, Add a person, New automation, Edit, +): a light tap
+    ['.btn, .btn-sm, .btn-pill, [data-action="plus"]', 'light'],
   ];
   document.addEventListener('click', (e) => {
     const t = e.target && e.target.closest ? e.target : null; if (!t || !t.closest('.phone')) return;
