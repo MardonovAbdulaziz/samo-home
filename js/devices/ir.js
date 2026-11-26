@@ -266,7 +266,7 @@ Devices.ir = (() => {
     });
     UI.on({ 'ir-again': () => openSetup(d, ctx, kind, brand, true) });
   }
-  const removeR = (d, ctx, i, after) => UI.confirm({ title: 'Remove device?', text: 'Are you sure you want to remove this device? It will be unlinked from your home.', ok: 'Remove', onOk: () => { const n = d.remotes[i].name; d.remotes.splice(i, 1); Store.save(); if (after) after(n); else { ctx.render(); UI.toast(`${n} removed`); } } });
+  const removeR = (d, ctx, i, after) => UI.confirm({ title: `Remove ${d.remotes[i].name}?`, text: 'Its taught buttons are deleted from the app.', ok: 'Remove', onOk: () => { const n = d.remotes[i].name; d.remotes.splice(i, 1); Store.save(); if (after) after(n); else { ctx.render(); UI.toast(`${n} removed`); } } });
   /* ---------- Edit a remote (like the channel Edit sheet, Figma 5990:67634) ----------
      Full sheet: icon (pen → icon picker) · name · buttons · Remove remote (red text button, Figma 5429:45036) · Save.
      Name and icon are a draft until Save; × leaves the remote as it was. Opened from the Remotes row in Device Settings,
@@ -319,7 +319,7 @@ Devices.ir = (() => {
       'ir-add': () => openAdd(d, ctx),
       'ir-open': ({ i }, el, e) => { if (e && e.target.closest('.ir-more')) return; go(`device.html?id=${d.id}&r=${i}`); },
       'ir-more': ({ i }) => openEdit(d, ctx, +i),
-      'ir-remove': ({ i }) => { UI.closeSheet(); removeR(d, ctx, +i, view() >= 0 ? (n) => { UI.flash(`${n} removed`); go(`device.html?id=${d.id}`); } : null); },
+      'ir-remove': ({ i }) => { removeR(d, ctx, +i, view() >= 0 ? (n) => { UI.flash(`${n} removed`); go(`device.html?id=${d.id}`); } : null); },
       'ir-teach': ({ i }) => { UI.closeSheet(); go(`device.html?id=${d.id}&r=${i}&check=1`); },
       'ir-edit': () => openEdit(d, ctx, view()),
       'ir-send': ({ l }) => {
@@ -358,7 +358,7 @@ Devices.ir = (() => {
     UI.on({
       'ir-more': ({ i }) => openEdit(d, ctx, +i),
       'ir-teach': ({ i }) => { UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${i}&check=1`); },
-      'ir-remove': ({ i }) => { UI.closeSheet(); removeR(d, ctx, +i, (n) => { d.cur = 0; Store.save(); ctx.render(); UI.toast(`${n} removed`); }); },
+      'ir-remove': ({ i }) => { removeR(d, ctx, +i, (n) => { d.cur = 0; Store.save(); ctx.render(); UI.toast(`${n} removed`); }); },
     });
   }
   const about = (d) => [['Remotes', `${d.remotes.length}`], ...(d.st.last ? [['Last sent', lastLine(d)]] : [])];

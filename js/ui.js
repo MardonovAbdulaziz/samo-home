@@ -505,8 +505,9 @@ const UI = (() => {
   function drawSub() {
     const c = sub2; if (!c) return;
     const body = c.render ? c.render() : '', foot = footerHTML(c, body);
-    patch(sheet2El, `<div class="grabber"></div><div class="sheet-head"><div class="sheet-title">${esc(typeof c.title === 'function' ? c.title() : c.title)}</div><button class="icon-btn sheet-x" data-action="sub-close" aria-label="Close">${icon('close-circle')}</button></div>
-      <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`, { animate: false });
+    const x = c.closeBtn === false ? '' : `<button class="icon-btn sheet-x" data-action="sub-close" aria-label="Close">${icon('close-circle')}</button>`;
+    patch(sheet2El, `<div class="grabber"></div><div class="sheet-head"><div class="sheet-title">${esc(typeof c.title === 'function' ? c.title() : c.title)}</div>${x}</div>
+      ${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}<div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`, { animate: false });
     c.onMount && c.onMount(sheet2El);
   }
   function closeSubSheet() {
@@ -527,14 +528,17 @@ const UI = (() => {
   on({ 'sheet-close': closeSheet });
 
   /** Confirm sheet (Figma: Delete confirm modal) */
+  /* Opened over an open sheet it stacks on it (iOS): Cancel goes back to that sheet; the confirmed action closes both. */
   function confirm({ title, text, ok = 'Delete', cancel = 'Cancel', danger = true, onOk }) {
+    const stacked = !!sheetState && sheetEl.classList.contains('open');
     on({ 'confirm-ok': () => { closeSheet(); onOk && onOk(); } });
-    sheet({
+    const cfg = {
       title, closeBtn: false, sub: esc(text),
       render: () => `<div class="sheet-actions">
-        <button class="btn btn-secondary" data-action="sheet-close">${esc(cancel)}</button>
+        <button class="btn btn-secondary" data-action="${stacked ? 'sub-close' : 'sheet-close'}">${esc(cancel)}</button>
         <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-action="confirm-ok">${esc(ok)}</button></div>`,
-    });
+    };
+    if (stacked) subSheet(cfg); else sheet(cfg);
   }
 
   /** Text input sheet (Figma: Rename). Opened over an open sheet it stacks on it (iOS stacked sheet):

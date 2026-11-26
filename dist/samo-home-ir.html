@@ -2935,8 +2935,9 @@ const UI = (() => {
   function drawSub() {
     const c = sub2; if (!c) return;
     const body = c.render ? c.render() : '', foot = footerHTML(c, body);
-    patch(sheet2El, `<div class="grabber"></div><div class="sheet-head"><div class="sheet-title">${esc(typeof c.title === 'function' ? c.title() : c.title)}</div><button class="icon-btn sheet-x" data-action="sub-close" aria-label="Close">${icon('close-circle')}</button></div>
-      <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`, { animate: false });
+    const x = c.closeBtn === false ? '' : `<button class="icon-btn sheet-x" data-action="sub-close" aria-label="Close">${icon('close-circle')}</button>`;
+    patch(sheet2El, `<div class="grabber"></div><div class="sheet-head"><div class="sheet-title">${esc(typeof c.title === 'function' ? c.title() : c.title)}</div>${x}</div>
+      ${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}<div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`, { animate: false });
     c.onMount && c.onMount(sheet2El);
   }
   function closeSubSheet() {
@@ -2957,14 +2958,17 @@ const UI = (() => {
   on({ 'sheet-close': closeSheet });
 
   /** Confirm sheet (Figma: Delete confirm modal) */
+  /* Opened over an open sheet it stacks on it (iOS): Cancel goes back to that sheet; the confirmed action closes both. */
   function confirm({ title, text, ok = 'Delete', cancel = 'Cancel', danger = true, onOk }) {
+    const stacked = !!sheetState && sheetEl.classList.contains('open');
     on({ 'confirm-ok': () => { closeSheet(); onOk && onOk(); } });
-    sheet({
+    const cfg = {
       title, closeBtn: false, sub: esc(text),
       render: () => `<div class="sheet-actions">
-        <button class="btn btn-secondary" data-action="sheet-close">${esc(cancel)}</button>
+        <button class="btn btn-secondary" data-action="${stacked ? 'sub-close' : 'sheet-close'}">${esc(cancel)}</button>
         <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-action="confirm-ok">${esc(ok)}</button></div>`,
-    });
+    };
+    if (stacked) subSheet(cfg); else sheet(cfg);
   }
 
   /** Text input sheet (Figma: Rename). Opened over an open sheet it stacks on it (iOS stacked sheet):
@@ -10675,7 +10679,7 @@ Devices.ir = (() => {
     });
     UI.on({ 'ir-again': () => openSetup(d, ctx, kind, brand, true) });
   }
-  const removeR = (d, ctx, i, after) => UI.confirm({ title: 'Remove device?', text: 'Are you sure you want to remove this device? It will be unlinked from your home.', ok: 'Remove', onOk: () => { const n = d.remotes[i].name; d.remotes.splice(i, 1); Store.save(); if (after) after(n); else { ctx.render(); UI.toast(`${n} removed`); } } });
+  const removeR = (d, ctx, i, after) => UI.confirm({ title: `Remove ${d.remotes[i].name}?`, text: 'Its taught buttons are deleted from the app.', ok: 'Remove', onOk: () => { const n = d.remotes[i].name; d.remotes.splice(i, 1); Store.save(); if (after) after(n); else { ctx.render(); UI.toast(`${n} removed`); } } });
   /* ---------- Edit a remote (like the channel Edit sheet, Figma 5990:67634) ----------
      Full sheet: icon (pen → icon picker) · name · buttons · Remove remote (red text button, Figma 5429:45036) · Save.
      Name and icon are a draft until Save; × leaves the remote as it was. Opened from the Remotes row in Device Settings,
@@ -10728,7 +10732,7 @@ Devices.ir = (() => {
       'ir-add': () => openAdd(d, ctx),
       'ir-open': ({ i }, el, e) => { if (e && e.target.closest('.ir-more')) return; go(`device.html?id=${d.id}&r=${i}`); },
       'ir-more': ({ i }) => openEdit(d, ctx, +i),
-      'ir-remove': ({ i }) => { UI.closeSheet(); removeR(d, ctx, +i, view() >= 0 ? (n) => { UI.flash(`${n} removed`); go(`device.html?id=${d.id}`); } : null); },
+      'ir-remove': ({ i }) => { removeR(d, ctx, +i, view() >= 0 ? (n) => { UI.flash(`${n} removed`); go(`device.html?id=${d.id}`); } : null); },
       'ir-teach': ({ i }) => { UI.closeSheet(); go(`device.html?id=${d.id}&r=${i}&check=1`); },
       'ir-edit': () => openEdit(d, ctx, view()),
       'ir-send': ({ l }) => {
@@ -10767,7 +10771,7 @@ Devices.ir = (() => {
     UI.on({
       'ir-more': ({ i }) => openEdit(d, ctx, +i),
       'ir-teach': ({ i }) => { UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${i}&check=1`); },
-      'ir-remove': ({ i }) => { UI.closeSheet(); removeR(d, ctx, +i, (n) => { d.cur = 0; Store.save(); ctx.render(); UI.toast(`${n} removed`); }); },
+      'ir-remove': ({ i }) => { removeR(d, ctx, +i, (n) => { d.cur = 0; Store.save(); ctx.render(); UI.toast(`${n} removed`); }); },
     });
   }
   const about = (d) => [['Remotes', `${d.remotes.length}`], ...(d.st.last ? [['Last sent', lastLine(d)]] : [])];
