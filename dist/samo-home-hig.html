@@ -2324,6 +2324,8 @@ a.section-title:active { opacity: .6; }
 
 /* Tappable things never select their text (a quick double tap in Safari highlighted a row's title + sub) */
 button, [role="button"] { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+/* IR remote Edit sheet: the action rows sit in a card 24 below the name field (tappable rows, not fields) */
+.sheet .ir-edit-rows { margin-top: 24px; }
 
 /* ==========================================================================
    VARIANT "hig" — Apple iOS 26 Human Interface Guidelines + Liquid Glass.
@@ -11081,11 +11083,11 @@ Devices.ir = (() => {
       full: true, title: 'Edit', sub: esc(r.brand ? `${kindOf(r.kind)[1]} · ${r.brand}` : kindOf(r.kind)[1]),
       render: () => `<div class="edit-avatar"><div class="ring">${icon(dr.icon, 'icon', 'style="width:48px;height:48px"')}</div>
           <button class="pen" data-action="ir-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
-        <div class="pad">
-          <label class="input-box"><span class="lbl">Remote name</span><input id="irName" value="${esc(dr.name)}" maxlength="30" autocomplete="off"></label>
-          ${r.builtin ? '' : `<button class="input-box" data-action="ir-teach" data-i="${i}"><span class="lbl">Buttons</span><span class="val">${n ? `${n} taught · teach again` : 'Teach buttons'}</span><span class="trail">${icon('chevron-right', 'icon')}</span></button>`}
-          ${learnHere ? `<button class="input-box" data-action="ir-learn"><span class="lbl">New button</span><span class="val">Learn from the original remote</span><span class="trail">${icon('chevron-right', 'icon')}</span></button>` : ''}
-          <button class="btn-delete" data-action="ir-remove" data-i="${i}">${icon('trash', 'icon', 'style="width:20px;height:20px"')}Remove remote</button>
+        <div class="pad"><label class="input-box"><span class="lbl">Remote name</span><input id="irName" value="${esc(dr.name)}" maxlength="30" autocomplete="off"></label></div>
+        ${r.builtin && !learnHere ? '' : `<div class="list ir-edit-rows">
+          ${r.builtin ? '' : `<button class="cell" data-action="ir-teach" data-i="${i}"><span class="cell-main cell-title">Teach buttons</span>${n ? `<span class="cell-value">${n} taught</span>` : ''}${icon('chevron-right', 'chev')}</button>`}
+          ${learnHere ? `<button class="cell" data-action="ir-learn"><span class="cell-main cell-title">Learn a new button</span>${icon('chevron-right', 'chev')}</button>` : ''}</div>`}
+        <div class="pad"><button class="btn-delete" data-action="ir-remove" data-i="${i}">${icon('trash', 'icon', 'style="width:20px;height:20px"')}Remove remote</button>
         </div>`,
       footer: '<button class="btn btn-primary btn-block" data-action="ir-save">Save</button>',
       onMount: (el) => { const inp = el.querySelector('#irName'); if (inp) inp.onkeydown = (e) => { if (e.key === 'Enter') save(); }; },

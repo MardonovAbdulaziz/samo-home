@@ -2148,3 +2148,5 @@ a.section-title:active { opacity: .6; }
 
 /* Tappable things never select their text (a quick double tap in Safari highlighted a row's title + sub) */
 button, [role="button"] { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+/* IR remote Edit sheet: the action rows sit in a card 24 below the name field (tappable rows, not fields) */
+.sheet .ir-edit-rows { margin-top: 24px; }
