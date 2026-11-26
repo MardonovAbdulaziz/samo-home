@@ -321,13 +321,19 @@ Devices.ir = (() => {
 
   /* ---------- Settings ---------- */
   function settings(d) {
-    const rows = d.remotes.map((r, i) => `<div class="cell"><span class="cell-icon">${icon(kindOf(r.kind)[2])}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(r.name)}</span><span class="cell-sub" style="display:block">${esc(r.brand || 'Learned buttons')}</span></span><button class="btn-sm" data-action="ir-del" data-i="${i}">Remove</button></div>`).join('');
+    const rows = d.remotes.map((r, i) => `<button class="cell" data-action="ir-more" data-i="${i}"><span class="cell-icon">${icon(kindOf(r.kind)[2])}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(r.name)}</span><span class="cell-sub" style="display:block">${esc(r.brand || 'Learned buttons')}</span></span>${icon('chevron-right', 'chev')}</button>`).join('');
     return (d.remotes.length ? `<div class="list-header">Remotes</div><div class="list">${rows}</div>` : '') + Kit.settingsHTML(F, GROUPS, d);
   }
   function bindSettings(d, ctx) {
     Kit.bindSettings(F, d, ctx, { brandSetup: () => openAdd(d, ctx) });
     UI.on({ 'rs-history': () => Kit.historySheet(d, { sent: 'Code sent', learned: 'Learned a button', added: 'Remote added' }, 'Every code the blaster sent') });
-    UI.on({ 'ir-del': ({ i }) => UI.confirm({ title: `Remove ${d.remotes[+i].name}?`, text: 'Its buttons are deleted from the app.', ok: 'Remove', onOk: () => { d.remotes.splice(+i, 1); d.cur = 0; Store.save(); ctx.render(); } }) });
+    // Remotes rows open the same sheet as ⋮ on the device page (Rename / Teach buttons again / Remove)
+    UI.on({
+      'ir-more': ({ i }) => openMore(d, ctx, +i),
+      'ir-rename': ({ i }) => { UI.closeSheet(); renameR(d, ctx, +i); },
+      'ir-teach': ({ i }) => { UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${i}&check=1`); },
+      'ir-remove': ({ i }) => { UI.closeSheet(); removeR(d, ctx, +i, (n) => { d.cur = 0; Store.save(); ctx.render(); UI.toast(`${n} removed`); }); },
+    });
   }
   const about = (d) => [['Remotes', `${d.remotes.length}`], ...(d.st.last ? [['Last sent', lastLine(d)]] : [])];
 
