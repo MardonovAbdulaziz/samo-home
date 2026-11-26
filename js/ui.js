@@ -435,10 +435,10 @@ const UI = (() => {
     const body = c.render ? c.render() : '', foot = footerHTML(c, body);
     const sheetHTML = c.full
       ? `<div class="grabber"></div><div class="sheet-top">${x}</div>
-        <div class="sheet-big-title">${esc(c.title)}</div>${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}
+        <div class="sheet-big-title">${esc(typeof c.title === 'function' ? c.title() : c.title)}</div>${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}
         <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`
       : `<div class="grabber"></div>
-      <div class="sheet-head"><div class="sheet-title">${esc(c.title)}</div>${x}</div>
+      <div class="sheet-head"><div class="sheet-title">${esc(typeof c.title === 'function' ? c.title() : c.title)}</div>${x}</div>
       ${c.sub ? `<div class="sheet-sub">${c.sub}</div>` : ''}
       ${c.tabs ? `<div class="sheet-tabs">${c.tabs()}</div>` : ''}
       <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`;
@@ -505,7 +505,7 @@ const UI = (() => {
   function drawSub() {
     const c = sub2; if (!c) return;
     const body = c.render ? c.render() : '', foot = footerHTML(c, body);
-    patch(sheet2El, `<div class="grabber"></div><div class="sheet-head"><div class="sheet-title">${esc(c.title)}</div><button class="icon-btn sheet-x" data-action="sub-close" aria-label="Close">${icon('close-circle')}</button></div>
+    patch(sheet2El, `<div class="grabber"></div><div class="sheet-head"><div class="sheet-title">${esc(typeof c.title === 'function' ? c.title() : c.title)}</div><button class="icon-btn sheet-x" data-action="sub-close" aria-label="Close">${icon('close-circle')}</button></div>
       <div class="sheet-body">${body}</div>${foot ? `<div class="sheet-footer">${foot}</div>` : ''}`, { animate: false });
     c.onMount && c.onMount(sheet2El);
   }
@@ -537,18 +537,21 @@ const UI = (() => {
     });
   }
 
-  /** Text input sheet (Figma: Rename) */
+  /** Text input sheet (Figma: Rename). Opened over an open sheet it stacks on it (iOS stacked sheet):
+      × and Save both bring you back to the sheet underneath, which is redrawn with the new value. */
   function prompt({ title, label, value = '', okText = 'Save', onOk, validate }) {
+    const stacked = !!sheetState && sheetEl.classList.contains('open');
+    const host = () => (stacked ? sheet2El : sheetEl);
     on({
       'prompt-ok': () => {
-        const v = sheetEl.querySelector('#promptInput').value.trim();
+        const v = host().querySelector('#promptInput').value.trim();
         const err = validate ? validate(v) : (!v ? 'Name cannot be empty' : null);
-        if (err) { sheetEl.querySelector('#promptErr').textContent = err; haptic('error'); return; }
-        closeSheet(); onOk(v);
+        if (err) { host().querySelector('#promptErr').textContent = err; haptic('error'); return; }
+        if (stacked) { closeSubSheet(); onOk(v); if (sheetState) drawSheet(); } else { closeSheet(); onOk(v); }
       },
-      'prompt-clear': () => { const i = sheetEl.querySelector('#promptInput'); i.value = ''; i.focus(); },
+      'prompt-clear': () => { const i = host().querySelector('#promptInput'); i.value = ''; i.focus(); },
     });
-    sheet({
+    const cfg = {
       title, focus: true,
       render: () => `<label class="field"><span class="field-label">${esc(label)}</span>
           <input id="promptInput" value="${esc(value)}" maxlength="40" autocomplete="off">
@@ -557,9 +560,12 @@ const UI = (() => {
       footer: `<button class="btn btn-primary btn-block" data-action="prompt-ok">${esc(okText)}</button>`,
       onMount: (el) => {
         const i = el.querySelector('#promptInput');
+        if (i.dataset.bound) return; i.dataset.bound = '1';
         i.addEventListener('keydown', (e) => { if (e.key === 'Enter') actions['prompt-ok'](); });
+        if (stacked) setTimeout(() => i.focus(), 300);
       },
-    });
+    };
+    if (stacked) subSheet(cfg); else sheet(cfg);
   }
 
   /* ---------- Popover ---------- */

@@ -228,14 +228,14 @@
       const r = S().rooms.find((x) => x.id === room); if (!r) return;
       const n = () => S().devices.filter((d) => d.roomId === r.id).length;
       const s = UI.sheet({
-        title: r.name, sub: n() ? `${n()} device${n() > 1 ? 's' : ''}` : 'No devices yet',
+        title: () => r.name, sub: n() ? `${n()} device${n() > 1 ? 's' : ''}` : 'No devices yet',
         render: () => `<div class="list"><button class="cell" data-action="room-rename"><span class="cell-main cell-title">Name</span><span class="cell-value">${UI.esc(r.name)}</span>${icon('chevron-right', 'chev')}</button></div>
           <div class="pad" style="margin-top:24px"><button class="btn btn-danger btn-block" data-action="room-remove">Remove room</button></div>`,
       });
       UI.on({
         'room-rename': () => UI.prompt({ title: 'Rename room', label: 'Room name', value: r.name, okText: 'Save',
           validate: (v) => (!v ? 'Enter a room name' : S().rooms.some((x) => x !== r && x.name.toLowerCase() === v.toLowerCase()) ? 'A room with this name already exists' : null),
-          onOk: (v) => { r.name = v; Store.save(); render(); UI.closeSheet(); UI.toast(`Renamed to “${v}”`); } }),
+          onOk: (v) => { r.name = v; Store.save(); render(); UI.toast(`Renamed to “${v}”`); } }),
         'room-remove': () => UI.confirm({ title: `Remove ${r.name}?`, text: n() ? `Its ${n()} device${n() > 1 ? 's' : ''} stay${n() > 1 ? '' : 's'} in your home, under No room.` : 'The room is empty.', ok: 'Remove',
           onOk: () => { S().devices.forEach((d) => { if (d.roomId === r.id) d.roomId = null; }); S().rooms.splice(S().rooms.indexOf(r), 1); Store.save(); UI.closeSheet(); render(); UI.toast(`${r.name} removed`); } }),
       });

@@ -370,6 +370,9 @@ button.cell:active, a.cell:active { background: var(--fill-quaternary); }
 .input-box:focus-within .lbl { color: var(--primary); }
 .input-box input, .input-box .val { display: block; width: 100%; border: 0; outline: 0; background: transparent; font: 400 17px/22px var(--font); letter-spacing: -0.43px; color: var(--label-primary); padding: 0; caret-color: var(--primary); }
 .input-box .trail { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--label-secondary); display: flex; }
+/* Red text delete button under the fields of an Edit sheet (Figma 5429:45036 “Delete Room”): trash 20 + label, no fill, 24 below */
+.btn-delete { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 44px; margin-top: 24px; background: none; border: 0; color: var(--red); font: 500 15px/18px var(--font); letter-spacing: -0.23px; }
+.btn-delete .icon { width: 20px; height: 20px; }
 
 /* Icon picker grid */
 
@@ -2142,3 +2145,6 @@ a.section-title:active { opacity: .6; }
 .ed-drop { display: none; }
 .ed-grid:not(:has(.ed-cell)) .ed-drop { display: grid; place-items: center; grid-column: 1 / -1; min-height: 76px; border-radius: 24px; border: 1.5px dashed rgba(255, 255, 255, 0.18); color: var(--label-secondary); font: var(--body-sm); }
 @media (prefers-reduced-motion: reduce) { .ed-cell .tile { animation: none; } }
+
+/* Tappable things never select their text (a quick double tap in Safari highlighted a row's title + sub) */
+button, [role="button"] { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }

@@ -185,7 +185,7 @@ Devices.ir = (() => {
     // empty (Figma 5433:46868 “Remote control”)
     if (!d.remotes.length && !has(d, 'irSwitches')) return h + `<div class="ir-empty" data-key="empty"><h2>No devices yet</h2><p>Tap “Add a device” to add a device for remote control use</p><button class="btn btn-opposite btn-block" data-action="ir-add">${icon('plus')}Add a device</button></div>`;
     // the list (Figma 5433:46901 “Device list”): tiles with the appliance icon and name; ⋮ = Rename / Remove
-    if (d.remotes.length) h += `<div class="pad ir-tiles" data-key="remotes">${d.remotes.map((x, i) => `<div class="ir-tile" role="link" tabindex="0" data-action="ir-open" data-i="${i}">${icon(kindOf(x.kind)[2], 'icon', 'style="width:28px;height:28px"')}<span class="nm">${esc(x.name)}</span><button class="ir-more" data-action="ir-more" data-i="${i}" aria-label="More for ${esc(x.name)}"><i></i><i></i><i></i></button></div>`).join('')}</div>`;
+    if (d.remotes.length) h += `<div class="pad ir-tiles" data-key="remotes">${d.remotes.map((x, i) => `<div class="ir-tile" role="link" tabindex="0" data-action="ir-open" data-i="${i}">${icon(remIcon(x), 'icon', 'style="width:28px;height:28px"')}<span class="nm">${esc(x.name)}</span><button class="ir-more" data-action="ir-more" data-i="${i}" aria-label="More for ${esc(x.name)}"><i></i><i></i><i></i></button></div>`).join('')}</div>`;
     if (has(d, 'irSwitches')) h += `<div class="list-header" data-key="sw-h">Switches</div><div class="list" data-key="sw">${d.sw.map((x, i) => x.learned ? Kit.sw('ir-sw', i, x.name, x.on ? 'Sent “on”' : 'Sent “off”', x.on) : `<button class="cell" data-action="ir-sw-learn" data-i="${i}"><span class="cell-main"><span class="cell-title" style="display:block">${esc(x.name)}</span><span class="cell-sub" style="display:block">Not learned yet</span></span>${icon('chevron-right', 'chev')}</button>`).join('')}</div>`;
     h += Kit.cards([
       has(d, 'climateSensor') && ['Room temperature', fmtT(d, roomT(d)), { count: true }],
@@ -217,7 +217,7 @@ Devices.ir = (() => {
     });
     const got = () => { phase = 'got'; s.refresh(); };
     d.sim.learnHook = got;
-    UI.on({ 'ir-learn-sim': got, 'ir-learn-name': () => UI.prompt({ title: 'Button name', label: 'e.g. Light, Speed, Timer', value: 'Light', okText: 'Save', onOk: (v) => { onDone(v); Kit.logEv(d, 'learned', { text: `Learned “${v}”` }); Store.save(); ctx.render(); } }) });
+    UI.on({ 'ir-learn-sim': got, 'ir-learn-name': () => UI.prompt({ title: 'Button name', label: 'e.g. Light, Speed, Timer', value: 'Light', okText: 'Save', onOk: (v) => { UI.closeSheet(); onDone(v); Kit.logEv(d, 'learned', { text: `Learned “${v}”` }); Store.save(); ctx.render(); } }) });
   }
   // brands with logos (Figma 5433:47261 TV / 5433:47322 AC “Choose brand”)
   const LOGO = { Samsung: [14.21, 4.16, 43.24, 92.47], LG: [38.42, 8.96, 30.37, 83.77], Artel: [49.79, 6.44, 24.84, 86.59], TCL: [53.72, 5, 23.14, 90], Hisense: [13.5, 7.5, 43.25, 85], Skyworth: [15.05, 5, 42.48, 90], Sony: [14.08, 10, 42.96, 80], Philips: [100, 0, 0, 100], Sharp: [12.13, 7.5, 43.93, 85], Daikin: [18.33, 7.5, 40.84, 85], Midea: [37.22, 5, 31.39, 90], Gree: [18.38, 5, 40.81, 90], Hitachi: [12.5, 10.91, 45, 78.18] };
@@ -266,22 +266,50 @@ Devices.ir = (() => {
     });
     UI.on({ 'ir-again': () => openSetup(d, ctx, kind, brand, true) });
   }
-  function openMore(d, ctx, i) {
-    const r = d.remotes[i];
-    UI.sheet({
-      title: r.name, render: () => `<div class="list"><button class="cell" data-action="ir-rename" data-i="${i}"><span class="cell-main cell-title">Rename</span>${icon('chevron-right', 'chev')}</button><button class="cell" data-action="ir-teach" data-i="${i}"><span class="cell-main cell-title">Teach buttons again</span>${icon('chevron-right', 'chev')}</button><button class="cell" data-action="ir-remove" data-i="${i}"><span class="cell-main cell-title" style="color:var(--red)">Remove</span></button></div>`,
-    });
-  }
-  const renameR = (d, ctx, i) => UI.prompt({ title: 'Rename', label: 'Device name', value: d.remotes[i].name, okText: 'Save', onOk: (v) => { d.remotes[i].name = v; Store.save(); ctx.render(); } });
   const removeR = (d, ctx, i, after) => UI.confirm({ title: 'Remove device?', text: 'Are you sure you want to remove this device? It will be unlinked from your home.', ok: 'Remove', onOk: () => { const n = d.remotes[i].name; d.remotes.splice(i, 1); Store.save(); if (after) after(n); else { ctx.render(); UI.toast(`${n} removed`); } } });
-  function openEdit(d, ctx) {
-    const r = rem(d), i = view();
+  /* ---------- Edit a remote (like the channel Edit sheet, Figma 5990:67634) ----------
+     Full sheet: icon (pen → icon picker) · name · buttons · Remove remote (red text button, Figma 5429:45036) · Save.
+     Name and icon are a draft until Save; × leaves the remote as it was. Opened from the Remotes row in Device Settings,
+     ⋮ on a remote tile and Edit on a remote's page. */
+  const remIcon = (r) => r.icon || kindOf(r.kind)[2];
+  const REM_ICONS = [...new Set(KINDS.map((k) => k[2]))];
+  function openEdit(d, ctx, i, draft) {
+    const r = d.remotes[i]; if (!r) return;
+    const dr = draft || { name: r.name, icon: remIcon(r) };
+    const keepName = () => { const el = document.getElementById('irName'); if (el) dr.name = el.value; };
+    const n = Object.keys(r.trained || {}).length;
+    const learnHere = has(d, 'learn') && r.kind !== 'ac' && r.kind !== 'tv' && view() === i;
+    const save = () => {
+      keepName();
+      const name = dr.name.trim();
+      if (!name) { UI.toast('Name cannot be empty'); return; }
+      const changed = name !== r.name || dr.icon !== remIcon(r);
+      r.name = name;
+      if (dr.icon !== kindOf(r.kind)[2]) r.icon = dr.icon; else delete r.icon;
+      Store.save(); UI.closeSheet(); ctx.render(); if (changed) UI.toast('Saved');
+    };
     UI.sheet({
-      title: `Edit ${r.name}`, sub: r.brand ? `${r.brand}` : 'Learned buttons',
-      render: () => `<div class="list"><button class="cell" data-action="ir-rename" data-i="${i}"><span class="cell-main cell-title">Name</span><span class="cell-value">${esc(r.name)}</span>${icon('chevron-right', 'chev')}</button>
-        ${r.builtin ? '' : `<button class="cell" data-action="ir-teach" data-i="${i}"><span class="cell-main cell-title">Teach buttons</span>${icon('chevron-right', 'chev')}</button>`}
-        ${has(d, 'learn') && r.kind !== 'ac' && r.kind !== 'tv' ? `<button class="cell" data-action="ir-learn"><span class="cell-main cell-title">Learn a new button</span>${icon('chevron-right', 'chev')}</button>` : ''}</div>
-        <div class="pad" style="margin-top:24px"><button class="btn btn-danger btn-block" data-action="ir-remove" data-i="${i}">Remove this remote</button></div>`,
+      full: true, title: 'Edit', sub: esc(r.brand ? `${kindOf(r.kind)[1]} · ${r.brand}` : kindOf(r.kind)[1]),
+      render: () => `<div class="edit-avatar"><div class="ring">${icon(dr.icon, 'icon', 'style="width:48px;height:48px"')}</div>
+          <button class="pen" data-action="ir-icon" aria-label="Change icon">${icon('pen', 'icon', 'style="width:20px;height:20px"')}</button></div>
+        <div class="pad">
+          <label class="input-box"><span class="lbl">Remote name</span><input id="irName" value="${esc(dr.name)}" maxlength="30" autocomplete="off"></label>
+          ${r.builtin ? '' : `<button class="input-box" data-action="ir-teach" data-i="${i}"><span class="lbl">Buttons</span><span class="val">${n ? `${n} taught · teach again` : 'Teach buttons'}</span><span class="trail">${icon('chevron-right', 'icon')}</span></button>`}
+          ${learnHere ? `<button class="input-box" data-action="ir-learn"><span class="lbl">New button</span><span class="val">Learn from the original remote</span><span class="trail">${icon('chevron-right', 'icon')}</span></button>` : ''}
+          <button class="btn-delete" data-action="ir-remove" data-i="${i}">${icon('trash', 'icon', 'style="width:20px;height:20px"')}Remove remote</button>
+        </div>`,
+      footer: '<button class="btn btn-primary btn-block" data-action="ir-save">Save</button>',
+      onMount: (el) => { const inp = el.querySelector('#irName'); if (inp) inp.onkeydown = (e) => { if (e.key === 'Enter') save(); }; },
+    });
+    UI.on({
+      'ir-save': save,
+      'ir-icon': () => {
+        keepName();
+        UI.sheet({ title: 'Select an icon', render: () => iconPickerHTML([['Appliances', REM_ICONS]], dr.icon, 'ir-ip-pick'),
+          footer: '<button class="btn btn-glass btn-block" data-action="ir-ip-back">Done</button>' });
+      },
+      'ir-ip-pick': ({ n: ic }) => { dr.icon = ic; openEdit(d, ctx, i, dr); },
+      'ir-ip-back': () => openEdit(d, ctx, i, dr),
     });
   }
   function bindPage(d, ctx) {
@@ -290,11 +318,10 @@ Devices.ir = (() => {
     UI.on({
       'ir-add': () => openAdd(d, ctx),
       'ir-open': ({ i }, el, e) => { if (e && e.target.closest('.ir-more')) return; go(`device.html?id=${d.id}&r=${i}`); },
-      'ir-more': ({ i }) => openMore(d, ctx, +i),
-      'ir-rename': ({ i }) => { UI.closeSheet(); renameR(d, ctx, +i); },
+      'ir-more': ({ i }) => openEdit(d, ctx, +i),
       'ir-remove': ({ i }) => { UI.closeSheet(); removeR(d, ctx, +i, view() >= 0 ? (n) => { UI.flash(`${n} removed`); go(`device.html?id=${d.id}`); } : null); },
       'ir-teach': ({ i }) => { UI.closeSheet(); go(`device.html?id=${d.id}&r=${i}&check=1`); },
-      'ir-edit': () => openEdit(d, ctx),
+      'ir-edit': () => openEdit(d, ctx, view()),
       'ir-send': ({ l }) => {
         const r = rem(d);
         if (r && checking()) {   // teaching: select a button, then press it on the physical remote
@@ -321,16 +348,15 @@ Devices.ir = (() => {
 
   /* ---------- Settings ---------- */
   function settings(d) {
-    const rows = d.remotes.map((r, i) => `<button class="cell" data-action="ir-more" data-i="${i}"><span class="cell-icon">${icon(kindOf(r.kind)[2])}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(r.name)}</span><span class="cell-sub" style="display:block">${esc(r.brand || 'Learned buttons')}</span></span>${icon('chevron-right', 'chev')}</button>`).join('');
+    const rows = d.remotes.map((r, i) => `<button class="cell" data-action="ir-more" data-i="${i}"><span class="cell-icon">${icon(remIcon(r))}</span><span class="cell-main"><span class="cell-title" style="display:block">${esc(r.name)}</span><span class="cell-sub" style="display:block">${esc(r.brand || 'Learned buttons')}</span></span>${icon('chevron-right', 'chev')}</button>`).join('');
     return (d.remotes.length ? `<div class="list-header">Remotes</div><div class="list">${rows}</div>` : '') + Kit.settingsHTML(F, GROUPS, d);
   }
   function bindSettings(d, ctx) {
     Kit.bindSettings(F, d, ctx, { brandSetup: () => openAdd(d, ctx) });
     UI.on({ 'rs-history': () => Kit.historySheet(d, { sent: 'Code sent', learned: 'Learned a button', added: 'Remote added' }, 'Every code the blaster sent') });
-    // Remotes rows open the same sheet as ⋮ on the device page (Rename / Teach buttons again / Remove)
+    // Remotes rows open the same Edit sheet as ⋮ on the device page
     UI.on({
-      'ir-more': ({ i }) => openMore(d, ctx, +i),
-      'ir-rename': ({ i }) => { UI.closeSheet(); renameR(d, ctx, +i); },
+      'ir-more': ({ i }) => openEdit(d, ctx, +i),
       'ir-teach': ({ i }) => { UI.closeSheet(); UI.go(`device.html?id=${d.id}&r=${i}&check=1`); },
       'ir-remove': ({ i }) => { UI.closeSheet(); removeR(d, ctx, +i, (n) => { d.cur = 0; Store.save(); ctx.render(); UI.toast(`${n} removed`); }); },
     });
